@@ -2,6 +2,10 @@
 
 ## Status
 
+![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
+[![Build Status](https://travis-ci.org/mcollovati/vertx-vaadin.svg?branch=master)](https://travis-ci.org/mcollovati/vertx-vaadin)
+
+
 ## Description
 
 Vertx Vaadin is an adapter library that lets you run [Vaadin](https://vaadin.com/) applications on top of [Vert.x](http://vertx.io/).
@@ -31,4 +35,4 @@ Contributions are welcome, but there are no guarantees that they are accepted as
   
 ## License & Author
 
-Vertx Vaadin is distributed under MIT License. For license terms, see LICENSE.
+Vertx Vaadin is distributed under MIT License. For license terms, see [LICENSE](LICENSE).
