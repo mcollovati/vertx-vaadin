@@ -64,6 +64,7 @@
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.21</slf4j.version>
         <checkstyle.version>8.8</checkstyle.version>
+        <sonar-maven-plugin.version>3.4.0.905</sonar-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -222,6 +223,11 @@
                         </execution>
                     </executions>
                 </plugin>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>${sonar-maven-plugin.version}</version>
+                    </plugin>
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
