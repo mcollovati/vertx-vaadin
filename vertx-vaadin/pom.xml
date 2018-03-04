@@ -7,9 +7,9 @@
         <version>0.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>vertx-vaadin-8</artifactId>
+    <artifactId>vertx-vaadin8</artifactId>
     <packaging>jar</packaging>
-    <name>vertx-vaadin-8</name>
+    <name>vertx-vaadin8</name>
     <description>An adapter to run Vaadin 8 applications on Vertx</description>
 
     <properties>
