@@ -13,6 +13,10 @@
     <name>vertx-vaadin-8</name>
     <description>An adapter to run Vaadin 8 applications on Vertx</description>
 
+    <properties>
+        <tagPrefix>8-</tagPrefix>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>

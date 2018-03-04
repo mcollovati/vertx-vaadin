@@ -33,7 +33,7 @@
     <scm>
         <url>https://github.com/mcollovati/vertx-vaadin</url>
         <connection>scm:git:git@github.com:mcollovati/vertx-vaadin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:mcollovati/vertx-vaadin.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@github.com:/mcollovati/vertx-vaadin.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -60,6 +60,7 @@
         <maven-failsafe-plugin.version>2.20.1</maven-failsafe-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 
         <vertx.version>3.5.1</vertx.version>
         <vaadin.version>8.3.1</vaadin.version>
@@ -231,6 +232,14 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven-release-plugin.version}</version>
+                    <configuration>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
+
                 <plugin>
                     <groupId>org.sonarsource.scanner.maven</groupId>
                     <artifactId>sonar-maven-plugin</artifactId>
