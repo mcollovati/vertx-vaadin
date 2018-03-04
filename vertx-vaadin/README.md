@@ -1,6 +1,8 @@
-# Vertx-Vaadin 
+# Vertx-Vaadin-8
 
-Vertx-vaadin projects provides a vert.x verticle that starts a http server and initialize `VertxVaadinService`,
+Vertx-Vaadin-8 is an adapter library that allow Vaadin 8.x applications to run on a Vert.x environment.
+
+Vertx-vaadin provides a Vert.x verticle that starts an http server and initialize `VertxVaadinService`,
 a custom implementation of VaadinService.
 
 VertxVaadinService is inspired from VaadinServletService and takes the same configuration parameters in the form
@@ -19,5 +21,5 @@ All [Servlet Configuration Parameter](https://vaadin.com/docs/-/part/framework/a
 }
 ``` 
 
-Vertx-Vaadin supports PUSH using a custom implementation based on SockJS that replaces the atmosphere stack on client and server side; for this reason widgetset compilation is needed for projects using vertx-vaadin 
+Vertx-Vaadin supports PUSH using a custom implementation based on SockJS that replaces the atmosphere stack on client and server side; for this reason widgetset compilation is needed for projects using vertx-vaadin. 
  
