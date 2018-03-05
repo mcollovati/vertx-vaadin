@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
 [![Build Status](https://travis-ci.org/mcollovati/vertx-vaadin.svg?branch=master)](https://travis-ci.org/mcollovati/vertx-vaadin)
-
+[ ![Download](https://api.bintray.com/packages/mcollovati/maven-repo/vertx-vaadin/images/download.svg) ](https://bintray.com/mcollovati/maven-repo/vertx-vaadin/_latestVersion)
 
 ## Description
 
@@ -13,11 +13,43 @@ This means you can mix the simplicity and robustness of Vaadin applications with
 
 ## Installation and Getting Started
 
-TODO
+Vertx-vaadin binaries are available on Bintray.
+
+### Maven
+
+```
+<repository>
+	<id>jcenter</id>
+	<url>http://jcenter.bintray.com</url>
+</repository>
+```
+```
+<dependency>
+  <groupId>com.github.mcollovati.vertx</groupId>
+  <artifactId>vertx-vaadin8</artifactId>
+  <version>0.2</version>
+</dependency>
+```
+
+### Gradle
+
+```
+repositories {
+	jcenter()
+}
+```
+```
+compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.2'
+```
+
 
 ## Documentation
 
-TODO
+See [vertx-vaadin](vertx-vaadin) module for more information.
+
+## Demo
+
+A public demo based on Vaadin archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/) 
 
 ## Issue tracking
   
@@ -33,6 +65,10 @@ Contributions are welcome, but there are no guarantees that they are accepted as
 - Send a pull request for the original project
 - Comment on the original issue that you have implemented a fix for it
   
-## License & Author
+## License
 
 Vertx Vaadin is distributed under MIT License. For license terms, see [LICENSE](LICENSE).
+
+## Acknowledgements
+
+Thanks to [David Sowerby](https://github.com/davidsowerby) (author of [Krail framework](https://github.com/davidsowerby/krail)) for all his precious technical and non technical support.
