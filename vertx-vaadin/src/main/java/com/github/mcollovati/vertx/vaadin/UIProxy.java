@@ -25,19 +25,16 @@ package com.github.mcollovati.vertx.vaadin;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 
 public class UIProxy {
 
     private final UI ui;
-    private final VaadinSession session;
     private final VertxVaadinService service;
 
     public UIProxy(UI ui) {
         this.ui = ui;
         this.service = (VertxVaadinService) ui.getSession().getService();
-        this.session = ui.getSession();
     }
 
 

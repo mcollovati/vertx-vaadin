@@ -36,6 +36,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.ui.UI;
+import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
 
 public class SockJSPushConnection implements PushConnection {
@@ -76,7 +77,7 @@ public class SockJSPushConnection implements PushConnection {
                 new UidlWriter().write(ui, writer, async);
                 sendMessage("for(;;);[{" + writer + "}]");
             } catch (Exception e) {
-                throw new RuntimeException("Push failed", e);
+                throw new VertxException("Push failed", e);
             }
         }
     }

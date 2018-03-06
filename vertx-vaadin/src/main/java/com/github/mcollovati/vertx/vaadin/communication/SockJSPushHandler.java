@@ -482,11 +482,9 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     private static UI findUiUsingSocket(PushSocket socket, Collection<UI> uIs) {
         for (UI ui : uIs) {
             PushConnection pushConnection = ui.getPushConnection();
-            if (pushConnection instanceof SockJSPushConnection) {
-                if (((SockJSPushConnection) pushConnection)
-                    .getSocket() == socket) {
-                    return ui;
-                }
+            if (pushConnection instanceof SockJSPushConnection &&
+                ((SockJSPushConnection) pushConnection).getSocket() == socket) {
+                return ui;
             }
         }
         return null;
@@ -575,7 +573,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             this.socket = socket;
         }
 
-        public PushSocket socket() {
+        PushSocket socket() {
             return socket;
         }
 

@@ -97,10 +97,10 @@ public class VertxWrappedSession implements WrappedSession {
     public void invalidate() {
         checkSessionState();
         Map<String, HttpSessionBindingListener> toUnbind = delegate.data().entrySet().stream()
-            .filter( entry -> HttpSessionBindingListener.class.isInstance(entry.getValue()))
+            .filter(entry -> HttpSessionBindingListener.class.isInstance(entry.getValue()))
             .collect(toMap(Map.Entry::getKey, e -> HttpSessionBindingListener.class.cast(e.getValue())));
         delegate.destroy();
-        toUnbind.forEach( (name, listener) -> listener.valueUnbound(createHttpSessionBindingEvent(name,listener)));
+        toUnbind.forEach((name, listener) -> listener.valueUnbound(createHttpSessionBindingEvent(name, listener)));
         toUnbind.clear();
     }
 
@@ -138,6 +138,7 @@ public class VertxWrappedSession implements WrappedSession {
             throw new IllegalStateException("Session already invalidated");
         }
     }
+
     private Optional<HttpSessionBindingListener> tryCastHttpSessionBindingListener(Object value) {
         return Optional.ofNullable(value)
             .filter(HttpSessionBindingListener.class::isInstance)
@@ -153,7 +154,7 @@ public class VertxWrappedSession implements WrappedSession {
 class VertxHttpSession implements HttpSession {
 
     @Delegate(excludes = Exclusions.class)
-    VertxWrappedSession delegate;
+    private VertxWrappedSession delegate;
 
     VertxHttpSession(ExtendedSession session) {
         this(new VertxWrappedSession(Objects.requireNonNull(session)));

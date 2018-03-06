@@ -23,7 +23,6 @@
 package com.github.mcollovati.vertx.web;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -39,8 +38,6 @@ public class ExtendedSessionImpl extends SessionImpl implements ExtendedSession,
 
     protected Session delegate;
     private long createdAt;
-    private Map<Integer, Handler<Void>> headersEndHandlers;
-    private AtomicInteger handlerSeq = new AtomicInteger();
 
     public ExtendedSessionImpl() {
         this.delegate = new SessionImpl();

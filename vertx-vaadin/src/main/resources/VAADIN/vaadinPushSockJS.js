@@ -6150,9 +6150,6 @@ window.vaadinPush = window.vaadinPush || {};
   //# sourceMappingURL=sockjs.js.map
 
   var SockJSImpl = window.SockJS;
-  if (window.SockJS) {
-    window.SockJS = null;
-  }
 
   var SockJSWrapper = function(url, options) {
     var self = this;
