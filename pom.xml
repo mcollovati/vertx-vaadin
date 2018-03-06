@@ -274,7 +274,7 @@
                         </dependency>
                     </dependencies>
                     <configuration>
-                        <configLocation>${checkstyle.directory}/vaadin-checkstyle.xml</configLocation>
+                        <configLocation>${checkstyle.directory}/checkstyle.xml</configLocation>
                         <headerLocation>${checkstyle.directory}/license.txt</headerLocation>
                         <suppressionsLocation>${checkstyle.directory}/suppressions.xml
                         </suppressionsLocation>
