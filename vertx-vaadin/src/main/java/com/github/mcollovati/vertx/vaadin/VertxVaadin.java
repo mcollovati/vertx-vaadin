@@ -162,13 +162,13 @@ public class VertxVaadin {
 
         vaadinRouter.route().handler(CookieHandler.create());
         vaadinRouter.route().handler(BodyHandler.create());
+
         // Disable SessionHandler for /VAADIN/ static resources
         vaadinRouter.routeWithRegex("^(?!/VAADIN/).*$").handler(sessionHandler);
 
         // Forward vaadinPush javascript to sockjs implementation
         vaadinRouter.routeWithRegex("/VAADIN/vaadinPush(\\.debug)?\\.js")
-            .handler(ctx -> ctx.reroute("/VAADIN/vaadinPushSockJS.js"));
-
+            .handler(ctx -> ctx.reroute(ctx.mountPoint() + "/VAADIN/vaadinPushSockJS.js"));
         vaadinRouter.route("/VAADIN/*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
 
         initSockJS(vaadinRouter, sessionHandler);
