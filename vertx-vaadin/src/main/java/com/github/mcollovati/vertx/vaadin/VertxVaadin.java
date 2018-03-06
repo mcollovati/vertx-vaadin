@@ -42,6 +42,7 @@ import io.vertx.core.VertxException;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.MessageProducer;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -153,6 +154,12 @@ public class VertxVaadin {
             .setCookieHttpOnlyFlag(true);
 
         Router vaadinRouter = Router.router(vertx);
+        // Redirect mountPoint to mountPoint/
+        vaadinRouter.routeWithRegex("^$").handler(ctx -> ctx.response()
+            .putHeader(HttpHeaders.LOCATION, ctx.request().uri() + "/")
+            .setStatusCode(302).end()
+        );
+
         vaadinRouter.route().handler(CookieHandler.create());
         vaadinRouter.route().handler(BodyHandler.create());
         // Disable SessionHandler for /VAADIN/ static resources
