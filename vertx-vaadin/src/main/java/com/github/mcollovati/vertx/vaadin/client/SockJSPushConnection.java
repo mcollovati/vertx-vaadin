@@ -223,7 +223,7 @@ public class SockJSPushConnection implements PushConnection {
         return config;
     }
 
-    /**
+    /*
      * Available options
      * - transport:
      * - websocket: options[maxLength, protocols]

@@ -52,7 +52,7 @@ public interface NearCacheSessionStore extends ExtendedSessionStore {
     }
 
     /**
-     * Create a session store.<p/>
+     * Create a session store.
      *
      * The retry timeout value, configures how long the session handler will retry to get a session from the store
      * when it is not found.
@@ -67,7 +67,7 @@ public interface NearCacheSessionStore extends ExtendedSessionStore {
     }
 
     /**
-     * Create a session store.<p/>
+     * Create a session store.
      *
      * The retry timeout value, configures how long the session handler will retry to get a session from the store
      * when it is not found.
@@ -84,7 +84,7 @@ public interface NearCacheSessionStore extends ExtendedSessionStore {
     }
 
     /**
-     * Create a session store
+     * Create a session store.
      *
      * @param vertx the Vert.x instance
      * @return the session store
@@ -94,7 +94,7 @@ public interface NearCacheSessionStore extends ExtendedSessionStore {
     }
 
     /**
-     * Create a session store.<p/>
+     * Create a session store.
      *
      * The retry timeout value, configures how long the session handler will retry to get a session from the store
      * when it is not found.
@@ -108,7 +108,7 @@ public interface NearCacheSessionStore extends ExtendedSessionStore {
     }
 
     /**
-     * Create a session store.<p/>
+     * Create a session store.
      *
      * The retry timeout value, configures how long the session handler will retry to get a session from the store
      * when it is not found.
