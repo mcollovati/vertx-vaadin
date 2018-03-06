@@ -13,33 +13,38 @@ This means you can mix the simplicity and robustness of Vaadin applications with
 
 ## Installation and Getting Started
 
-Vertx-vaadin binaries are available on Bintray.
+Vertx-vaadin binaries are available on Maven Central and Bintray.
 
 ### Maven
 
+```
+<dependency>
+  <groupId>com.github.mcollovati.vertx</groupId>
+  <artifactId>vertx-vaadin8</artifactId>
+  <version>0.3.0</version>
+</dependency>
+```
+
+Optional:
 ```
 <repository>
 	<id>jcenter</id>
 	<url>http://jcenter.bintray.com</url>
 </repository>
 ```
-```
-<dependency>
-  <groupId>com.github.mcollovati.vertx</groupId>
-  <artifactId>vertx-vaadin8</artifactId>
-  <version>0.2</version>
-</dependency>
-```
+
 
 ### Gradle
 
 ```
+compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.3.0'
+```
+
+Optional:
+```
 repositories {
 	jcenter()
 }
-```
-```
-compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.2'
 ```
 
 
@@ -47,9 +52,11 @@ compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.2'
 
 See [vertx-vaadin](vertx-vaadin) module for more information.
 
-## Demo
+## Demo and samples
 
-A public demo based on Vaadin archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/) 
+A public demo based on Vaadin archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
+
+Source code and other samples can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
 
 ## Issue tracking
   
