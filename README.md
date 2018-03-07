@@ -25,11 +25,17 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 </dependency>
 ```
 
-Optional:
+For snapshots:
 ```
 <repository>
-	<id>jcenter</id>
-	<url>http://jcenter.bintray.com</url>
+	<id>oss-jfrog-snapshots</id>
+	<url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+    <releases>
+        <enabled>false</enabled>
+    </releases>
+    <snapshots>
+        <enabled>true</enabled>
+    </snapshots>	
 </repository>
 ```
 
@@ -40,10 +46,10 @@ Optional:
 compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.3.0'
 ```
 
-Optional:
+For snapshots:
 ```
 repositories {
-	jcenter()
+	maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
 }
 ```
 
