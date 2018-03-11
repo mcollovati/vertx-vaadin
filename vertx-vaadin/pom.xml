@@ -16,6 +16,8 @@
 
     <properties>
         <tagPrefix>8-</tagPrefix>
+        <sockjs-client.version>1.1.4</sockjs-client.version>
+        <pippo>OKOKK</pippo>
     </properties>
 
     <dependencies>
@@ -106,6 +108,7 @@
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
             </resource>
             <resource>
                 <directory>${project.basedir}/src/main/java</directory>
@@ -159,6 +162,115 @@
                         <exclude>VAADIN/widgetsets/WEB-INF/**</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-sockjs</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.webjars.npm</groupId>
+                                    <artifactId>sockjs-client</artifactId>
+                                    <version>${sockjs-client.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/sockjs-client</outputDirectory>
+                            <includes>META-INF/resources/**/dist/sockjs.js</includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                    <delimiters>
+                        <delimiter>@@*@@</delimiter>
+                    </delimiters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <loadfile
+                                        srcfile="${project.build.directory}/sockjs-client/META-INF/resources/webjars/sockjs-client/${sockjs-client.version}/dist/sockjs.js"
+                                        property="sockjs-client.contents"/>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>compresspush</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="vaadinPushSockJS.debug.js"
+                                          location="${project.build.outputDirectory}/VAADIN/vaadinPushSockJS.debug.js"/>
+                                <property name="vaadinPushSockJS-min.js"
+                                          location="${project.build.outputDirectory}/VAADIN/vaadinPushSockJS.debug-min.js"/>
+                                <property name="vaadinPushSockJS.js"
+                                          location="${project.build.outputDirectory}/VAADIN/vaadinPushSockJS.js"/>
+
+                                <move file="${vaadinPushSockJS-min.js}"
+                                      tofile="${vaadinPushSockJS.js}"/>
+
+                                <!-- Gzipped versions -->
+                                <gzip src="${vaadinPushSockJS.debug.js}"
+                                      destfile="${vaadinPushSockJS.debug.js}.gz"/>
+                                <gzip src="${vaadinPushSockJS.js}"
+                                      destfile="${vaadinPushSockJS.js}.gz"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.7.6</version>
+                <executions>
+                    <execution>
+                        <id>default-minify</id>
+                        <configuration>
+                            <webappSourceDir>${project.build.outputDirectory}</webappSourceDir>
+                            <webappTargetDir>${project.build.outputDirectory}</webappTargetDir>
+                            <jsEngine>CLOSURE</jsEngine>
+                            <jsSourceDir>VAADIN</jsSourceDir>
+                            <jsSourceFiles>
+                                <jsSourceFile>vaadinPushSockJS.debug.js</jsSourceFile>
+                            </jsSourceFiles>
+                            <jsFinalFile>vaadinPushSockJS.debug-min.js</jsFinalFile>
+                            <nosuffix>true</nosuffix>
+                            <verbose>true</verbose>
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

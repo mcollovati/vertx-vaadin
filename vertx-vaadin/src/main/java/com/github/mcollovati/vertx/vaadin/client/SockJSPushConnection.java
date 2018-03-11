@@ -384,7 +384,7 @@ public class SockJSPushConnection implements PushConnection {
         if (ApplicationConfiguration.isProductionMode()) {
             pushJs = "vaadinPushSockJS.js";
         } else {
-            pushJs = "vaadinPushSockJS.js";
+            pushJs = "vaadinPushSockJS.debug.js";
         }
         // Parameter appended to bypass caches after version upgrade.
         pushJs += "?v=" + Version.getFullVersion();
