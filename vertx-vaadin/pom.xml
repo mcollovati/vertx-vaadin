@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -114,101 +115,6 @@
             </resource>
         </resources>
         <plugins>
-            <!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <argLine>${surefireArgLine}</argLine>
-                    <includes>
-                        <include>**/*UT.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-failsafe-plugin.version}</version>
-                <configuration>
-                    <includes>
-                        <include>**/*IT.java</include>
-                    </includes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>pre-unit-test</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <destFile>${jacoco.ut.execution.data.file}</destFile>
-                            <propertyName>surefireArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>post-unit-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <configuration>
-                            <dataFile>${jacoco.ut.execution.data.file}</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>${license-maven-plugin.version}</version>
-                <configuration>
-                    <header>${license.directory}/MIT.txt</header>
-                    <properties>
-                        <owner>${project.organization.name}</owner>
-                        <email>mcollovati@gmail.com</email>
-                    </properties>
-                    <includes>
-                        <include>src/main/java/**</include>
-                        <include>src/test/java/**</include>
-                    </includes>
-                    <mapping>
-                        <java>SLASHSTAR_STYLE</java>
-                    </mapping>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${maven-checkstyle-plugin.version}</version>
-                <configuration>
-                    <configLocation>${project.basedir}/checkstyle/vaadin-checkstyle.xml</configLocation>
-                    <headerLocation>${project.basedir}/checkstyle/license.txt</headerLocation>
-                    <suppressionsLocation>${project.basedir}/checkstyle/suppressions.xml
-                    </suppressionsLocation>
-                    <encoding>UTF-8</encoding>
-                    <consoleOutput>false</consoleOutput>
-                    <failsOnError>false</failsOnError>
-                    <linkXRef>false</linkXRef>
-                </configuration>
-            </plugin>
-            -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-maven-plugin</artifactId>
@@ -259,6 +165,22 @@
 
     <profiles>
         <profile>
+            <id>production</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-maven-plugin</artifactId>
+                        <configuration>
+                            <draftCompile>false</draftCompile>
+                            <compileReport>false</compileReport>
+                            <style>OBF</style>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>fat</id>
             <build>
                 <plugins>
@@ -274,7 +196,8 @@
                                 </goals>
                                 <configuration>
                                     <transformers>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <manifestEntries>
                                                 <Main-Class>io.vertx.core.Launcher</Main-Class>
                                                 <Main-Verticle>com.github.mcollovati.vertx.vaadin.VaadinVerticle
