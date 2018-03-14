@@ -15,9 +15,7 @@
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
-        <tagPrefix>8-</tagPrefix>
         <sockjs-client.version>1.1.4</sockjs-client.version>
-        <pippo>OKOKK</pippo>
     </properties>
 
     <dependencies>
