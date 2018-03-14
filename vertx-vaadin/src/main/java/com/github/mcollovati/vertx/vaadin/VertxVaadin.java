@@ -167,8 +167,13 @@ public class VertxVaadin {
         vaadinRouter.routeWithRegex("^(?!/VAADIN/).*$").handler(sessionHandler);
 
         // Forward vaadinPush javascript to sockjs implementation
-        vaadinRouter.routeWithRegex("/VAADIN/vaadinPush(\\.debug)?\\.js")
-            .handler(ctx -> ctx.reroute(ctx.mountPoint() + "/VAADIN/vaadinPushSockJS.js"));
+        vaadinRouter.routeWithRegex("/VAADIN/vaadinPush(?<debug>\\.debug)?\\.js(?<compressed>\\.gz)?")
+            .handler(ctx -> ctx.reroute(
+                String.format("%s/VAADIN/vaadinPushSockJS%s.js%s", ctx.mountPoint(),
+                    Objects.toString(ctx.request().getParam("debug"), ""),
+                    Objects.toString(ctx.request().getParam("compressed"), "")
+                )
+            ));
         vaadinRouter.route("/VAADIN/*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
 
         initSockJS(vaadinRouter, sessionHandler);
