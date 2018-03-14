@@ -266,7 +266,12 @@
 
     <profiles>
         <profile>
-            <id>production</id>
+            <id>do-release</id>
+            <activation>
+                <property>
+                    <name>vertx-vaadin.release</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
