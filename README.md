@@ -21,7 +21,7 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin8</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
 </dependency>
 ```
 
@@ -43,7 +43,7 @@ For snapshots:
 ### Gradle
 
 ```
-compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.3.0'
+compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.4.0'
 ```
 
 For snapshots:
