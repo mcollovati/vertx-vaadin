@@ -95,6 +95,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-core</artifactId>
@@ -304,6 +305,7 @@
 
     <modules>
         <module>vertx-vaadin-8-parent</module>
+        <module>vertx-vaadin-10-parent</module>
     </modules>
 
     <profiles>
