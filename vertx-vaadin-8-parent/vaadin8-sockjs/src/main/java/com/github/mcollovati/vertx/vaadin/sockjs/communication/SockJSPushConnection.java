@@ -74,7 +74,7 @@ public class SockJSPushConnection implements PushConnection {
                 new UidlWriter().write(ui, writer, async);
                 sendMessage("for(;;);[{" + writer + "}]");
             } catch (Exception e) {
-                throw new RuntimeException("Push failed", e);
+                throw new PushException("Push failed", e);
             }
         }
     }
