@@ -4,7 +4,9 @@ jdk:
 cache:
   directories:
     - $HOME/.m2
-install: ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+install: 
+  - ./mvnw install -N 
+  - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script: ./mvnw clean verify
 branches:
   only:
