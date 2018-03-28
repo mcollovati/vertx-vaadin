@@ -1,0 +1,199 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.mcollovati.vertx</groupId>
+        <artifactId>vertx-vaadin-root</artifactId>
+        <version>0.4.1-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
+
+    <artifactId>vertx-vaadin8</artifactId>
+    <packaging>jar</packaging>
+    <name>vertx-vaadin8</name>
+    <description>An adapter to run Vaadin 8 applications on Vertx</description>
+    <url>https://github.com/mcollovati/vertx-vaadin</url>
+
+    <properties>
+        <sockjs-client.version>1.1.4</sockjs-client.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.mcollovati.vertx</groupId>
+            <artifactId>vaadin8-sockjs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-client-compiler</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-hazelcast</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.pholser</groupId>
+            <artifactId>junit-quickcheck-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.pholser</groupId>
+            <artifactId>junit-quickcheck-generators</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>full</id>
+            <activation>
+                <property>
+                    <name>vertx-vaadin.release</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.mcollovati.vertx</groupId>
+                    <artifactId>vaadin8-sockjs</artifactId>
+                    <version>${project.version}</version>
+                    <classifier>sources</classifier>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/resources</directory>
+                    </resource>
+                    <resource>
+                        <directory>${project.basedir}/src/widgetset/resources</directory>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-maven-plugin</artifactId>
+                        <version>${vaadin.version}</version>
+                        <configuration>
+                            <extraJvmArgs>-Xmx1024M -Xss1024k</extraJvmArgs>
+                            <webappDirectory>${basedir}/target/classes/VAADIN/widgetsets</webappDirectory>
+                            <draftCompile>false</draftCompile>
+                            <compileReport>false</compileReport>
+                            <style>OBF</style>
+                            <strict>true</strict>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>update-widgetset</goal>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>${maven-jar-plugin.version}</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>VAADIN/**</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>jar-with-widgetset</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration combine.self="override">
+                                    <archive>
+                                        <manifestEntries>
+                                            <Vaadin-Package-Version>1</Vaadin-Package-Version>
+                                            <Vaadin-Widgetsets>com.github.mcollovati.vertx.vaadin.VaadinVertxWidgetset
+                                            </Vaadin-Widgetsets>
+                                        </manifestEntries>
+                                    </archive>
+                                    <!-- Exclude some unnecessary files generated by the
+                                        GWT compiler. -->
+                                    <excludes>
+                                        <exclude>VAADIN/gwt-unitCache/**</exclude>
+                                        <exclude>VAADIN/widgetsets/WEB-INF/**</exclude>
+                                    </excludes>
+                                    <classifier>full</classifier>
+
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
