@@ -6,6 +6,7 @@
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
         <version>0.4.1-SNAPSHOT</version>
+        <relativePath/>
     </parent>
 
     <artifactId>vaadin8-sockjs</artifactId>
@@ -39,12 +40,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-        -->
     </dependencies>
 
     <build>

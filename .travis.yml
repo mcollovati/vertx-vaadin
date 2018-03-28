@@ -4,8 +4,8 @@ jdk:
 cache:
   directories:
     - $HOME/.m2
-install: ./mvnw -pl 'vertx-vaadin' install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-script: ./mvnw -pl 'vertx-vaadin' clean verify
+install: ./mvnw -pl 'vertx-vaadin-8-parent/vaadin8-sockjs,vertx-vaadin-8-parent/vertx-vaadin8' install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script: ./mvnw -pl 'vertx-vaadin-8-parent/vaadin8-sockjs,vertx-vaadin-8-parent/vertx-vaadin8' clean verify
 branches:
   only:
     - master
