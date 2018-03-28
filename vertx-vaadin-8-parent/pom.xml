@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.mcollovati.vertx</groupId>
+    <artifactId>vertx-vaadin-parent</artifactId>
+    <version>0.4.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <description>Vertx Vaadin 8 parent</description>
+    <url>https://github.com/mcollovati/vertx-vaadin</url>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <name>vertx-vaadin-root-parent</name>
+    <modules>
+        <module>vertx-vaadin8</module>
+        <module>vaadin8-sockjs</module>
+    </modules>
+
+</project>

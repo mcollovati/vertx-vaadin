@@ -303,7 +303,7 @@
     </build>
 
     <modules>
-        <module>vertx-vaadin</module>
+        <module>vertx-vaadin-8-parent</module>
     </modules>
 
     <profiles>
