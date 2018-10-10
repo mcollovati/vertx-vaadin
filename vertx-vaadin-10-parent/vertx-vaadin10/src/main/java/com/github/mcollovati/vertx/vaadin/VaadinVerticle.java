@@ -203,7 +203,6 @@ public class VaadinVerticle extends AbstractVerticle {
             .alwaysScanClasspathElementRoot()
             .matchClassesWithAnnotation(Route.class, processorFactory.apply(RouteRegistryInitializer.class)::accept)
             .matchClassesWithAnnotation(RouteAlias.class, processorFactory.apply(RouteRegistryInitializer.class)::accept)
-            //.matchClassesWithAnnotation(Tag.class, processorFactory.apply(CustomElementRegistryInitializer.class)::accept)
             .matchClassesImplementing(HasErrorParameter.class, processorFactory.apply(ErrorNavigationTargetInitializer.class)::accept)
             .matchClassesWithAnnotation(Viewport.class, processorFactory.apply(AnnotationValidator.class)::accept)
             .matchClassesWithAnnotation(BodySize.class, processorFactory.apply(AnnotationValidator.class)::accept)
@@ -214,7 +213,6 @@ public class VaadinVerticle extends AbstractVerticle {
         StubServletContext servletContext = new StubServletContext(vertx);
         
         new RouteRegistryInitializer().onStartup(map.get(RouteRegistryInitializer.class), servletContext);
-        //new CustomElementRegistryInitializer().onStartup(map.get(CustomElementRegistryInitializer.class), servletContext);
         new ErrorNavigationTargetInitializer().onStartup(map.get(ErrorNavigationTargetInitializer.class), servletContext);
         new AnnotationValidator().onStartup(map.get(AnnotationValidator.class), servletContext);
     }

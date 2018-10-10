@@ -23,12 +23,10 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContext;
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -50,7 +48,6 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
@@ -274,6 +271,7 @@ public class VertxVaadin {
         return initParameters;
     }
 
+    /*
     protected void scanForResources(String basePath,
                                     Predicate<String> consumer) {
 
@@ -288,6 +286,7 @@ public class VertxVaadin {
 
 
     }
+    */
 
     private void scanFilesystemForResources(String basePath, Predicate<String> consumer, Set<String> exploredPaths) {
         int prefixLength = basePath.length();
@@ -320,6 +319,7 @@ public class VertxVaadin {
         }
     }
 
+    /*
     private int scanClasspathForResources(String path, Predicate<String> consumer, Set<String> exploredPaths) {
         int prefixLength = path.length();
         // First scan classpath
@@ -336,6 +336,7 @@ public class VertxVaadin {
             .scan();
         return prefixLength;
     }
+    */
 
     protected void scanForResources2(String basePath,
                                      Predicate<String> consumer) {
@@ -420,6 +421,21 @@ public class VertxVaadin {
                 + frontendPrefix.substring(
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
 
+
+            /*
+            try(ScanResult scanResult = new ClassGraph()
+                .verbose()
+                .whitelistPaths(WEBJARS_RESOURCES_PREFIX, webjarsLocation)
+                .removeTemporaryFilesAfterScan()
+                .scan()
+            ) {
+                scanResult.getAllResources()
+                    .nonClassFilesOnly()
+                    .forEach(resource -> paths.add(resource.getPath()));
+            }
+            */
+
+            /*
             FastClasspathScanner scanner = new FastClasspathScanner("META-INF.resources.webjars")
                 //.alwaysScanClasspathElementRoot()
                 .matchFilenamePattern(WEBJARS_RESOURCES_PREFIX + EXCLUDE_CLASSES, (File el, String path) -> {
@@ -435,6 +451,7 @@ public class VertxVaadin {
                 .removeTemporaryFilesAfterScan(true);
             scanner.overrideClassLoaders(getClass().getClassLoader());
             //////scanner.scan();
+            */
             urlPattern = Pattern.compile("^((/\\.)?(/\\.\\.)*)" + webjarsLocation + "(bower_components/)?(?<webjar>.*)");
         }
 

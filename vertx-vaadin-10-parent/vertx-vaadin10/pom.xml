@@ -16,8 +16,8 @@
 
     <properties>
 
-        <vaadin.version>10.0-SNAPSHOT</vaadin.version>
-        <flow.version>1.0.0.beta8</flow.version>
+        <vaadin.version>10.0.6</vaadin.version>
+        <flow.version>1.0.5</flow.version>
     </properties>
 
     <dependencies>
@@ -45,10 +45,17 @@
             <artifactId>vaadin10-sockjs</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
+        <!--
         <dependency>
             <groupId>io.github.lukehutch</groupId>
             <artifactId>fast-classpath-scanner</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
             <version>LATEST</version>
         </dependency>
         <dependency>
@@ -177,7 +184,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>2.4.3</version>
+                        <version>3.2.0</version>
                         <executions>
                             <execution>
                                 <phase>package</phase>
