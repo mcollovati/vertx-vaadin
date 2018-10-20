@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -67,6 +68,24 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public class VertxVaadin {
+
+    private static final String VERSION;
+
+    static {
+        String version = "0.0.0";
+        Properties properties = new Properties();
+        try {
+            properties.load(VertxVaadin.class.getResourceAsStream("version.properties"));
+            version = properties.getProperty("vertx-vaadin.version");
+        } catch (Exception e) {
+            getLogger().warning("Unable to determine VertxVaadin version");
+        }
+        VERSION = version;
+    }
+
+    public static String getVersion() {
+        return VERSION;
+    }
 
     private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
 
@@ -266,23 +285,23 @@ public class VertxVaadin {
     private Properties initProperties() {
         Properties initParameters = new Properties();
         //initParameters.putAll(config().getMap());
-        initParameters.putAll((Map)adaptJson(config().getMap()));
+        initParameters.putAll((Map) adaptJson(config().getMap()));
         return initParameters;
     }
 
     private Object adaptJson(Object object) {
         if (object instanceof Collection) {
-            return ((Collection<?>)object).stream()
+            return ((Collection<?>) object).stream()
                 .map(this::adaptJson)
                 .collect(Collectors.toList());
         } else if (object instanceof Map) {
-            LinkedHashMap map = new LinkedHashMap((Map)object);
+            LinkedHashMap map = new LinkedHashMap((Map) object);
             map.replaceAll((k, v) -> adaptJson(v));
             return map;
         } else if (object instanceof JsonObject) {
             return adaptJson(((JsonObject) object).getMap());
         } else if (object instanceof JsonArray) {
-            return adaptJson( ((JsonArray) object).getList());
+            return adaptJson(((JsonArray) object).getList());
         }
         return object;
     }

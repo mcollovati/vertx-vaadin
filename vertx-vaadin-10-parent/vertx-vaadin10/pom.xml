@@ -15,7 +15,6 @@
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
-
         <vaadin.version>10.0.6</vaadin.version>
         <flow.version>1.0.5</flow.version>
     </properties>
@@ -129,6 +128,15 @@
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
         </pluginRepository>
     </pluginRepositories>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 
     <repositories>
         <!--
