@@ -70,7 +70,7 @@
         <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 
-        <vertx.version>3.5.1</vertx.version>
+        <vertx.version>3.5.4</vertx.version>
         <vaadin.version>8.3.1</vaadin.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.6</junit-quickcheck.version>
