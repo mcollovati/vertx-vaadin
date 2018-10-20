@@ -22,20 +22,19 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletContext;
-import java.nio.file.Paths;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
@@ -54,9 +53,8 @@ import io.vertx.core.VertxException;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.MessageProducer;
-import io.vertx.core.file.FileProps;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -206,7 +204,7 @@ public class VertxVaadin {
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("webroot", getClass().getClassLoader()));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("META-INF/resources/webjars", getClass().getClassLoader()));
         vaadinRouter.routeWithRegex("/frontend/bower_components/(?<webjar>.*)").handler(ctx -> {
-                System.out.println("============ Rerouting to " + String.format("%s/webjars/%s",
+                getLogger().fine("============ Rerouting to " + String.format("%s/webjars/%s",
                     ctx.mountPoint(), Objects.toString(ctx.request().getParam("webjar"), "")
                 ));
                 ctx.reroute(String.format("%s/webjars/%s",
@@ -267,96 +265,26 @@ public class VertxVaadin {
 
     private Properties initProperties() {
         Properties initParameters = new Properties();
-        initParameters.putAll(config().getMap());
+        //initParameters.putAll(config().getMap());
+        initParameters.putAll((Map)adaptJson(config().getMap()));
         return initParameters;
     }
 
-    /*
-    protected void scanForResources(String basePath,
-                                    Predicate<String> consumer) {
-
-        String path = basePath;
-        if (path.startsWith("/")) {
-            path = path.substring(1);
+    private Object adaptJson(Object object) {
+        if (object instanceof Collection) {
+            return ((Collection<?>)object).stream()
+                .map(this::adaptJson)
+                .collect(Collectors.toList());
+        } else if (object instanceof Map) {
+            LinkedHashMap map = new LinkedHashMap((Map)object);
+            map.replaceAll((k, v) -> adaptJson(v));
+            return map;
+        } else if (object instanceof JsonObject) {
+            return adaptJson(((JsonObject) object).getMap());
+        } else if (object instanceof JsonArray) {
+            return adaptJson( ((JsonArray) object).getList());
         }
-
-        Set<String> exploredPaths = new LinkedHashSet<>();
-        scanFilesystemForResources(path, consumer, exploredPaths);
-        scanClasspathForResources(path, consumer, exploredPaths);
-
-
-    }
-    */
-
-    private void scanFilesystemForResources(String basePath, Predicate<String> consumer, Set<String> exploredPaths) {
-        int prefixLength = basePath.length();
-        // Then scan filesystem
-        FileSystem fileSystem = vertx.fileSystem();
-        Deque<String> queue = new ArrayDeque<>();
-        queue.add(basePath);
-
-        String path;
-        while (!queue.isEmpty()) {
-            path = queue.removeLast();
-            boolean visit = consumer.test(path.substring(prefixLength));
-            if (visit && fileSystem.existsBlocking(path)) {
-                FileProps props = fileSystem.propsBlocking(path);
-                if (props != null && props.isDirectory()) {
-                    System.out.println("============= " + path + " Is directory");
-                    fileSystem.readDirBlocking(path).stream()
-                        .map(p -> {
-                            String n = Paths.get(p).getFileName().toString();
-                            if (fileSystem.propsBlocking(p).isDirectory()) {
-                                n += "/";
-                            } else {
-                                exploredPaths.add(basePath + n);
-                            }
-                            System.out.println("==================== " + basePath + " ---> " + p);
-                            return basePath + n;
-                        }).forEach(queue::add);
-                }
-            }
-        }
-    }
-
-    /*
-    private int scanClasspathForResources(String path, Predicate<String> consumer, Set<String> exploredPaths) {
-        int prefixLength = path.length();
-        // First scan classpath
-        new FastClasspathScanner()
-            .alwaysScanClasspathElementRoot()
-            .matchFilenamePattern("(META-INF/resources/)?" + path + ".*(?<!\\.class)$", (File classpathElt, String relativePath) -> {
-                String pathToTest = relativePath.replaceFirst("^META-INF/resources/", "").substring(prefixLength);
-                if (!exploredPaths.contains(pathToTest) && consumer.test(pathToTest)) {
-                    System.out.println("========== found " + pathToTest);
-                }
-            })
-            //.verbose()
-            .removeTemporaryFilesAfterScan(true)
-            .scan();
-        return prefixLength;
-    }
-    */
-
-    protected void scanForResources2(String basePath,
-                                     Predicate<String> consumer) {
-        Deque<String> queue = new ArrayDeque<>();
-        queue.add(basePath);
-
-        ServletContext context = new StubServletContext(vertx);
-        int prefixLength = basePath.length();
-
-        while (!queue.isEmpty()) {
-            String path = queue.removeLast();
-            boolean visit = consumer.test(path.substring(prefixLength));
-
-            if (visit && path.endsWith("/")) {
-                Set<String> resourcePaths = context.getResourcePaths(path);
-                if (resourcePaths != null) {
-                    queue.addAll(resourcePaths);
-                }
-            }
-        }
+        return object;
     }
 
     // TODO: change JsonObject to VaadinOptions interface
@@ -466,10 +394,9 @@ public class VertxVaadin {
         /**
          * Gets web jar resource path if it exists.
          *
-         * @param filePathInContext
-         *            servlet context path for file
+         * @param filePathInContext servlet context path for file
          * @return an optional web jar resource path, or an empty optional if the
-         *         resource is not web jar resource
+         * resource is not web jar resource
          */
         public Optional<String> getWebJarResourcePath(String filePathInContext) {
             String webJarPath = null;
@@ -481,7 +408,7 @@ public class VertxVaadin {
             }
             return Optional.ofNullable(webJarPath);
         }
-        
+
 
     }
 

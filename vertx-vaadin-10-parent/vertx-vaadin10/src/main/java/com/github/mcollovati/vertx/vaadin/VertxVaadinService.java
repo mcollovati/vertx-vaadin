@@ -75,6 +75,7 @@ public class VertxVaadinService extends VaadinService {
         return RouteRegistry.getInstance(new StubServletContext(vertxVaadin.vertx()));
     }
 
+
     @Override
     protected List<RequestHandler> createRequestHandlers()
         throws ServiceException {
@@ -148,6 +149,11 @@ public class VertxVaadinService extends VaadinService {
     @Override
     public void destroy() {
         super.destroy();
+    }
+
+    @Override
+    public URL getStaticResource(String url) {
+        return tryResolveFile(url);
     }
 
     @Override
