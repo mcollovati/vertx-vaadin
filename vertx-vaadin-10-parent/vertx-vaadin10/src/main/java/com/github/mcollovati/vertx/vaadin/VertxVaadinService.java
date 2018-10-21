@@ -203,8 +203,14 @@ public class VertxVaadinService extends VaadinService {
 
 
     private URL tryGetResource(String path) {
+        logger.trace("Try to resolve path {}", path);
         URL url = tryResolveFile(path);
+        if (url == null && !path.startsWith("META-INF/resources/")) {
+            logger.trace("Path {} not found, try into /META-INF/resources/", path);
+            url = tryResolveFile("/META-INF/resources/" + path);
+        }
         if (url == null) {
+            logger.trace("Path {} not found into META-INF/resources/, try with webjars");
             url = vertxVaadin.webJars.getWebJarResourcePath(path)
                 .map(this::tryResolveFile).orElse(null);
         }
@@ -234,11 +240,20 @@ public class VertxVaadinService extends VaadinService {
 
 
     public InputStream tryGetResourceAsStream(String path) {
+        logger.trace("Try to resolve path {}", path);
         String relativePath = makePathRelative(path);
         FileSystem fileSystem = getVertx().fileSystem();
         if (fileSystem.existsBlocking(relativePath)) {
             return new BufferInputStreamAdapter(fileSystem.readFileBlocking(relativePath));
         }
+        if (!path.startsWith("/META-INF/resources")) {
+            logger.trace("Path {} not found, try into /META-INF/resources/", path);
+            InputStream is = tryGetResourceAsStream("/META-INF/resources/" + relativePath);
+            if (is != null) {
+                return is;
+            }
+        }
+        logger.trace("Path {} not found into META-INF/resources/, try with webjars");
         return vertxVaadin.webJars.getWebJarResourcePath(path)
             .filter(fileSystem::existsBlocking)
             .map(fileSystem::readFileBlocking)
