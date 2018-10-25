@@ -136,6 +136,7 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     protected void serviceInitialized(VertxVaadinService service, Router router) {
+        // empty by default
     }
 
 
@@ -202,9 +203,6 @@ public class VaadinVerticle extends AbstractVerticle {
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
 
         log.debug("Scanning packages {}", String.join(", ", pkgs));
-
-        Function<Class<?>, Consumer<Class<?>>> processorFactory = initializerClazz ->
-            clazz -> map.computeIfAbsent(initializerClazz, k -> new HashSet<>()).add(clazz);
 
         Function<Class<?>[], ClassInfoList.ClassInfoFilter> annotationFilterFactory = annotationClazzes -> {
             List<String> clazzNames = Stream.of(annotationClazzes).map(Class::getName).collect(Collectors.toList());

@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ClassGraphTest {
@@ -29,5 +31,6 @@ public class ClassGraphTest {
                 .map(resourcePath::relativize)
                 .forEach(System.out::println);
         }
+        Assert.assertTrue(true);
     }
 }

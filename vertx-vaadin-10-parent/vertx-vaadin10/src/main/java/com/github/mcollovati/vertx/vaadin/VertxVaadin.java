@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -69,7 +68,15 @@ import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public class VertxVaadin {
 
+    private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
     private static final String VERSION;
+
+    private final VertxVaadinService service;
+    private final JsonObject config;
+    private final Vertx vertx;
+    private final Router router;
+    private final ExtendedSessionStore sessionStore;
+    WebJars webJars;
 
     static {
         String version = "0.0.0";
@@ -82,19 +89,6 @@ public class VertxVaadin {
         }
         VERSION = version;
     }
-
-    public static String getVersion() {
-        return VERSION;
-    }
-
-    private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
-
-    private final VertxVaadinService service;
-    private final JsonObject config;
-    private final Vertx vertx;
-    private final Router router;
-    private final ExtendedSessionStore sessionStore;
-    WebJars webJars;
 
 
     private VertxVaadin(Vertx vertx, Optional<ExtendedSessionStore> sessionStore, JsonObject config) {
@@ -168,6 +162,7 @@ public class VertxVaadin {
     }
 
     protected void serviceInitialized(Router router) {
+        // empty by default
     }
 
     protected VertxVaadinService createVaadinService() {
@@ -341,9 +336,12 @@ public class VertxVaadin {
         return vertx.eventBus().consumer(VAADIN_SESSION_EXPIRED_ADDRESS, handler);
     }
 
+    public static String getVersion() {
+        return VERSION;
+    }
+
     static final class WebJars {
 
-        public static final String EXCLUDE_CLASSES = ".*(?<!\\.class)$";
         static final String WEBJARS_RESOURCES_PREFIX = "META-INF/resources/webjars/";
         private final Set<String> paths = new HashSet<>();
         private final String webjarsLocation;
@@ -369,46 +367,9 @@ public class VertxVaadin {
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
 
 
-            /*
-            try(ScanResult scanResult = new ClassGraph()
-                .verbose()
-                .whitelistPaths(WEBJARS_RESOURCES_PREFIX, webjarsLocation)
-                .removeTemporaryFilesAfterScan()
-                .scan()
-            ) {
-                scanResult.getAllResources()
-                    .nonClassFilesOnly()
-                    .forEach(resource -> paths.add(resource.getPath()));
-            }
-            */
-
-            /*
-            FastClasspathScanner scanner = new FastClasspathScanner("META-INF.resources.webjars")
-                //.alwaysScanClasspathElementRoot()
-                .matchFilenamePattern(WEBJARS_RESOURCES_PREFIX + EXCLUDE_CLASSES, (File el, String path) -> {
-                    paths.add(path.substring(WEBJARS_RESOURCES_PREFIX.length()));
-                    System.out.println("===================================== adding " + path);
-
-                })
-                .matchFilenamePattern(webjarsLocation + EXCLUDE_CLASSES, (File el, String path) -> {
-                    paths.add(path.substring(webjarsLocation.length()));
-                    System.out.println("===================================== adding " + path);
-                })
-                //.verbose()
-                .removeTemporaryFilesAfterScan(true);
-            scanner.overrideClassLoaders(getClass().getClassLoader());
-            //////scanner.scan();
-            */
             urlPattern = Pattern.compile("^((/\\.)?(/\\.\\.)*)" + webjarsLocation + "(bower_components/)?(?<webjar>.*)");
         }
 
-        boolean inWebJar(String path) {
-            Matcher matcher = urlPattern.matcher(path);
-            if (matcher.matches()) {
-                path = matcher.group("webjar");
-            }
-            return paths.contains(path);
-        }
 
         /**
          * Gets web jar resource path if it exists.

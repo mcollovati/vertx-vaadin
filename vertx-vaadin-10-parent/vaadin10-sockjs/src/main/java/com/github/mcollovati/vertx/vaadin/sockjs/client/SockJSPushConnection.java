@@ -49,7 +49,6 @@ public class SockJSPushConnection implements PushConnection {
     private SockJS socket;
     private SockJSConfiguration config;
     private State state = State.CONNECTING;
-    private String uri;
     private String transport;
     /**
      * Keeps track of the disconnect confirmation command for cases where
@@ -158,7 +157,7 @@ public class SockJSPushConnection implements PushConnection {
             return false;
         }
 
-        if (!transport.equals("websocket")) {
+        if (!"websocket".equals(transport)) {
             // If we are not using websockets, we want to send XHRs
             return false;
         }
@@ -214,8 +213,9 @@ public class SockJSPushConnection implements PushConnection {
                 break;
             case CLOSING:
             case CLOSED:
-                throw new IllegalStateException(
-                    "Can not disconnect more than once");
+                throw new IllegalStateException("Can not disconnect more than once");
+            default:
+                throw new IllegalStateException("Invalid state");
         }
 
     }

@@ -2,7 +2,6 @@ package com.github.mcollovati.vertx.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -11,8 +10,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
-
-    private final String webComponentsPolyfillBase;
 
     private boolean productionMode = false;
     private boolean xsrfProtectionEnabled = true;
@@ -30,7 +27,6 @@ public class MockDeploymentConfiguration
     }
 
     public MockDeploymentConfiguration(String webComponentsPolyfillBase) {
-        this.webComponentsPolyfillBase = webComponentsPolyfillBase;
     }
 
     @Override

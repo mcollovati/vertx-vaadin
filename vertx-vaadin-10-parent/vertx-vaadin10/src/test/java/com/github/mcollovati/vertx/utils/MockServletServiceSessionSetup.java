@@ -161,12 +161,6 @@ public class MockServletServiceSessionSetup {
     }
 
     public static class TestRouteRegistry extends RouteRegistry {
-        /**
-         * Creates a new test route registry.
-         */
-        public TestRouteRegistry() {
-            super();
-        }
 
         @Override
         public boolean hasRoutes() {

@@ -17,7 +17,6 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -29,36 +28,21 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // Stub class only used to get access to com.vaadin.flow.server.startup.RouteRegistry
 // through vertx Context
 class StubServletContext implements ServletContext {
 
-    //private final LocalMap<String, Object> context;
+    private static final Logger logger = LoggerFactory.getLogger(StubServletContext.class);
     private final Context context;
     private final Vertx vertx;
-    private final Map<String, Set<String>> resourcesCaches;
 
 
     public StubServletContext(Vertx vertx) {
         this.vertx = vertx;
-        //this.context = vertx.sharedData().getLocalMap(ServletContext.class.getName());
         this.context = vertx.getOrCreateContext();
-        this.resourcesCaches = new HashMap<>();
-        /*
-        new FastClasspathScanner()
-            .alwaysScanClasspathElementRoot()
-            .matchFilenamePattern("META-INF/resources/.*", (File classpathElt, String relativePath) -> {
-                System.out.println("===================== " + classpathElt + " ---> " + relativePath);
-                relativePath.split("/");
-                if (classpathElt.isDirectory()) {
-                    resourcesCaches.put(relativePath, new LinkedHashSet<>());
-                }
-            })
-            //.verbose()
-            .removeTemporaryFilesAfterScan(true)
-            .scan();
-        */
     }
 
     @Override
@@ -102,41 +86,10 @@ class StubServletContext implements ServletContext {
         if (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }
-        //FileSystem fileSystem = vertx.fileSystem();
 
         return Stream.of(relativePath, "META-INF/resources/" + relativePath).distinct()
             .flatMap(this::resolveRelativeResourcePath)
-            //.map(p -> p.replaceFirst("META-INF/resources/", ""))
             .collect(Collectors.toCollection(LinkedHashSet::new));
-        /*
-        FileProps props = fileSystem.propsBlocking(relativePath);
-        if (props != null && props.isDirectory()) {
-            System.out.println("============= " + path + " Is directory");
-            return Stream.of(relativePath, "META-INF/resources/" + relativePath).distinct()
-                .filter(fileSystem::existsBlocking)
-                .flatMap(p -> fileSystem.readDirBlocking(p).stream())
-                .map(p -> {
-                        String n = Paths.get(p).getFileName().toString();
-                        if (fileSystem.propsBlocking(p).isDirectory()) {
-                            n += "/";
-                        }
-                        return path + n;
-                    }
-                ).collect(Collectors.toCollection(LinkedHashSet::new));
-
-            /*
-            return fileSystem.readDirBlocking(relativePath).stream()
-                .map(p -> {
-                    String n = Paths.get(p).getFileName().toString();
-                    if (fileSystem.propsBlocking(p).isDirectory()) {
-                        n += "/";
-                    }
-                    return path + n;
-                }).collect(Collectors.toCollection(LinkedHashSet::new));* /
-        }
-        System.out.println("============= " + path + " Is not directory. " + props);
-        return null;
-        */
     }
 
 
@@ -208,17 +161,17 @@ class StubServletContext implements ServletContext {
 
     @Override
     public void log(String msg) {
-
+        logger.trace(msg);
     }
 
     @Override
     public void log(Exception exception, String msg) {
-
+        logger.trace(msg, exception);
     }
 
     @Override
     public void log(String message, Throwable throwable) {
-
+        logger.trace(message, throwable);
     }
 
     @Override
@@ -336,9 +289,10 @@ class StubServletContext implements ServletContext {
         return null;
     }
 
+
     @Override
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
-
+        // Ignored on stub context
     }
 
     @Override
@@ -353,17 +307,17 @@ class StubServletContext implements ServletContext {
 
     @Override
     public void addListener(String className) {
-
+        // Ignored on stub context
     }
 
     @Override
     public <T extends EventListener> void addListener(T t) {
-
+        // Ignored on stub context
     }
 
     @Override
     public void addListener(Class<? extends EventListener> listenerClass) {
-
+        // Ignored on stub context
     }
 
     @Override
@@ -383,7 +337,7 @@ class StubServletContext implements ServletContext {
 
     @Override
     public void declareRoles(String... roleNames) {
-
+        // Ignored on stub context
     }
 
     @Override
