@@ -58,8 +58,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <license.directory>../../license</license.directory>
-        <checkstyle.directory>../../checkstyle</checkstyle.directory>
+
+        <license.directory>${maven.multiModuleProjectDirectory}/license</license.directory>
+        <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
+        <checkstyle.skip>true</checkstyle.skip>
+
 
         <jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
         <license-maven-plugin.version>3.0.rc1</license-maven-plugin.version>
@@ -297,6 +300,7 @@
                         <consoleOutput>false</consoleOutput>
                         <failsOnError>false</failsOnError>
                         <linkXRef>false</linkXRef>
+                        <skip>${checkstyle.skip}</skip>
                     </configuration>
                 </plugin>
             </plugins>

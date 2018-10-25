@@ -11,6 +11,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.license.skip>true</maven.license.skip>
     </properties>
 
     <name>vertx-vaadin10-parent</name>
@@ -18,5 +19,18 @@
         <module>vertx-vaadin10</module>
         <module>vaadin10-sockjs</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>

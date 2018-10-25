@@ -37,6 +37,8 @@ import elemental.json.JsonObject;
 
 public class SockJSPushConnection implements PushConnection {
 
+    private static final long serialVersionUID = -1336533816978562477L;
+
     private final int uiId;
     private PushSocket socket;
     private State state = State.DISCONNECTED;

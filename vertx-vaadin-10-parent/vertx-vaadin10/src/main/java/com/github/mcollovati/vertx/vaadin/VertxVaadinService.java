@@ -58,7 +58,7 @@ public class VertxVaadinService extends VaadinService {
 
     private static final Logger logger = LoggerFactory.getLogger(VertxVaadinService.class);
 
-    private final VertxVaadin vertxVaadin;
+    private final transient VertxVaadin vertxVaadin;
     private final ServiceContextUriResolver contextResolver = new ServiceContextUriResolver();
 
     public VertxVaadinService(VertxVaadin vertxVaadin, DeploymentConfiguration deploymentConfiguration) {

@@ -17,6 +17,7 @@
 
     <properties>
         <sockjs-client.version>1.1.4</sockjs-client.version>
+        <checkstyle.skip>false</checkstyle.skip>
     </properties>
 
     <dependencies>
