@@ -22,6 +22,16 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.http.Cookie;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import com.github.mcollovati.vertx.utils.RandomStringGenerator;
 import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
@@ -40,22 +50,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import javax.servlet.http.Cookie;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
