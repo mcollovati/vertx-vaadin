@@ -57,12 +57,25 @@ import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 public class VertxVaadin {
 
     private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
+    private static final String VERSION;
 
     private final VertxVaadinService service;
     private final JsonObject config;
     private final Vertx vertx;
     private final Router router;
     private final ExtendedSessionStore sessionStore;
+
+    static {
+        String version = "0.0.0";
+        Properties properties = new Properties();
+        try {
+            properties.load(VertxVaadin.class.getResourceAsStream("version.properties"));
+            version = properties.getProperty("vertx-vaadin.version");
+        } catch (Exception e) {
+            getLogger().warning("Unable to determine VertxVaadin version");
+        }
+        VERSION = version;
+    }
 
 
     private VertxVaadin(Vertx vertx, Optional<ExtendedSessionStore> sessionStore, JsonObject config) {
@@ -254,6 +267,10 @@ public class VertxVaadin {
 
     public static MessageConsumer<String> sessionExpiredHandler(Vertx vertx, Handler<Message<String>> handler) {
         return vertx.eventBus().consumer(VAADIN_SESSION_EXPIRED_ADDRESS, handler);
+    }
+
+    public static String getVersion() {
+        return VERSION;
     }
 
 }
