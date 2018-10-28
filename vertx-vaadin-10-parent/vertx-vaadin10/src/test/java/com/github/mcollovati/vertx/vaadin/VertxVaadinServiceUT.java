@@ -44,7 +44,7 @@ public class VertxVaadinServiceUT {
     private MockServletServiceSessionSetup.TestVertxVaadinService service;
 
     @Before
-    public void setup() throws Exception {
+    public void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
     }
@@ -106,8 +106,6 @@ public class VertxVaadinServiceUT {
             Assert.assertNull(service.getResourceAsStream(untranslatedUrl,
                 browser, theme));
         } else {
-            URL expectedUrl = new URL(
-                "file://" + expectedResource);
             URL resource = service.getResource(untranslatedUrl, browser, theme);
             Assert.assertNotNull("Url must not ne null for " + expectedResource, resource);
             Assert.assertThat(resource.toExternalForm(), CoreMatchers.allOf(

@@ -343,7 +343,6 @@ public class VertxVaadin {
     static final class WebJars {
 
         static final String WEBJARS_RESOURCES_PREFIX = "META-INF/resources/webjars/";
-        private final Set<String> paths = new HashSet<>();
         private final String webjarsLocation;
         private final Pattern urlPattern;
 

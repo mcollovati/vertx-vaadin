@@ -22,14 +22,15 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+
 import com.github.mcollovati.vertx.web.ExtendedSession;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.ClusteredSessionStore;
-import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.junit.After;
@@ -37,9 +38,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
 
 /**
  * Created by marco on 26/07/16.

@@ -187,7 +187,6 @@ public class VertxVaadinResponseUT {
 
     @Test
     public void shouldDelegateAadCookie() throws Exception {
-        Set<io.vertx.ext.web.Cookie> cookies = new LinkedHashSet<>();
         Cookie cookie = new Cookie("name", "value");
         cookie.setMaxAge(10);
         cookie.setSecure(true);
