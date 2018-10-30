@@ -8,13 +8,15 @@
         <version>0.4.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>vaadin10-sockjs</artifactId>
+    <artifactId>vaadin-flow-sockjs</artifactId>
     <packaging>jar</packaging>
-    <name>vaadin10-sockjs</name>
-    <description>>Sockjs push connection implementation for Vaadin 10</description>
+    <name>vaadin-flow-sockjs</name>
+    <version>0.1.0</version>
+    <description>>Sockjs push connection implementation for Vaadin Flow</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
+        <bintray.package>vertx-vaadin-flow</bintray.package>
         <vaadin.version>10.0.6</vaadin.version>
         <flow.version>1.0.5</flow.version>
         <flow-client.version>${flow.version}</flow-client.version>

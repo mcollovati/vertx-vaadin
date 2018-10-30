@@ -16,8 +16,8 @@
 
     <name>vertx-vaadin10-parent</name>
     <modules>
-        <module>vertx-vaadin10</module>
-        <module>vaadin10-sockjs</module>
+        <module>vertx-vaadin-flow</module>
+        <module>vaadin-flow-sockjs</module>
     </modules>
 
     <build>

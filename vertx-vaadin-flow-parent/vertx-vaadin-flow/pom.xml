@@ -8,13 +8,15 @@
         <version>0.4.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>vertx-vaadin10</artifactId>
+    <artifactId>vertx-vaadin-flow</artifactId>
     <packaging>jar</packaging>
-    <name>vertx-vaadin10</name>
-    <description>An adapter to run Vaadin 10 applications on Vertx</description>
+    <name>vertx-vaadin-flow</name>
+    <version>0.1.0</version>
+    <description>An adapter to run Vaadin Flow applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
+        <bintray.package>vertx-vaadin-flow</bintray.package>
         <vaadin.version>10.0.6</vaadin.version>
         <flow.version>1.0.5</flow.version>
         <checkstyle.skip>false</checkstyle.skip>
@@ -43,7 +45,7 @@
 
         <dependency>
             <groupId>com.github.mcollovati.vertx</groupId>
-            <artifactId>vaadin10-sockjs</artifactId>
+            <artifactId>vaadin-flow-sockjs</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -61,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.mcollovati.vertx</groupId>
-            <artifactId>vaadin10-sockjs</artifactId>
+            <artifactId>vaadin-flow-sockjs</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -214,7 +216,7 @@
                                     </transformers>
                                     <artifactSet>
                                         <!--<excludes>*:*</excludes>-->
-                                        <includes>com.github.mcollovati.vertx:vaadin10-sockjs</includes>
+                                        <includes>com.github.mcollovati.vertx:vaadin-flow-sockjs</includes>
                                     </artifactSet>
                                     <shadedArtifactAttached>true</shadedArtifactAttached>
                                     <shadedClassifierName>full</shadedClassifierName>
