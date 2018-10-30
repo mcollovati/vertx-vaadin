@@ -1,6 +1,6 @@
-# Vertx-Vaadin-8
+# Vertx-Vaadin-10
 
-Vertx-Vaadin-10 is an adapter library that allow Vaadin 10.x applications to run on a Vert.x environment.
+Vertx-Vaadin-10 is an adapter library that allow Vaadin 10.x (or higher) applications to run on a Vert.x environment.
 
 Vertx-vaadin provides a Vert.x verticle that starts an http server and initialize `VertxVaadinService`,
 a custom implementation of VaadinService.

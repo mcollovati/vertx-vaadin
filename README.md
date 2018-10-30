@@ -56,11 +56,13 @@ repositories {
 
 ## Documentation
 
-See [vertx-vaadin](vertx-vaadin) module for more information.
+See [vertx-vaadin-8](vertx-vaadin-8-parent/vertx-vaadin8)  or [vertx-vaadin-10](vertx-vaadin-10-parent/vertx-vaadin10) module for more information.
 
 ## Demo and samples
 
-A public demo based on Vaadin archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
+A public demo based on Vaadin 8 archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
+
+Bookstore demo on Vaadin 10 is published on heroku and is available [here](https://vertx-vaadin10-example.herokuapp.com/)
 
 Source code and other samples can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
 
