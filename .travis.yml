@@ -3,13 +3,20 @@ jdk:
   - oraclejdk8 
   - openjdk10
   - openjdk11
+env:
+  - VAADIN_FRAMEWORK=8.3.3
+  - VAADIN_FRAMEWORK=8.4.5
+  - VAADIN_FRAMEWORK=8.5.2
+  - VAADIN_FRAMEWORK=8.6.0
+  - VAADIN_PLATFORM=10.0.6 VAADIN_FLOW=1.0.5
+  - VAADIN_PLATFORM=11.0.1 VAADIN_FLOW=1.0.5
 cache:
   directories:
     - $HOME/.m2
 install: 
   - ./mvnw install -N 
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-script: ./mvnw clean verify
+script: ./mvnw clean verify ${VAADIN_FRAMEWORK+-Dvaadin.version=$VAADIN_FRAMEWORK} ${VAADIN_PLATFORM+-Dvaadin.platform.version=$VAADIN_PLATFORM} ${VAADIN_FLOW+-Dvaadin.flow.version=$VAADIN_FLOW} 
 branches:
   only:
     - master
