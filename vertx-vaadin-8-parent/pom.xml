@@ -3,7 +3,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin8-parent</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin 8 parent</description>
