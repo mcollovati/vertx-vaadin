@@ -102,6 +102,7 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     protected void serviceInitialized(VertxVaadinService service, Router router) {
+        // empty by default
     }
 
 

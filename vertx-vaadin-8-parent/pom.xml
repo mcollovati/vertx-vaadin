@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.mcollovati.vertx</groupId>
-    <artifactId>vertx-vaadin-parent</artifactId>
+    <artifactId>vertx-vaadin8-parent</artifactId>
     <version>0.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -13,10 +13,22 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
-    <name>vertx-vaadin-root-parent</name>
+    <name>vertx-vaadin8-parent</name>
     <modules>
         <module>vertx-vaadin8</module>
         <module>vaadin8-sockjs</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

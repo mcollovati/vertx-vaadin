@@ -38,6 +38,8 @@ import com.vaadin.ui.UI;
 
 public class SockJSPushConnection implements PushConnection {
 
+    private static final long serialVersionUID = 8138733886026049701L;
+
     private final int uiId;
     private PushSocket socket;
     private State state = State.DISCONNECTED;

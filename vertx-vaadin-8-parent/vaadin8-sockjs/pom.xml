@@ -12,11 +12,12 @@
     <artifactId>vaadin8-sockjs</artifactId>
     <packaging>jar</packaging>
     <name>vaadin8-sockjs</name>
-    <description>Sockjs push connection implementation</description>
+    <description>Sockjs push connection implementation for Vaadin 8</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
         <sockjs-client.version>1.1.4</sockjs-client.version>
+        <checkstyle.skip>false</checkstyle.skip>
     </properties>
 
     <dependencies>

@@ -22,6 +22,9 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -35,9 +38,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by marco on 16/07/16.

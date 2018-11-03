@@ -4,7 +4,10 @@
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
 [![Build Status](https://travis-ci.org/mcollovati/vertx-vaadin.svg?branch=master)](https://travis-ci.org/mcollovati/vertx-vaadin)
-[ ![Download](https://api.bintray.com/packages/mcollovati/maven-repo/vertx-vaadin/images/download.svg) ](https://bintray.com/mcollovati/maven-repo/vertx-vaadin/_latestVersion)
+
+![Bintray](https://img.shields.io/bintray/v/mcollovati/maven-repo/vertx-vaadin.svg?label=vertx-vaadin8&colorB=blue)
+![Bintray](https://img.shields.io/bintray/v/mcollovati/maven-repo/vertx-vaadin-flow.svg?label=vertx-vaadin-flow&colorB=blue)
+
 
 ## Description
 
@@ -24,6 +27,15 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
   <version>0.4.0</version>
 </dependency>
 ```
+
+```
+<dependency>
+  <groupId>com.github.mcollovati.vertx</groupId>
+  <artifactId>vertx-vaadin-flow</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
 
 For snapshots:
 ```
@@ -56,11 +68,13 @@ repositories {
 
 ## Documentation
 
-See [vertx-vaadin](vertx-vaadin) module for more information.
+See [vertx-vaadin-8](vertx-vaadin-8-parent/vertx-vaadin8)  or [vertx-vaadin-flow](vertx-vaadin-flow-parent/vertx-vaadin-flow) module for more information.
 
 ## Demo and samples
 
-A public demo based on Vaadin archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
+A public demo based on Vaadin 8 archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
+
+Bookstore demo on Vaadin Flow is published on heroku and is available [here](https://vertx-vaadin10-example.herokuapp.com/)
 
 Source code and other samples can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
 

@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.mcollovati.vertx</groupId>
+    <artifactId>vertx-vaadin10-parent</artifactId>
+    <version>0.4.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <description>Vertx Vaadin 10 parent</description>
+    <url>https://github.com/mcollovati/vertx-vaadin</url>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.license.skip>true</maven.license.skip>
+    </properties>
+
+    <name>vertx-vaadin10-parent</name>
+    <modules>
+        <module>vertx-vaadin-flow</module>
+        <module>vaadin-flow-sockjs</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
