@@ -210,11 +210,11 @@ public class VertxVaadinRequestUT {
         Session session = mock(ExtendedSession.class);
         when(routingContext.session()).thenReturn(session);
         assertThat(vaadinRequest.getWrappedSession()).isExactlyInstanceOf(VertxWrappedSession.class)
-            .extracting(ws -> ((VertxWrappedSession) ws).getVertxSession()).containsExactly(session);
+            .extracting(ws -> ((VertxWrappedSession) ws).getVertxSession()).isEqualTo(session);
         assertThat(vaadinRequest.getWrappedSession(true)).isExactlyInstanceOf(VertxWrappedSession.class)
-            .extracting(ws -> ((VertxWrappedSession) ws).getVertxSession()).containsExactly(session);
+            .extracting(ws -> ((VertxWrappedSession) ws).getVertxSession()).isEqualTo(session);
         assertThat(vaadinRequest.getWrappedSession(false)).isExactlyInstanceOf(VertxWrappedSession.class)
-            .extracting(ws -> ((VertxWrappedSession) ws).getVertxSession()).containsExactly(session);
+            .extracting(ws -> ((VertxWrappedSession) ws).getVertxSession()).isEqualTo(session);
 
     }
 
@@ -330,7 +330,7 @@ public class VertxVaadinRequestUT {
             .thenReturn(new JsonObject());
         when(routingContext.user()).thenReturn(null).thenReturn(user);
         assertThat(vaadinRequest.getUserPrincipal()).isNull();
-        assertThat(vaadinRequest.getUserPrincipal()).extracting("name").containsExactly("marco");
+        assertThat(vaadinRequest.getUserPrincipal().getName()).isEqualTo("marco");
         assertThat(vaadinRequest.getUserPrincipal().getName()).isNull();
     }
 
