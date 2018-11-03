@@ -28,6 +28,15 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 </dependency>
 ```
 
+```
+<dependency>
+  <groupId>com.github.mcollovati.vertx</groupId>
+  <artifactId>vertx-vaadin-flow</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+
 For snapshots:
 ```
 <repository>
