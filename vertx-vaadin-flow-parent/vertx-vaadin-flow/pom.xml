@@ -17,10 +17,9 @@
 
     <properties>
         <bintray.package>vertx-vaadin-flow</bintray.package>
-        <vaadin.version>10.0.6</vaadin.version>
-        <flow.version>1.0.5</flow.version>
         <checkstyle.skip>false</checkstyle.skip>
         <classgraph.version>4.4.12</classgraph.version>
+        <vaadin-flow-sockjs.version>0.1.1-SNAPSHOT</vaadin-flow-sockjs.version>
     </properties>
 
     <dependencies>
@@ -35,18 +34,18 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core</artifactId>
-            <version>${vaadin.version}</version>
+            <version>${vaadin.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
-            <version>${flow.version}</version>
+            <version>${vaadin.flow.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.mcollovati.vertx</groupId>
             <artifactId>vaadin-flow-sockjs</artifactId>
-            <version>${project.version}</version>
+            <version>${vaadin-flow-sockjs.version}</version>
         </dependency>
 
         <!--
