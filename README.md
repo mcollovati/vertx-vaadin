@@ -24,7 +24,7 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin8</artifactId>
-  <version>0.4.0</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
@@ -32,7 +32,7 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin-flow</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
