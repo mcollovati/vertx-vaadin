@@ -23,13 +23,6 @@
 package com.github.mcollovati.vertx.vaadin;
 
 
-import com.vaadin.server.ExposeVaadinServerPkg;
-import com.vaadin.server.VaadinResponse;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RoutingContext;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -38,6 +31,13 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+
+import com.vaadin.server.ExposeVaadinServerPkg;
+import com.vaadin.server.VaadinResponse;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Created by marco on 16/07/16.

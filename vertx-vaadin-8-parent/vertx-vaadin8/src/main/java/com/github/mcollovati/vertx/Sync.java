@@ -22,15 +22,15 @@
  */
 package com.github.mcollovati.vertx;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.VertxException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 
 /**
  * Created by marco on 22/07/16.

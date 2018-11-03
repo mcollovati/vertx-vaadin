@@ -24,7 +24,6 @@ package com.github.mcollovati.vertx.vaadin;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

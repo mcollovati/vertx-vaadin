@@ -22,10 +22,10 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
-
 import javax.servlet.http.Cookie;
 import java.util.Optional;
+
+import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 
 /**
  * Created by marco on 24/07/16.
