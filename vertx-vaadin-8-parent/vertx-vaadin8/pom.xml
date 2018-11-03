@@ -5,19 +5,21 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>0.4.1-SNAPSHOT</version>
+        <version>1.0.0</version>
         <relativePath/>
     </parent>
 
     <artifactId>vertx-vaadin8</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin8</name>
+    <version>1.0.0</version>
     <description>An adapter to run Vaadin 8 applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
         <sockjs-client.version>1.1.4</sockjs-client.version>
         <checkstyle.skip>false</checkstyle.skip>
+        <vaadin8-sockjs.version>1.0.0</vaadin8-sockjs.version>
     </properties>
 
     <dependencies>
@@ -33,7 +35,7 @@
         <dependency>
             <groupId>com.github.mcollovati.vertx</groupId>
             <artifactId>vaadin8-sockjs</artifactId>
-            <version>${project.version}</version>
+            <version>${vaadin8-sockjs.version}</version>
         </dependency>
 
         <dependency>
