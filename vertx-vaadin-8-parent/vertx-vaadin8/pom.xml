@@ -12,7 +12,7 @@
     <artifactId>vertx-vaadin8</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin8</name>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <description>An adapter to run Vaadin 8 applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
