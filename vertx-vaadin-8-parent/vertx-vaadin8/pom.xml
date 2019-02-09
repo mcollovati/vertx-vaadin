@@ -128,11 +128,14 @@
                     <name>vertx-vaadin.release</name>
                 </property>
             </activation>
+            <properties>
+                <skipDefaultJar>false</skipDefaultJar>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>com.github.mcollovati.vertx</groupId>
                     <artifactId>vaadin8-sockjs</artifactId>
-                    <version>${project.version}</version>
+                    <version>${vaadin8-sockjs.version}</version>
                     <classifier>sources</classifier>
                     <scope>provided</scope>
                 </dependency>
@@ -198,9 +201,31 @@
                                         <exclude>VAADIN/gwt-unitCache/**</exclude>
                                         <exclude>VAADIN/widgetsets/WEB-INF/**</exclude>
                                     </excludes>
-                                    <classifier>full</classifier>
-
+                                    <classifier>vaadin-${vaadin.version}</classifier>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>skip-default-jar</id>
+            <activation>
+                <property>
+                    <name>skipDefaultJar</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>${maven-jar-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>default-jar</id>
+                                <phase>none</phase>
                             </execution>
                         </executions>
                     </plugin>
