@@ -28,6 +28,7 @@ import java.net.ServerSocket;
 import java.util.Optional;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 import io.vertx.core.AbstractVerticle;
@@ -44,6 +45,8 @@ import org.slf4j.LoggerFactory;
  * Created by marco on 16/07/16.
  */
 public class VaadinVerticle extends AbstractVerticle {
+
+    public static final String DEFAULT_WIDGETSET = "com.github.mcollovati.vertx.vaadin.VaadinVertxWidgetset";
 
     private static final Logger log = LoggerFactory.getLogger(VaadinVerticle.class);
 
@@ -148,6 +151,16 @@ public class VaadinVerticle extends AbstractVerticle {
                         stringValue = ((Class<?>) value).getName();
                     } else {
                         stringValue = value.toString();
+                    }
+
+                    if (VaadinServlet.PARAMETER_WIDGETSET.equals(name.value())
+                        && method.getDefaultValue().equals(stringValue)) {
+                        // Do not set the widgetset to anything so that the
+                        // framework can fallback to the default. Setting
+                        // anything to the init parameter will force that into
+                        // use and e.g. AppWidgetset will not be used even
+                        // though it is found.
+                        continue;
                     }
 
                     vaadinConfig.put(name.value(), stringValue);
