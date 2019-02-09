@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.mcollovati.vertx</groupId>
@@ -305,6 +306,18 @@
                         <failsOnError>false</failsOnError>
                         <linkXRef>false</linkXRef>
                         <skip>${checkstyle.skip}</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.amashchenko.maven.plugin</groupId>
+                    <artifactId>gitflow-maven-plugin</artifactId>
+                    <version>1.11.0</version>
+                    <configuration>
+                        <skipFeatureVersion>true</skipFeatureVersion>
+                        <gitFlowConfig>
+                            <developmentBranch>development</developmentBranch>
+                        </gitFlowConfig>
+                        <pushRemote>false</pushRemote>
                     </configuration>
                 </plugin>
             </plugins>
