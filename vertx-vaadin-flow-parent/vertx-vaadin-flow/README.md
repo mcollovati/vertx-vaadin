@@ -62,6 +62,17 @@ for this reason Vaadin `flow-push` and `flow-client` dependencies must be exclud
 </dependency>
 ```
 
+For better compatibility add a dependency to the version of `vaadin-flow-sockjs`, specifying the classifier for
+the vaadin version in use; for example
+
+```xml
+<dependency>
+    <groupId>com.github.mcollovati.vertx</groupId>
+    <artifactId>vaadin-flow-sockjs</artifactId>
+    <version>0.2.0</version>
+    <classifier>vaadin-${vaadin.version}</classifier>
+</dependency>
+```
 
 ## Getting started
 

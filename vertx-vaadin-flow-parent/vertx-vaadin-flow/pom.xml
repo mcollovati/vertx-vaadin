@@ -35,6 +35,16 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core</artifactId>
             <version>${vaadin.platform.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-push</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -60,13 +70,6 @@
             <artifactId>classgraph</artifactId>
             <version>${classgraph.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.mcollovati.vertx</groupId>
-            <artifactId>vaadin-flow-sockjs</artifactId>
-            <version>${vaadin-flow-sockjs.version}</version>
-        </dependency>
-
-        
 
         <dependency>
             <groupId>org.slf4j</groupId>
