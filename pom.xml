@@ -45,7 +45,7 @@
         <repository>
             <id>bintray-mcollovati-maven-repo</id>
             <name>mcollovati-maven-repo</name>
-            <url>https://api.bintray.com/maven/mcollovati/maven-repo/${bintray.package}/;publish=1</url>
+            <url>${bintray.url}</url>
         </repository>
         <snapshotRepository>
             <id>bintray-oss-snapshots</id>
@@ -64,6 +64,7 @@
         <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
         <checkstyle.skip>true</checkstyle.skip>
         <bintray.package>vertx-vaadin</bintray.package>
+        <bintray.url>https://api.bintray.com/maven/mcollovati/maven-repo/${bintray.package}/;publish=1</bintray.url>
 
 
         <jacoco-maven-plugin.version>0.8.1</jacoco-maven-plugin.version>
@@ -77,6 +78,7 @@
         <sonar-maven-plugin.version>3.5.0.1254</sonar-maven-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
+        <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
 
         <vertx.version>3.5.4</vertx.version>
         <vaadin.version>8.5.2</vaadin.version>
@@ -195,6 +197,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven-jar-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven-deploy-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -317,7 +324,7 @@
                         <gitFlowConfig>
                             <developmentBranch>development</developmentBranch>
                         </gitFlowConfig>
-                        <pushRemote>false</pushRemote>
+                        <pushRemote>true</pushRemote>
                     </configuration>
                 </plugin>
             </plugins>
