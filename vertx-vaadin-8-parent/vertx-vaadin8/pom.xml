@@ -12,7 +12,7 @@
     <artifactId>vertx-vaadin8</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin8</name>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <description>An adapter to run Vaadin 8 applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
@@ -118,6 +118,18 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>com.amashchenko.maven.plugin</groupId>
+                <artifactId>gitflow-maven-plugin</artifactId>
+                <version>1.11.0</version>
+                <configuration>
+                    <gitFlowConfig>
+                        <versionTagPrefix>v8-</versionTagPrefix>
+                    </gitFlowConfig>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
@@ -202,6 +214,35 @@
                                         <exclude>VAADIN/widgetsets/WEB-INF/**</exclude>
                                     </excludes>
                                     <classifier>vaadin-${vaadin.version}</classifier>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>deploy-widgetset</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <file>
+                                        ${build.directory}/${build.finalName}-vaadin-${vaadin.version}.${project.packaging}
+                                    </file>
+                                    <url>${bintray.url}</url>
+                                    <repositoryId>bintray-mcollovati-maven-repo</repositoryId>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <packaging>${project.packaging}</packaging>
+                                    <classifier>vaadin-${vaadin.version}</classifier>
+                                    <generatePom>false</generatePom>
                                 </configuration>
                             </execution>
                         </executions>
