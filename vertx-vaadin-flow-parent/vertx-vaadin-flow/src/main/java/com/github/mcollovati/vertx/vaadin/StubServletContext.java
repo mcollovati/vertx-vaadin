@@ -41,6 +41,7 @@ import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +51,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,16 +62,22 @@ class StubServletContext implements ServletContext {
     private static final Logger logger = LoggerFactory.getLogger(StubServletContext.class);
     private final Context context;
     private final Vertx vertx;
+    private final JsonObject vaadinConfig;
 
 
-    public StubServletContext(Vertx vertx) {
+    public StubServletContext(VertxVaadinService vertxVaadinService) {
+        this(vertxVaadinService.getVertx(), vertxVaadinService.getVertxVaadinConfig());
+    }
+
+    public StubServletContext(Vertx vertx, JsonObject vaadinConfig) {
         this.vertx = vertx;
         this.context = vertx.getOrCreateContext();
+        this.vaadinConfig = vaadinConfig;
     }
 
     @Override
     public String getContextPath() {
-        return null;
+        return vaadinConfig.getString("mountPoint", "").replaceFirst("/$", "");
     }
 
     @Override
@@ -365,6 +373,20 @@ class StubServletContext implements ServletContext {
     @Override
     public String getVirtualServerName() {
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StubServletContext that = (StubServletContext) o;
+        return vertx.equals(that.vertx) &&
+            vaadinConfig.equals(that.vaadinConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vertx, vaadinConfig);
     }
 }
 

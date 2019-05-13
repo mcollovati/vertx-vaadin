@@ -43,6 +43,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.RouteRegistry;
+import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -55,7 +56,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-public class MockServletServiceSessionSetup {
+public class MockServiceSessionSetup {
 
     @Mock
     private FileSystem fileSystem;
@@ -67,6 +68,8 @@ public class MockServletServiceSessionSetup {
     private VaadinSession session;
     @Mock
     private WebBrowser browser;
+    @Mock
+    private Context context;
     //@Mock
     //private WrappedHttpSession wrappedSession;
     //@Mock
@@ -77,11 +80,11 @@ public class MockServletServiceSessionSetup {
     private TestVertxVaadinService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
-    public MockServletServiceSessionSetup() throws Exception {
+    public MockServiceSessionSetup() throws Exception {
         this(true);
     }
 
-    public MockServletServiceSessionSetup(boolean sessionAvailable)
+    public MockServiceSessionSetup(boolean sessionAvailable)
         throws Exception {
         MockitoAnnotations.initMocks(this);
         SharedData sharedData = Mockito.mock(SharedData.class);
@@ -89,6 +92,7 @@ public class MockServletServiceSessionSetup {
         Mockito.when(sharedData.getLocalMap(Matchers.anyString())).thenReturn(Mockito.mock(LocalMap.class));
         Mockito.when(vertx.eventBus()).thenReturn(Mockito.mock(EventBus.class));
         Mockito.when(vertx.fileSystem()).thenReturn(fileSystem);
+        Mockito.when(vertx.getOrCreateContext()).thenReturn(context);
 
         vertxVaadin = new TestVertxVaadin(vertx);
 

@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceContextUriResolver;
 import com.vaadin.flow.server.ServiceException;
@@ -48,6 +49,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.FileResolver;
+import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,9 +72,22 @@ public class VertxVaadinService extends VaadinService {
         return vertxVaadin.vertx();
     }
 
+    JsonObject getVertxVaadinConfig() {
+        return vertxVaadin.config();
+    }
+
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return RouteRegistry.getInstance(new StubServletContext(vertxVaadin.vertx()));
+        return RouteRegistry.getInstance(stubServletContext());
+    }
+
+    @Override
+    protected PwaRegistry getPwaRegistry() {
+        return PwaRegistry.getInstance(stubServletContext());
+    }
+
+    private StubServletContext stubServletContext() {
+        return new StubServletContext(vertxVaadin.vertx(), vertxVaadin.config());
     }
 
 
