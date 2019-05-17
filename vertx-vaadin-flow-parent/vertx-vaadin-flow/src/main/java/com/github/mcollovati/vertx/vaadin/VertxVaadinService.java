@@ -30,7 +30,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.github.mcollovati.vertx.adapters.BufferInputStreamAdapter;
-import com.github.mcollovati.vertx.vaadin.communication.StreamResourceHandler;
 import com.github.mcollovati.vertx.vaadin.communication.VertxStreamRequestHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.PwaRegistry;
