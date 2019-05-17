@@ -51,13 +51,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // Stub class only used to get access to com.vaadin.flow.server.startup.RouteRegistry
 // through vertx Context
-class StubServletContext implements ServletContext {
+public class StubServletContext implements ServletContext {
 
     private static final Logger logger = LoggerFactory.getLogger(StubServletContext.class);
     private final Context context;
@@ -107,7 +108,7 @@ class StubServletContext implements ServletContext {
 
     @Override
     public String getMimeType(String file) {
-        return null;
+        return MimeMapping.getMimeTypeForFilename(file);
     }
 
     @Override

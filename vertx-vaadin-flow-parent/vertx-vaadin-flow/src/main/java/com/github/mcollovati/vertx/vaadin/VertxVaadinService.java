@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,6 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.github.mcollovati.vertx.adapters.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.vaadin.communication.StreamResourceHandler;
+import com.github.mcollovati.vertx.vaadin.communication.VertxStreamRequestHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -41,11 +43,11 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.FaviconHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.startup.RouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.FileResolver;
@@ -97,6 +99,12 @@ public class VertxVaadinService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
+        handlers.replaceAll(requestHandler -> {
+            if (requestHandler instanceof StreamRequestHandler) {
+                return new VertxStreamRequestHandler();
+            }
+            return requestHandler;
+        });
         handlers.add(0, new VertxBootstrapHandler());
         return handlers;
     }
@@ -310,22 +318,6 @@ public class VertxVaadinService extends VaadinService {
     // from outside VertxVaadinService
     public static String getCancelingRelativePath(String servletPath) {
         return ServletHelper.getCancelingRelativePath(servletPath);
-    }
-
-    static class BufferInputStreamAdapter extends InputStream {
-
-        private final Buffer buffer;
-        private int position = 0;
-
-        public BufferInputStreamAdapter(Buffer buffer) {
-            this.buffer = buffer;
-        }
-
-        @Override
-        public int read() throws IOException {
-            return (position < buffer.length()) ? buffer.getByte(position++) & 0xff : -1;
-        }
-
     }
 
 }
