@@ -238,7 +238,7 @@ public class VaadinVerticle extends AbstractVerticle {
             ));
         }
 
-        StubServletContext servletContext = new StubServletContext(vertx);
+        StubServletContext servletContext = new StubServletContext(vertx, vaadinConfig);
 
         new RouteRegistryInitializer().onStartup(map.get(RouteRegistryInitializer.class), servletContext);
         new ErrorNavigationTargetInitializer().onStartup(map.get(ErrorNavigationTargetInitializer.class), servletContext);

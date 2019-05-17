@@ -1,6 +1,6 @@
 /*
  * The MIT License
- * Copyright © 2016-2018 Marco Collovati (mcollovati@gmail.com)
+ * Copyright © 2016-2019 Marco Collovati (mcollovati@gmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@ import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,26 +51,34 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // Stub class only used to get access to com.vaadin.flow.server.startup.RouteRegistry
 // through vertx Context
-class StubServletContext implements ServletContext {
+public class StubServletContext implements ServletContext {
 
     private static final Logger logger = LoggerFactory.getLogger(StubServletContext.class);
     private final Context context;
     private final Vertx vertx;
+    private final JsonObject vaadinConfig;
 
 
-    public StubServletContext(Vertx vertx) {
+    public StubServletContext(VertxVaadinService vertxVaadinService) {
+        this(vertxVaadinService.getVertx(), vertxVaadinService.getVertxVaadinConfig());
+    }
+
+    public StubServletContext(Vertx vertx, JsonObject vaadinConfig) {
         this.vertx = vertx;
         this.context = vertx.getOrCreateContext();
+        this.vaadinConfig = vaadinConfig;
     }
 
     @Override
     public String getContextPath() {
-        return null;
+        return vaadinConfig.getString("mountPoint", "").replaceFirst("/$", "");
     }
 
     @Override
@@ -99,7 +108,7 @@ class StubServletContext implements ServletContext {
 
     @Override
     public String getMimeType(String file) {
-        return null;
+        return MimeMapping.getMimeTypeForFilename(file);
     }
 
     @Override
@@ -365,6 +374,20 @@ class StubServletContext implements ServletContext {
     @Override
     public String getVirtualServerName() {
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StubServletContext that = (StubServletContext) o;
+        return vertx.equals(that.vertx) &&
+            vaadinConfig.equals(that.vaadinConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vertx, vaadinConfig);
     }
 }
 
