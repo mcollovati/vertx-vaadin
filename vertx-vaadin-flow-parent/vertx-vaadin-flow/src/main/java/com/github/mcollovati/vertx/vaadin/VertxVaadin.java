@@ -55,6 +55,7 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -195,7 +196,7 @@ public class VertxVaadin {
         vaadinRouter.route().handler(BodyHandler.create());
 
         // Disable SessionHandler for /VAADIN/ static resources
-        vaadinRouter.routeWithRegex("^(?!/(VAADIN|frontend|frontend-es6|webjars|webroot)/).*$").handler(sessionHandler);
+        vaadinRouter.routeWithRegex("^(?!/(VAADIN(?!/dynamic)|frontend|frontend-es6|webjars|webroot)/).*$").handler(sessionHandler);
 
         // Forward vaadinPush javascript to sockjs implementation
         vaadinRouter.routeWithRegex("/VAADIN/static/push/vaadinPush(?<min>-min)?\\.js(?<compressed>\\.gz)?")
@@ -207,11 +208,12 @@ public class VertxVaadin {
             ));
 
         //
+        //vaadinRouter.route("/VAADIN/dynamic/*").handler(this::handleVaadinRequest);
         vaadinRouter.route("/VAADIN/static/client/*")
             .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client", getClass().getClassLoader()));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static", getClass().getClassLoader()));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("META-INF/resources/VAADIN/static", getClass().getClassLoader()));
-        vaadinRouter.route("/VAADIN/*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
+        vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
         vaadinRouter.route("/webroot/*").handler(StaticHandler.create("webroot", getClass().getClassLoader()));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("webroot", getClass().getClassLoader()));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("META-INF/resources/webjars", getClass().getClassLoader()));
@@ -232,21 +234,23 @@ public class VertxVaadin {
 
         initSockJS(vaadinRouter, sessionHandler);
 
-        vaadinRouter.route("/*").handler(routingContext -> {
-            VertxVaadinRequest request = new VertxVaadinRequest(service, routingContext);
-            VertxVaadinResponse response = new VertxVaadinResponse(service, routingContext);
-
-            try {
-                service.handleRequest(request, response);
-                response.end();
-            } catch (ServiceException ex) {
-                routingContext.fail(ex);
-            }
-        });
+        vaadinRouter.route("/*").handler(this::handleVaadinRequest);
 
 
         serviceInitialized(vaadinRouter);
         return vaadinRouter;
+    }
+
+    private void handleVaadinRequest(RoutingContext routingContext) {
+        VertxVaadinRequest request = new VertxVaadinRequest(service, routingContext);
+        VertxVaadinResponse response = new VertxVaadinResponse(service, routingContext);
+
+        try {
+            service.handleRequest(request, response);
+            response.end();
+        } catch (ServiceException ex) {
+            routingContext.fail(ex);
+        }
     }
 
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {

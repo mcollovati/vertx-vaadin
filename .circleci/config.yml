@@ -31,7 +31,8 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: mvn dependency:resolve-plugins dependency:go-offline
+      # TODO: does not work well with multimodule project
+      #- run: mvn dependency:resolve-plugins dependency:go-offline
 
       - save_cache:
           paths:

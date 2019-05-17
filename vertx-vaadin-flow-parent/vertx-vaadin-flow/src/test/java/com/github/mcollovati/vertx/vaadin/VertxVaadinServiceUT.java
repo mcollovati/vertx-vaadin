@@ -28,7 +28,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
-import com.github.mcollovati.vertx.utils.MockServletServiceSessionSetup;
+import com.github.mcollovati.vertx.utils.MockServiceSessionSetup;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.theme.AbstractTheme;
 import org.apache.commons.io.IOUtils;
@@ -40,12 +40,12 @@ import org.junit.Test;
 public class VertxVaadinServiceUT {
 
     private final String[] es5es6 = new String[] {"es5", "es6"};
-    private MockServletServiceSessionSetup mocks;
-    private MockServletServiceSessionSetup.TestVertxVaadinService service;
+    private MockServiceSessionSetup mocks;
+    private MockServiceSessionSetup.TestVertxVaadinService service;
 
     @Before
     public void setUp() throws Exception {
-        mocks = new MockServletServiceSessionSetup();
+        mocks = new MockServiceSessionSetup();
         service = mocks.getService();
     }
 

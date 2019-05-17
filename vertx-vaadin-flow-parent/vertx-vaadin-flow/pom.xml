@@ -11,7 +11,7 @@
     <artifactId>vertx-vaadin-flow</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin-flow</name>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
     <description>An adapter to run Vaadin Flow applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
@@ -19,7 +19,7 @@
         <bintray.package>vertx-vaadin-flow</bintray.package>
         <checkstyle.skip>false</checkstyle.skip>
         <classgraph.version>4.4.12</classgraph.version>
-        <vaadin-flow-sockjs.version>0.2.0</vaadin-flow-sockjs.version>
+        <vaadin-flow-sockjs.version>0.3.0</vaadin-flow-sockjs.version>
     </properties>
 
     <dependencies>
