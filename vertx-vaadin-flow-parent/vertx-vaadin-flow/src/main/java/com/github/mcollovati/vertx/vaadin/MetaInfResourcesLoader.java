@@ -32,7 +32,7 @@ public class MetaInfResourcesLoader implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent event) {
         VaadinService service = event.getSource();
         if (service instanceof VertxVaadinService) {
-            new StubServletContext(((VertxVaadinService) service).getVertx())
+            new StubServletContext(((VertxVaadinService) service))
                 .getResourcePaths("/META-INF/resources/");
         }
     }

@@ -82,8 +82,8 @@
 
         <vertx.version>3.5.4</vertx.version>
         <vaadin.version>8.5.2</vaadin.version>
-        <vaadin.platform.version>10.0.6</vaadin.platform.version>
-        <vaadin.flow.version>1.0.5</vaadin.flow.version>
+        <vaadin.platform.version>12.0.7</vaadin.platform.version>
+        <vaadin.flow.version>1.2.5</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
@@ -207,6 +207,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
                     <configuration>
+                        <useSystemClassLoader>false</useSystemClassLoader>
                         <argLine>${surefireArgLine}</argLine>
                         <includes>
                             <include>**/*UT.java</include>
@@ -331,12 +332,18 @@
         </pluginManagement>
     </build>
 
-    <modules>
-        <module>vertx-vaadin-8-parent</module>
-        <module>vertx-vaadin-flow-parent</module>
-    </modules>
 
     <profiles>
+        <profile>
+            <id>default-setup</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>vertx-vaadin-8-parent</module>
+                <module>vertx-vaadin-flow-parent</module>
+            </modules>
+        </profile>
         <profile>
             <id>release</id>
             <build>
@@ -369,6 +376,30 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>release-vaadin8</id>
+            <modules>
+                <module>vertx-vaadin-8-parent/vaadin8-sockjs</module>
+                <module>vertx-vaadin-8-parent/vertx-vaadin8</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>release-flow</id>
+            <modules>
+                <module>vertx-vaadin-flow-parent/vaadin-flow-sockjs</module>
+                <module>vertx-vaadin-flow-parent/vertx-vaadin-flow</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>find-flow-client-version</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-core</artifactId>
+                    <version>${vaadin.platform.version}</version>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>
