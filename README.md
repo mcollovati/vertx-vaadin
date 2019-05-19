@@ -68,10 +68,10 @@ repositories {
 ## Compatibility matrix
 
 |Vaadin version|vertx-vaadin version|
-|--------------\|--------------------|
+|--------------|--------------------|
 |8.x|vertx-vaadin8:1.0.0|
 |10|vertx-vaadin-flow:0.2.0|
-|12|ertx-vaadin-flow:0.3.0|
+|12|vertx-vaadin-flow:0.3.0|
 
 
 ## Documentation
