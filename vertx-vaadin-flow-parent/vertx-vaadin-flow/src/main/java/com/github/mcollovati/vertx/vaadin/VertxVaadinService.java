@@ -43,7 +43,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 import io.vertx.core.Vertx;
@@ -79,7 +80,7 @@ public class VertxVaadinService extends VaadinService {
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return RouteRegistry.getInstance(stubServletContext());
+        return ApplicationRouteRegistry.getInstance(stubServletContext());
     }
 
     @Override

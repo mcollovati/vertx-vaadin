@@ -42,7 +42,8 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.server.startup.RouteRegistry;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -186,16 +187,7 @@ public class MockServiceSessionSetup {
         Mockito.when(browser.isEs6Supported()).thenReturn(browserEs6);
     }
 
-    public static class TestRouteRegistry extends RouteRegistry {
-
-        @Override
-        public boolean hasRoutes() {
-            /*
-             * Always pretend there are routes even though they might actually be
-             * injected later on.
-             */
-            return true;
-        }
+    public static class TestRouteRegistry extends ApplicationRouteRegistry {
 
     }
 
