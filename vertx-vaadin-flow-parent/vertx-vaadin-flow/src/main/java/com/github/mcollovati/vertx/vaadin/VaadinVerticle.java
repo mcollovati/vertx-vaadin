@@ -26,6 +26,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.AnnotationValidator;
@@ -99,6 +101,7 @@ public class VaadinVerticle extends AbstractVerticle {
 
         String mountPoint = vaadinConfig.getString("mountPoint");
         vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
+        vaadinConfig.put(Constants.SERVLET_PARAMETER_PUSH_URL, mountPoint);
 
         initFlow(vaadinConfig);
 

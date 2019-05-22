@@ -22,6 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,6 +42,7 @@ import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
@@ -261,7 +264,8 @@ public class VertxVaadin {
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
         SockJSPushHandler pushHandler = new SockJSPushHandler(service, sessionHandler, sockJSHandler);
         //vaadinRouter.route("/PUSH/*").handler(pushHandler);
-        vaadinRouter.route("/*").handler(rc -> {
+        Path pushPath = Paths.get(config.getString(Constants.SERVLET_PARAMETER_PUSH_URL, "/"), "*").normalize();
+        vaadinRouter.route(pushPath.toString()).handler(rc -> {
             if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
                 pushHandler.handle(rc);
             } else {
