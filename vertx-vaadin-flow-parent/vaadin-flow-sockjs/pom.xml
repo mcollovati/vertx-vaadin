@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.v8v10</version>
     </parent>
 
     <artifactId>vaadin-flow-sockjs</artifactId>
@@ -373,6 +373,35 @@
                             <compileReport>false</compileReport>
                             <style>OBF</style>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>deploy-widgetset</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <file>
+                                        ${build.directory}/${build.finalName}.${project.packaging}
+                                    </file>
+                                    <url>${bintray.url}</url>
+                                    <repositoryId>bintray-mcollovati-maven-repo</repositoryId>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <packaging>${project.packaging}</packaging>
+                                    <classifier>vaadin-${vaadin.platform.version}</classifier>
+                                    <generatePom>false</generatePom>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

@@ -3,8 +3,6 @@
 ## Status
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
-[![Build Status](https://travis-ci.org/mcollovati/vertx-vaadin.svg?branch=master)](https://travis-ci.org/mcollovati/vertx-vaadin)
-
 ![Bintray](https://img.shields.io/bintray/v/mcollovati/maven-repo/vertx-vaadin.svg?label=vertx-vaadin8&colorB=blue)
 ![Bintray](https://img.shields.io/bintray/v/mcollovati/maven-repo/vertx-vaadin-flow.svg?label=vertx-vaadin-flow&colorB=blue)
 
@@ -65,6 +63,12 @@ repositories {
 }
 ```
 
+## Compatibility matrix
+
+|Vaadin version|vertx-vaadin version|Status|
+|--------------|--------------------|------|
+|8.x|vertx-vaadin8:1.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
+|10|vertx-vaadin-flow:10.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10)|
 
 ## Documentation
 
