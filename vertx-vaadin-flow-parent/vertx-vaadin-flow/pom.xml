@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.v8v13</version>
     </parent>
 
     <artifactId>vertx-vaadin-flow</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin-flow</name>
-    <version>13.0.0-SNAPSHOT</version>
+    <version>13.0.0</version>
     <description>An adapter to run Vaadin Flow applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
