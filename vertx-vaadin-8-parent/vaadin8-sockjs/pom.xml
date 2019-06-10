@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.v8v12</version>
         <relativePath/>
     </parent>
 
     <artifactId>vaadin8-sockjs</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>1.0.v8v12</version>
     <name>vaadin8-sockjs</name>
     <description>Sockjs push connection implementation for Vaadin 8</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
