@@ -83,6 +83,7 @@ jobs:
             - v2-dependencies-{{ checksum "pom.xml" }}
             - v2-dependencies-
       - run: ./mvnw -Prelease,release-flow -pl :vertx-vaadin-flow -DskipTests clean deploy
+      - run: ./tools/build_flow_widgetsets.sh deploy
 
 
 workflows:
