@@ -17,7 +17,7 @@ for rel in  ${vaadin_releases[@]}; do
             cat target/flow-client.version | grep 'com.vaadin:flow-client' | cut -d ':' -f 4)
 
         echo "Deploying vaadin-flow-sockjs for vaadin ${version}, flow client ${flow_client_version}"
-        $_base_dir/../mvnw -B -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} clean $_action
+        $_base_dir/../mvnw -B --fail-never -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} clean $_action
     done
 done
 
