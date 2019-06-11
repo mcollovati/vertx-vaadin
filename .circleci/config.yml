@@ -2,13 +2,13 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
-version: 2.1
+version: 2
 jobs:
   build:
     docker:
       # specify the version you desire here
       # test
-      - image: circleci/openjdk:8-jdk
+        - image: circleci/openjdk:8-jdk
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -20,6 +20,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
 
     steps:
       - checkout
@@ -40,8 +41,8 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
-      - run: mvn -N install
-      - run: mvn verify
+      - run: ./mvnw -N install
+      - run: ./mvnw install
       - run:
           name: Save test results
           command: |
@@ -60,9 +61,10 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
     steps:
       - checkout
-      - run: mvn -Prelease,release-vaadin8 -pl :vertx-vaadin8 -am -DskipTests clean deploy
+      - run: ./mvnw -Prelease,release-vaadin8 -pl :vertx-vaadin8 -am -DskipTests clean deploy
       - run: ./tools/build_v8_widgetsets.sh
   deploy-vaadin-flow:
     docker:
@@ -71,9 +73,10 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
     steps:
       - checkout
-      - run: mvn -Prelease,release-flow -pl :vertx-vaadin-flow -DskipTests clean deploy
+      - run: ./mvnw -Prelease,release-flow -pl :vertx-vaadin-flow -DskipTests clean deploy
 
 
 workflows:
