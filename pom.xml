@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>1.0.v8v13</version>
+    <version>1.0.v8v14</version>
     <packaging>pom</packaging>
 
 
@@ -54,6 +54,12 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>vaadin-prereleases</id>
+            <url>http://maven.vaadin.com/vaadin-prereleases</url>
+        </repository>
+    </repositories>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -82,8 +88,8 @@
 
         <vertx.version>3.5.4</vertx.version>
         <vaadin.version>8.5.2</vaadin.version>
-        <vaadin.platform.version>13.0.7</vaadin.platform.version>
-        <vaadin.flow.version>1.4.4</vaadin.flow.version>
+        <vaadin.platform.version>14.0-SNAPSHOT</vaadin.platform.version>
+        <vaadin.flow.version>2.0-SNAPSHOT</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
