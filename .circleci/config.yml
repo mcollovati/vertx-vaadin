@@ -25,24 +25,22 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v2-dependencies-
 
       # TODO: does not work well with multimodule project
       #- run: mvn dependency:resolve-plugins dependency:go-offline
 
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: v1-dependencies-{{ checksum "pom.xml" }}
 
       # run tests!
       - run: ./mvnw -N install
       - run: ./mvnw install
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v2-dependencies-{{ checksum "pom.xml" }}
       - run:
           name: Save test results
           command: |
@@ -64,6 +62,10 @@ jobs:
       MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v2-dependencies-
       - run: ./mvnw -Prelease,release-vaadin8 -pl :vertx-vaadin8 -am -DskipTests clean deploy
       - run: ./tools/build_v8_widgetsets.sh
   deploy-vaadin-flow:
@@ -76,6 +78,10 @@ jobs:
       MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v2-dependencies-
       - run: ./mvnw -Prelease,release-flow -pl :vertx-vaadin-flow -DskipTests clean deploy
 
 
