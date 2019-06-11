@@ -8,7 +8,7 @@ jobs:
     docker:
       # specify the version you desire here
       # test
-      - image: circleci/openjdk:8-jdk
+        - image: circleci/openjdk:8-jdk
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -20,28 +20,27 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
 
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v2-dependencies-
 
       # TODO: does not work well with multimodule project
       #- run: mvn dependency:resolve-plugins dependency:go-offline
 
+
+      # run tests!
+      - run: ./mvnw -N install
+      - run: ./mvnw install
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies-{{ checksum "pom.xml" }}
-
-      # run tests!
-      - run: mvn -N install
-      - run: mvn verify
+          key: v2-dependencies-{{ checksum "pom.xml" }}
       - run:
           name: Save test results
           command: |
@@ -60,14 +59,14 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-    filters:
-      tags:
-        only: /v8-.*/
-    requires:
-      - build
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
     steps:
       - checkout
-      - run: mvn -Prelease,release-vaadin8 -pl :vertx-vaadin8 -am -DskipTests clean deploy
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v2-dependencies-
+      - run: ./mvnw -Prelease,release-vaadin8 -pl :vertx-vaadin8 -am -DskipTests clean deploy
       - run: ./tools/build_v8_widgetsets.sh
   deploy-vaadin-flow:
     docker:
@@ -76,12 +75,44 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-    filters:
-      tags:
-        only: /flow-.*/
-    requires:
-      - build
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
     steps:
       - checkout
-      - run: mvn -Prelease,release-flow -pl :vertx-vaadin-flow -DskipTests clean deploy
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v2-dependencies-
+      - run: ./mvnw -Prelease,release-flow -pl :vertx-vaadin-flow -DskipTests clean deploy
+      - run: ./tools/build_flow_widgetsets.sh deploy
+
+
+workflows:
+  version: 2
+  build-only:
+    jobs:
+      - build
+  build-deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - deploy-vaadin8:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v8-.*/
+            branches:
+              ignore: /.*/
+      - deploy-vaadin-flow:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^flow-.*/
+            branches:
+              ignore: /.*/
 

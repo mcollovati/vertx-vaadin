@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.mcollovati.vertx</groupId>
-    <artifactId>vertx-vaadin10-parent</artifactId>
+    <artifactId>vertx-vaadin-flow-parent</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
@@ -14,7 +14,7 @@
         <maven.license.skip>true</maven.license.skip>
     </properties>
 
-    <name>vertx-vaadin10-parent</name>
+    <name>vertx-vaadin-flow-parent</name>
     <modules>
         <module>vaadin-flow-sockjs</module>
         <module>vertx-vaadin-flow</module>

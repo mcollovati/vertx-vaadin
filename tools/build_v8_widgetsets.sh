@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+_base_dir=$(dirname $(realpath $0))
+
 vaadin_releases=(8.7 8.6 8.5)
 for rel in  ${vaadin_releases[@]}; do
 
@@ -8,7 +10,7 @@ for rel in  ${vaadin_releases[@]}; do
 
     for version in ${versions}; do
         echo "Deploying vertx-vaadin for ${version}"
-        mvn -B -Prelease-vaadin8 -pl :vertx-vaadin8 -DskipTests -Dvertx-vaadin.release -DskipDefaultJar -Dvaadin.version=${version} clean deploy
+        $_base_dir/../mvnw -B --fail-never -Prelease-vaadin8 -pl :vertx-vaadin8 -DskipTests -Dvertx-vaadin.release -DskipDefaultJar -Dvaadin.version=${version} clean deploy
     done
 done
 

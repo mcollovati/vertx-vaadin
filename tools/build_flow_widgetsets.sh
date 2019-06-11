@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-vaadin_releases=(10)
+_base_dir=$(dirname $(realpath $0))
+_action=${1:package}
+
+vaadin_releases=(13)
 for rel in  ${vaadin_releases[@]}; do
 
     echo "Fetch Vaadin versions for ${rel}..."
@@ -14,7 +17,7 @@ for rel in  ${vaadin_releases[@]}; do
             cat target/flow-client.version | grep 'com.vaadin:flow-client' | cut -d ':' -f 4)
 
         echo "Deploying vaadin-flow-sockjs for vaadin ${version}, flow client ${flow_client_version}"
-        mvn -B -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} clean deploy
+        $_base_dir/../mvnw -B --fail-never -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} clean $_action
     done
 done
 
