@@ -33,9 +33,13 @@ import com.vaadin.flow.shared.communication.PushMode;
 public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
+    private final String webComponentsPolyfillBase;
+
     private boolean productionMode = false;
+    private boolean compatibilityMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
+    private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
     private String pushURL = "";
@@ -43,17 +47,24 @@ public class MockDeploymentConfiguration
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
+    private boolean brotli = false;
 
     public MockDeploymentConfiguration() {
         this(null);
     }
 
     public MockDeploymentConfiguration(String webComponentsPolyfillBase) {
+        this.webComponentsPolyfillBase = webComponentsPolyfillBase;
     }
 
     @Override
     public boolean isProductionMode() {
         return productionMode;
+    }
+
+    @Override
+    public boolean isBowerMode() {
+        return compatibilityMode;
     }
 
     @Override
@@ -86,6 +97,11 @@ public class MockDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    @Override
+    public int getWebComponentDisconnect() {
+        return webComponentDisconnect;
     }
 
     public void setHeartbeatInterval(int heartbeatInterval) {
@@ -134,10 +150,10 @@ public class MockDeploymentConfiguration
 
     @Override
     public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
+                                                T defaultValue, Function<String, T> converter) {
         if (applicationOrSystemProperty.containsKey(propertyName)) {
             return converter
-                    .apply(applicationOrSystemProperty.get(propertyName));
+                .apply(applicationOrSystemProperty.get(propertyName));
         } else {
             return defaultValue;
         }
@@ -146,6 +162,19 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isSendUrlsAsParameters() {
         return sendUrlsAsParameters;
+    }
+
+    @Override
+    public boolean isBrotli() {
+        return brotli;
+    }
+
+    public void setBrotli(boolean brotli) {
+        this.brotli = brotli;
+    }
+
+    public void setCompatibilityMode(boolean compatibility) {
+        compatibilityMode = compatibility;
     }
 
 }

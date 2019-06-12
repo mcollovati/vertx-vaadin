@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
@@ -52,6 +53,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
 import com.vaadin.flow.server.startup.RouteRegistryInitializer;
+import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
+import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import io.github.classgraph.ClassGraph;
@@ -239,13 +242,24 @@ public class VaadinVerticle extends AbstractVerticle {
                 scanResult.getClassesImplementing(HasErrorParameter.class.getName())
                     .loadClasses()
             ));
+            map.put(WebComponentConfigurationRegistryInitializer.class, new HashSet<>(
+                scanResult.getSubclasses(WebComponentExporter.class.getName()).loadClasses()
+            ));
+            map.put(WebComponentExporterAwareValidator.class, new HashSet<>(
+                scanResult.getAllClasses()
+                    .filter(annotationFilterFactory.apply(new Class[]{
+                        Theme.class, Push.class
+                    })).loadClasses()
+            ));
         }
 
         StubServletContext servletContext = new StubServletContext(vertx, vaadinConfig);
 
         new RouteRegistryInitializer().onStartup(map.get(RouteRegistryInitializer.class), servletContext);
         new ErrorNavigationTargetInitializer().onStartup(map.get(ErrorNavigationTargetInitializer.class), servletContext);
+        new WebComponentConfigurationRegistryInitializer().onStartup(map.get(WebComponentConfigurationRegistryInitializer.class), servletContext);
         new AnnotationValidator().onStartup(map.get(AnnotationValidator.class), servletContext);
+        new WebComponentExporterAwareValidator().onStartup(map.get(WebComponentExporterAwareValidator.class), servletContext);
     }
 
 }
