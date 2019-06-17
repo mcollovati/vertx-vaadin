@@ -369,6 +369,12 @@
 
     <profiles>
         <profile>
+            <id>sdm</id>
+            <properties>
+                <gwt.module>com.github.mcollovati.vertx.vaadin.sockjs.SockjsClientEngineXSI</gwt.module>
+            </properties>
+        </profile>
+        <profile>
             <id>do-release</id>
             <activation>
                 <property>
