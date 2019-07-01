@@ -24,9 +24,6 @@ package com.github.mcollovati.vertx.vaadin;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -34,8 +31,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import com.github.mcollovati.vertx.http.HttpReverseProxy;
+import com.github.mcollovati.vertx.vaadin.setup.DevModeWorker;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
@@ -43,7 +41,6 @@ import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -55,8 +52,9 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -210,10 +208,19 @@ public class VertxVaadin {
                 )
             ));
 
+
+        // TODO: Dev mode handler
+        MessageProducer<HttpReverseProxy.HttpRequestMessage> publisher = DevModeWorker.forwarder(vertx);
+        vaadinRouter.routeWithRegex(".+\\.js$").handler(ctx -> {
+            ctx.request().pause();
+            publisher.send(HttpReverseProxy.encodeRequest(ctx.request()), DevModeWorker.proxyResponseHandler(ctx));
+        });
+
         //
         //vaadinRouter.route("/VAADIN/dynamic/*").handler(this::handleVaadinRequest);
         vaadinRouter.route("/VAADIN/static/client/*")
             .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client", getClass().getClassLoader()));
+        vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build   ", getClass().getClassLoader()));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static", getClass().getClassLoader()));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("META-INF/resources/VAADIN/static", getClass().getClassLoader()));
         vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
@@ -243,6 +250,7 @@ public class VertxVaadin {
         serviceInitialized(vaadinRouter);
         return vaadinRouter;
     }
+
 
     private void handleVaadinRequest(RoutingContext routingContext) {
         VertxVaadinRequest request = new VertxVaadinRequest(service, routingContext);
@@ -279,32 +287,8 @@ public class VertxVaadin {
         return config().getString("sessionCookieName", "vertx-web.session");
     }
 
-    private DefaultDeploymentConfiguration createDeploymentConfiguration() {
-        return new DefaultDeploymentConfiguration(getClass(), initProperties());
-    }
-
-    private Properties initProperties() {
-        Properties initParameters = new Properties();
-        //initParameters.putAll(config().getMap());
-        initParameters.putAll((Map) adaptJson(config().getMap()));
-        return initParameters;
-    }
-
-    private Object adaptJson(Object object) {
-        if (object instanceof Collection) {
-            return ((Collection<?>) object).stream()
-                .map(this::adaptJson)
-                .collect(Collectors.toList());
-        } else if (object instanceof Map) {
-            LinkedHashMap map = new LinkedHashMap((Map) object);
-            map.replaceAll((k, v) -> adaptJson(v));
-            return map;
-        } else if (object instanceof JsonObject) {
-            return adaptJson(((JsonObject) object).getMap());
-        } else if (object instanceof JsonArray) {
-            return adaptJson(((JsonArray) object).getList());
-        }
-        return object;
+    private DeploymentConfiguration createDeploymentConfiguration() {
+        return DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), config());
     }
 
     // TODO: change JsonObject to VaadinOptions interface
