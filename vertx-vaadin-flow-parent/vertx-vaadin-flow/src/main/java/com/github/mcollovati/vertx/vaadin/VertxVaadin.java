@@ -251,6 +251,7 @@ public class VertxVaadin {
             service.handleRequest(request, response);
             response.end();
         } catch (ServiceException ex) {
+            getLogger().severe("Error processing request " + routingContext.request().uri());
             routingContext.fail(ex);
         }
     }
