@@ -22,11 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import javax.servlet.ServletContext;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -34,15 +30,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import com.github.mcollovati.vertx.Sync;
+import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
@@ -55,7 +51,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -66,15 +61,14 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
-import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
-
 public class VertxVaadin {
 
     private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
     private static final String VERSION;
 
     private final VertxVaadinService service;
-    private final JsonObject config;
+    private final StartupContext startupContext;
+    private final VaadinOptions config;
     private final Vertx vertx;
     private final Router router;
     private final ExtendedSessionStore sessionStore;
@@ -93,9 +87,10 @@ public class VertxVaadin {
     }
 
 
-    private VertxVaadin(Vertx vertx, Optional<ExtendedSessionStore> sessionStore, JsonObject config) {
+    private VertxVaadin(Vertx vertx, Optional<ExtendedSessionStore> sessionStore, StartupContext startupContext) {
         this.vertx = Objects.requireNonNull(vertx);
-        this.config = Objects.requireNonNull(config);
+        this.startupContext = Objects.requireNonNull(startupContext);
+        this.config = startupContext.vaadinOptions();
 
         this.service = createVaadinService();
         this.service.addUIInitListener(event ->
@@ -116,12 +111,12 @@ public class VertxVaadin {
         this.router = initRouter();
     }
 
-    protected VertxVaadin(Vertx vertx, ExtendedSessionStore sessionStore, JsonObject config) {
-        this(vertx, Optional.of(sessionStore), config);
+    protected VertxVaadin(Vertx vertx, ExtendedSessionStore sessionStore, StartupContext startupContext) {
+        this(vertx, Optional.of(sessionStore), startupContext);
     }
 
-    protected VertxVaadin(Vertx vertx, JsonObject config) {
-        this(vertx, Optional.empty(), config);
+    protected VertxVaadin(Vertx vertx, StartupContext startupContext) {
+        this(vertx, Optional.empty(), startupContext);
     }
 
     private void configureSessionStore() {
@@ -155,12 +150,16 @@ public class VertxVaadin {
     }
 
     public String serviceName() {
-        return config.getString("serviceName", getClass().getName() + ".service");
+        return config.serviceName().orElseGet(() -> getClass().getName() + ".service");
     }
 
 
-    protected final JsonObject config() {
+    protected final VaadinOptions config() {
         return config;
+    }
+
+    ServletContext servletContext() {
+        return startupContext.servletContext();
     }
 
     protected void serviceInitialized(Router router) {
@@ -183,7 +182,7 @@ public class VertxVaadin {
 
         String sessionCookieName = sessionCookieName();
         SessionHandler sessionHandler = SessionHandler.create(sessionStore)
-            .setSessionTimeout(config().getLong("sessionTimeout", DEFAULT_SESSION_TIMEOUT))
+            .setSessionTimeout(config().sessionTimeout())
             .setSessionCookieName(sessionCookieName)
             .setNagHttps(false)
             .setCookieHttpOnlyFlag(true);
@@ -259,13 +258,13 @@ public class VertxVaadin {
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {
 
         SockJSHandlerOptions options = new SockJSHandlerOptions()
-            .setSessionTimeout(config().getLong("sessionTimeout", DEFAULT_SESSION_TIMEOUT))
+            .setSessionTimeout(config().sessionTimeout())
             .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
         SockJSPushHandler pushHandler = new SockJSPushHandler(service, sessionHandler, sockJSHandler);
-        //vaadinRouter.route("/PUSH/*").handler(pushHandler);
-        Path pushPath = Paths.get(config.getString(Constants.SERVLET_PARAMETER_PUSH_URL, "/"), "*").normalize();
-        vaadinRouter.route(pushPath.toString()).handler(rc -> {
+
+        String pushPath = config.pushURL().replaceFirst("/$", "") + "/*";
+        vaadinRouter.route(pushPath).handler(rc -> {
             if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
                 pushHandler.handle(rc);
             } else {
@@ -276,43 +275,24 @@ public class VertxVaadin {
 
 
     private String sessionCookieName() {
-        return config().getString("sessionCookieName", "vertx-web.session");
+        return config().sessionCookieName();
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfiguration() {
-        return new DefaultDeploymentConfiguration(getClass(), initProperties());
+        return new DefaultDeploymentConfiguration(getClass(), config().asProperties());
     }
 
-    private Properties initProperties() {
-        Properties initParameters = new Properties();
-        //initParameters.putAll(config().getMap());
-        initParameters.putAll((Map) adaptJson(config().getMap()));
-        return initParameters;
-    }
 
-    private Object adaptJson(Object object) {
-        if (object instanceof Collection) {
-            return ((Collection<?>) object).stream()
-                .map(this::adaptJson)
-                .collect(Collectors.toList());
-        } else if (object instanceof Map) {
-            LinkedHashMap map = new LinkedHashMap((Map) object);
-            map.replaceAll((k, v) -> adaptJson(v));
-            return map;
-        } else if (object instanceof JsonObject) {
-            return adaptJson(((JsonObject) object).getMap());
-        } else if (object instanceof JsonArray) {
-            return adaptJson(((JsonArray) object).getList());
-        }
-        return object;
-    }
-
-    // TODO: change JsonObject to VaadinOptions interface
-    public static VertxVaadin create(Vertx vertx, ExtendedSessionStore sessionStore, JsonObject config) {
-        return new VertxVaadin(vertx, sessionStore, config);
+    public static VertxVaadin create(Vertx vertx, ExtendedSessionStore sessionStore, StartupContext startupContext) {
+        return new VertxVaadin(vertx, sessionStore, startupContext);
     }
 
     public static VertxVaadin create(Vertx vertx, JsonObject config) {
+        StartupContext startupContext = Sync.await(completer -> StartupContext.of(vertx, new VaadinOptions(config)).setHandler(completer));
+        return create(vertx, startupContext);
+    }
+
+    public static VertxVaadin create(Vertx vertx, StartupContext config) {
         return new VertxVaadin(vertx, config);
     }
 

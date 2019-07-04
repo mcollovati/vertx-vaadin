@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-import com.github.mcollovati.vertx.vaadin.StubServletContext;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
@@ -59,7 +58,7 @@ public class StreamResourceHandler implements Serializable {
         session.lock();
         try {
 
-            ServletContext context = new StubServletContext(((VertxVaadinRequest)request).getService());
+            ServletContext context = ((VertxVaadinRequest)request).getService().getServletContext();
             response.setContentType(streamResource.getContentTypeResolver()
                 .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());

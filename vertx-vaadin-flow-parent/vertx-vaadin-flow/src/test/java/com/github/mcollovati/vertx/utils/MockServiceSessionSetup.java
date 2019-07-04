@@ -27,9 +27,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 
+import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import com.github.mcollovati.vertx.vaadin.VertxVaadin;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -45,6 +48,7 @@ import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import io.vertx.core.Context;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -260,7 +264,7 @@ public class MockServiceSessionSetup {
         private Function<String, InputStream> resourceAsStreamOverride;
 
         protected TestVertxVaadin(Vertx vertx) {
-            super(vertx, new JsonObject());
+            super(vertx, StartupContext.syncOf(vertx, new VaadinOptions()));
         }
 
         @Override

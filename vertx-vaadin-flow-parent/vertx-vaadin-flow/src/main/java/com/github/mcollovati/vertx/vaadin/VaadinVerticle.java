@@ -22,11 +22,10 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +37,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -82,9 +82,68 @@ public class VaadinVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         log.info("Starting vaadin verticle " + getClass().getName());
 
-        VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
+        prepareConfig()
+            .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
+            .compose(this::initVertxVaadin)
+            .compose(this::startupHttpServer)
+            .<Void>map(router -> {
+                serviceInitialized(vaadinService, router);
+                return null;
+            }).setHandler(startFuture.completer());
+    }
 
+    private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
+        String mountPoint = vertxVaadin.config().mountPoint();
+        HttpServerOptions serverOptions = new HttpServerOptions().setCompressionSupported(true);
+
+        Router router = Router.router(vertx);
+        router.mountSubRouter(mountPoint, vertxVaadin.router());
+
+        httpServer = vertx.createHttpServer(serverOptions).requestHandler(router::accept);
+        Future<HttpServer> future = Future.<HttpServer>future()
+            .setHandler(event -> {
+                if (event.succeeded()) {
+                    log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result());
+                }
+            });
+
+        httpPort().setHandler(event -> {
+            if (event.succeeded()) {
+                httpServer.listen(event.result(), future);
+            } else {
+                future.fail(event.cause());
+            }
+        });
+
+        return future.map(router);
+    }
+
+    private Future<Integer> httpPort() {
+        Future<Integer> portFuture = Future.future();
+        Integer httpPort = config().getInteger("httpPort", 8080);
+        if (httpPort == 0) {
+            try (ServerSocket socket = new ServerSocket(0)) {
+                portFuture.complete(socket.getLocalPort());
+            } catch (Exception e) {
+                portFuture.fail(e);
+            }
+        } else {
+            portFuture.complete(httpPort);
+        }
+        return portFuture;
+    }
+
+    protected VertxVaadin createVertxVaadin(StartupContext startupContext) {
+        return VertxVaadin.create(vertx, startupContext);
+    }
+
+    protected void serviceInitialized(VertxVaadinService service, Router router) {
+        // empty by default
+    }
+
+    protected Future<VaadinOptions> prepareConfig() {
         JsonObject vaadinConfig = new JsonObject();
+        VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
 
         Optional.ofNullable(vaadinVerticleConfiguration)
             .map(VaadinVerticleConfiguration::serviceName)
@@ -103,44 +162,8 @@ public class VaadinVerticle extends AbstractVerticle {
         vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
         vaadinConfig.put(Constants.SERVLET_PARAMETER_PUSH_URL, mountPoint);
 
-        initFlow(vaadinConfig);
-
-        VertxVaadin vertxVaadin = createVertxVaadin(vaadinConfig);
-        vaadinService = vertxVaadin.vaadinService();
-
-        HttpServerOptions serverOptions = new HttpServerOptions().setCompressionSupported(true);
-        httpServer = vertx.createHttpServer(serverOptions);
-
-        Router router = Router.router(vertx);
-        router.mountSubRouter(mountPoint, vertxVaadin.router());
-
-        Integer httpPort = httpPort();
-        httpServer.requestHandler(router::accept).listen(httpPort);
-
-        serviceInitialized(vaadinService, router);
-
-        log.info("Started vaadin verticle " + getClass().getName() + " on port " + httpPort);
-        startFuture.complete();
+        return Future.succeededFuture(new VaadinOptions(vaadinConfig));
     }
-
-    private Integer httpPort() throws IOException {
-        Integer httpPort = config().getInteger("httpPort", 8080);
-        if (httpPort == 0) {
-            try (ServerSocket socket = new ServerSocket(0)) {
-                httpPort = socket.getLocalPort();
-            }
-        }
-        return httpPort;
-    }
-
-    protected VertxVaadin createVertxVaadin(JsonObject vaadinConfig) {
-        return VertxVaadin.create(vertx, vaadinConfig);
-    }
-
-    protected void serviceInitialized(VertxVaadinService service, Router router) {
-        // empty by default
-    }
-
 
     @Override
     public void stop() throws Exception {
@@ -198,9 +221,10 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     @SuppressWarnings("unchecked")
-    private void initFlow(JsonObject vaadinConfig) throws ServletException {
-        List<String> pkgs = vaadinConfig.getJsonArray("flowBasePackages", new JsonArray()).getList();
-        boolean isDebug = vaadinConfig.getBoolean("debug", false);
+    private Future<VertxVaadin> initVertxVaadin(StartupContext startupContext) {
+        VaadinOptions vaadinConfig = startupContext.vaadinOptions();
+        List<String> pkgs = vaadinConfig.flowBasePackages();
+        boolean isDebug = vaadinConfig.debug();
 
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
 
@@ -211,41 +235,52 @@ public class VaadinVerticle extends AbstractVerticle {
             return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
         };
 
+        Future<VertxVaadin> future = Future.future();
+        vertx.executeBlocking(event -> {
 
-        ClassGraph classGraph = new ClassGraph();
-        if (isDebug) {
-            classGraph.verbose();
-        }
-        classGraph.ignoreParentClassLoaders()
-            .enableClassInfo()
-            .enableAnnotationInfo()
-            .whitelistPackages(pkgs.toArray(new String[0]))
-            .ignoreParentClassLoaders()
-            .removeTemporaryFilesAfterScan();
-        try (ScanResult scanResult = classGraph.scan()) {
+            ClassGraph classGraph = new ClassGraph();
+            if (isDebug) {
+                classGraph.verbose();
+            }
+            classGraph.ignoreParentClassLoaders()
+                .enableClassInfo()
+                .enableAnnotationInfo()
+                .whitelistPackages(pkgs.toArray(new String[0]))
+                .ignoreParentClassLoaders()
+                .removeTemporaryFilesAfterScan();
+            try (ScanResult scanResult = classGraph.scan()) {
 
-            map.put(RouteRegistryInitializer.class, new HashSet<>(
-                scanResult.getAllClasses()
-                    .filter(annotationFilterFactory.apply(new Class[]{Route.class, RouteAlias.class}))
-                    .loadClasses()
-            ));
-            map.put(AnnotationValidator.class, new HashSet<>(
-                scanResult.getAllClasses()
-                    .filter(annotationFilterFactory.apply(new Class[]{
-                        Viewport.class, BodySize.class, Inline.class, Theme.class, Push.class
-                    })).loadClasses()
-            ));
-            map.put(ErrorNavigationTargetInitializer.class, new HashSet<>(
-                scanResult.getClassesImplementing(HasErrorParameter.class.getName())
-                    .loadClasses()
-            ));
-        }
+                map.put(RouteRegistryInitializer.class, new HashSet<>(
+                    scanResult.getAllClasses()
+                        .filter(annotationFilterFactory.apply(new Class[]{Route.class, RouteAlias.class}))
+                        .loadClasses()
+                ));
+                map.put(AnnotationValidator.class, new HashSet<>(
+                    scanResult.getAllClasses()
+                        .filter(annotationFilterFactory.apply(new Class[]{
+                            Viewport.class, BodySize.class, Inline.class, Theme.class, Push.class
+                        })).loadClasses()
+                ));
+                map.put(ErrorNavigationTargetInitializer.class, new HashSet<>(
+                    scanResult.getClassesImplementing(HasErrorParameter.class.getName())
+                        .loadClasses()
+                ));
+            }
 
-        StubServletContext servletContext = new StubServletContext(vertx, vaadinConfig);
+            ServletContext servletContext = startupContext.servletContext();
+            try {
+                new RouteRegistryInitializer().onStartup(map.get(RouteRegistryInitializer.class), servletContext);
+                new ErrorNavigationTargetInitializer().onStartup(map.get(ErrorNavigationTargetInitializer.class), servletContext);
+                new AnnotationValidator().onStartup(map.get(AnnotationValidator.class), servletContext);
 
-        new RouteRegistryInitializer().onStartup(map.get(RouteRegistryInitializer.class), servletContext);
-        new ErrorNavigationTargetInitializer().onStartup(map.get(ErrorNavigationTargetInitializer.class), servletContext);
-        new AnnotationValidator().onStartup(map.get(AnnotationValidator.class), servletContext);
+                VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
+                vaadinService = vertxVaadin.vaadinService();
+                event.complete(vertxVaadin);
+            } catch (ServletException e) {
+                event.fail(e);
+            }
+        }, future.completer());
+        return future;
     }
 
 }

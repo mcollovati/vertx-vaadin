@@ -31,7 +31,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.github.mcollovati.vertx.adapters.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
