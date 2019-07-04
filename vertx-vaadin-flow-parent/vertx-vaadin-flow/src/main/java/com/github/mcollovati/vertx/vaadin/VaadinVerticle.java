@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -40,7 +40,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.mcollovati.vertx.vaadin.setup.ClassFinder;
+import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.setup.DevModeWorker;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -56,7 +56,6 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
@@ -66,10 +65,10 @@ import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import elemental.json.impl.JsonUtil;
+import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -108,9 +107,68 @@ public class VaadinVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         log.info("Starting vaadin verticle " + getClass().getName());
 
-        VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
+        prepareConfig()
+            .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
+            .compose(this::initVertxVaadin)
+            .compose(this::startupHttpServer)
+            .<Void>map(router -> {
+                serviceInitialized(vaadinService, router);
+                return null;
+            }).setHandler(startFuture.completer());
+    }
 
+    private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
+        String mountPoint = vertxVaadin.config().mountPoint();
+        HttpServerOptions serverOptions = new HttpServerOptions().setCompressionSupported(true);
+
+        Router router = Router.router(vertx);
+        router.mountSubRouter(mountPoint, vertxVaadin.router());
+
+        httpServer = vertx.createHttpServer(serverOptions).requestHandler(router::accept);
+        Future<HttpServer> future = Future.<HttpServer>future()
+            .setHandler(event -> {
+                if (event.succeeded()) {
+                    log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result());
+                }
+            });
+
+        httpPort().setHandler(event -> {
+            if (event.succeeded()) {
+                httpServer.listen(event.result(), future);
+            } else {
+                future.fail(event.cause());
+            }
+        });
+
+        return future.map(router);
+    }
+
+    private Future<Integer> httpPort() {
+        Future<Integer> portFuture = Future.future();
+        Integer httpPort = config().getInteger("httpPort", 8080);
+        if (httpPort == 0) {
+            try (ServerSocket socket = new ServerSocket(0)) {
+                portFuture.complete(socket.getLocalPort());
+            } catch (Exception e) {
+                portFuture.fail(e);
+            }
+        } else {
+            portFuture.complete(httpPort);
+        }
+        return portFuture;
+    }
+
+    protected VertxVaadin createVertxVaadin(StartupContext startupContext) {
+        return VertxVaadin.create(vertx, startupContext);
+    }
+
+    protected void serviceInitialized(VertxVaadinService service, Router router) {
+        // empty by default
+    }
+
+    protected Future<VaadinOptions> prepareConfig() {
         JsonObject vaadinConfig = new JsonObject();
+        VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
 
         Optional.ofNullable(vaadinVerticleConfiguration)
             .map(VaadinVerticleConfiguration::serviceName)
@@ -130,49 +188,8 @@ public class VaadinVerticle extends AbstractVerticle {
         vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
         vaadinConfig.put(Constants.SERVLET_PARAMETER_PUSH_URL, mountPoint);
 
-
-        Future<Void> flowInitialization = Future.future();
-        initFlow(vaadinConfig, flowInitialization);
-
-        VertxVaadin vertxVaadin = createVertxVaadin(vaadinConfig);
-        vaadinService = vertxVaadin.vaadinService();
-
-        HttpServerOptions serverOptions = new HttpServerOptions().setCompressionSupported(true);
-        httpServer = vertx.createHttpServer(serverOptions);
-
-        Router router = Router.router(vertx);
-        router.mountSubRouter(mountPoint, vertxVaadin.router());
-
-        Integer httpPort = httpPort();
-        httpServer.requestHandler(router::accept).listen(httpPort);
-
-        serviceInitialized(vaadinService, router);
-
-        log.info("Started vaadin verticle " + getClass().getName() + " on port " + httpPort);
-
-
-        flowInitialization.setHandler(startFuture.completer());
-        //startFuture.complete();
+        return Future.succeededFuture(new VaadinOptions(vaadinConfig));
     }
-
-    private Integer httpPort() throws IOException {
-        Integer httpPort = config().getInteger("httpPort", 8080);
-        if (httpPort == 0) {
-            try (ServerSocket socket = new ServerSocket(0)) {
-                httpPort = socket.getLocalPort();
-            }
-        }
-        return httpPort;
-    }
-
-    protected VertxVaadin createVertxVaadin(JsonObject vaadinConfig) {
-        return VertxVaadin.create(vertx, vaadinConfig);
-    }
-
-    protected void serviceInitialized(VertxVaadinService service, Router router) {
-        // empty by default
-    }
-
 
     @Override
     public void stop(Future<Void> stopFuture) throws Exception {
@@ -244,62 +261,91 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     @SuppressWarnings("unchecked")
-    private void initFlow(JsonObject vaadinConfig, Future<Void> future) throws ServletException {
-        List<String> pkgs = vaadinConfig.getJsonArray("flowBasePackages", new JsonArray()).getList();
-        boolean isDebug = vaadinConfig.getBoolean("debug", false);
-        log.debug("Scanning packages {}", String.join(", ", pkgs));
-        StubServletContext servletContext = new StubServletContext(vertx, vaadinConfig);
-        ClassFinder.create(vertx, isDebug, pkgs)
-            .scan(this::seekRequiredClasses, event -> runInitializers(vaadinConfig, future, servletContext, event));
+    private Future<VertxVaadin> initVertxVaadin(StartupContext startupContext) {
+        VaadinOptions vaadinConfig = startupContext.vaadinOptions();
+        List<String> pkgs = vaadinConfig.flowBasePackages();
+        boolean isDebug = vaadinConfig.debug();
 
+        Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
+
+        log.debug("Scanning packages {}", String.join(", ", pkgs));
+
+        Function<Class<?>[], ClassInfoList.ClassInfoFilter> annotationFilterFactory = annotationClazzes -> {
+            List<String> clazzNames = Stream.of(annotationClazzes).map(Class::getName).collect(Collectors.toList());
+            return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
+        };
+
+        Future<VertxVaadin> future = Future.future();
+        vertx.executeBlocking(event -> {
+
+            ClassGraph classGraph = new ClassGraph();
+            if (isDebug) {
+                classGraph.verbose();
+            }
+            classGraph.ignoreParentClassLoaders()
+                .enableClassInfo()
+                .enableAnnotationInfo()
+                .whitelistPackages(pkgs.toArray(new String[0]))
+                .ignoreParentClassLoaders()
+                .removeTemporaryFilesAfterScan();
+            try (ScanResult scanResult = classGraph.scan()) {
+
+                map.putAll(seekRequiredClasses(scanResult));
+            }
+
+            ServletContext servletContext = startupContext.servletContext();
+            Future<Void> initializerFuture = Future.future();
+            runInitializers(startupContext, initializerFuture, map);
+            initializerFuture.map(unused -> {
+                VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
+                vaadinService = vertxVaadin.vaadinService();
+                return vertxVaadin;
+            }).setHandler(event.completer());
+        }, future.completer());
+        return future;
     }
 
-    private void runInitializers(JsonObject vaadinConfig, Future<Void> future, StubServletContext servletContext, AsyncResult<Map<Class<?>, Set<Class<?>>>> event) {
-        if (event.succeeded()) {
-            Map<Class<?>, Set<Class<?>>> map = event.result();
-            Function<ServletContainerInitializer, Handler<Future<Void>>> initializerFactory = initializer -> event2 -> {
-                try {
-                    initializer.onStartup(map.get(initializer.getClass()), servletContext);
-                    event2.complete();
-                } catch (Exception ex) {
-                    event2.fail(ex);
-                }
-            };
+    private void runInitializers(StartupContext startupContext, Future<Void> future, Map<Class<?>, Set<Class<?>>> classes) {
+        Function<ServletContainerInitializer, Handler<Future<Void>>> initializerFactory = initializer -> event2 -> {
+            try {
+                initializer.onStartup(classes.get(initializer.getClass()), startupContext.servletContext());
+                event2.complete();
+            } catch (Exception ex) {
+                event2.fail(ex);
+            }
+        };
 
-            CompositeFuture.join(
-                runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
-                runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
-                runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
-                runInitializer(initializerFactory.apply(new AnnotationValidator())),
-                runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-                startDevModeWorker(event2 -> {
-                    DevModeInitializer.initDevModeHandler(map.get(DevModeInitializer.class), servletContext,
-                        DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), vaadinConfig)
-                    );
-                    event2.complete();
-                })
-            ).setHandler(event2 -> {
-                if (event2.succeeded()) {
-                    future.complete();
-                } else {
-                    future.fail(event2.cause());
-                }
-            });
-        } else {
-            future.fail(event.cause());
-        }
+        CompositeFuture.join(
+            runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
+            runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
+            runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
+            runInitializer(initializerFactory.apply(new AnnotationValidator())),
+            runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
+            startDevModeWorker(event2 -> {
+                DevModeInitializer.initDevModeHandler(classes.get(DevModeInitializer.class), startupContext.servletContext(),
+                    DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions())
+                );
+                event2.complete();
+            })
+        ).setHandler(event2 -> {
+            if (event2.succeeded()) {
+                future.complete();
+            } else {
+                future.fail(event2.cause());
+            }
+        });
     }
 
     private Future<Void> startDevModeWorker(Handler<Future<Void>> devModeInitializer) {
 
         return runInitializer(devModeInitializer).compose(event -> {
             Future<String> future = Future.future();
-            WebpackDevServerPort port = new VertxVaadinContext(vertx).getAttribute(WebpackDevServerPort.class);
-            if (port != null) {
-                log.info("Starting dev mode server");
+            DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
+            if (devModeHandler != null) {
+                log.info("Starting dev mode proxy");
                 DeploymentOptions options = new DeploymentOptions()
                     .setWorker(true)
-                    .setConfig(new JsonObject().put("port", port.getPort()));
+                    .setConfig(new JsonObject().put("port", devModeHandler.getPort()));
                 vertx.deployVerticle(DevModeWorker.class, options, deployResult -> {
                     if (deployResult.succeeded()) {
                         devModeWorkerDeploymentId = deployResult.result();
@@ -321,6 +367,7 @@ public class VaadinVerticle extends AbstractVerticle {
             List<String> clazzNames = Stream.of(annotationClazzes).map(Class::getName).collect(Collectors.toList());
             return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
         };
+
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
         map.put(RouteRegistryInitializer.class, new HashSet<>(
             scanResult.getAllClasses()
@@ -362,11 +409,11 @@ public class VaadinVerticle extends AbstractVerticle {
         return future;
     }
 
-    private static void readBuildInfo(JsonObject vaadinConfig) { // NOSONAR
+    private void readBuildInfo(JsonObject config) { // NOSONAR
         try {
             String json = null;
             // token file location passed via init parameter property
-            String tokenLocation = vaadinConfig.getString(PARAM_TOKEN_FILE);
+            String tokenLocation = config.getString(PARAM_TOKEN_FILE);
             if (tokenLocation != null) {
                 File tokenFile = new File(tokenLocation);
                 if (tokenFile.canRead()) {
@@ -389,7 +436,7 @@ public class VaadinVerticle extends AbstractVerticle {
             if (json != null) {
                 elemental.json.JsonObject buildInfo = JsonUtil.parse(json);
                 if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    vaadinConfig.put(
+                    config.put(
                         SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
                             SERVLET_PARAMETER_PRODUCTION_MODE)));
@@ -400,7 +447,7 @@ public class VaadinVerticle extends AbstractVerticle {
                         VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
                 }
                 if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
-                    vaadinConfig.put(
+                    config.put(
                         SERVLET_PARAMETER_COMPATIBILITY_MODE,
                         String.valueOf(buildInfo.getBoolean(
                             SERVLET_PARAMETER_COMPATIBILITY_MODE)));

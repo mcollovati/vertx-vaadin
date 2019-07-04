@@ -114,11 +114,6 @@ public class DevModeWorker extends AbstractVerticle {
         if (httpClient != null) {
             httpClient.close();
         }
-        // TODO: handle stop with multple verticles
-        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
-        if (devModeHandler != null) {
-            devModeHandler.stop();
-        }
         stopFuture.complete();
     }
 

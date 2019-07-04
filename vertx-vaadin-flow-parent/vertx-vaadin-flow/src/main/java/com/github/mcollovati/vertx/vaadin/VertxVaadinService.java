@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.github.mcollovati.vertx.adapters.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.VertxStreamRequestHandler;
 import com.github.mcollovati.vertx.vaadin.communication.VertxWebComponentBootstrapHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -78,22 +79,22 @@ public class VertxVaadinService extends VaadinService {
         return vertxVaadin.vertx();
     }
 
-    JsonObject getVertxVaadinConfig() {
+    VaadinOptions getVaadinOptions() {
         return vertxVaadin.config();
+    }
+
+    public ServletContext getServletContext() {
+        return vertxVaadin.servletContext();
     }
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(stubServletContext());
+        return ApplicationRouteRegistry.getInstance(vertxVaadin.servletContext());
     }
 
     @Override
     protected PwaRegistry getPwaRegistry() {
-        return PwaRegistry.getInstance(stubServletContext());
-    }
-
-    private StubServletContext stubServletContext() {
-        return new StubServletContext(vertxVaadin.vertx(), vertxVaadin.config());
+        return PwaRegistry.getInstance(vertxVaadin.servletContext());
     }
 
 
