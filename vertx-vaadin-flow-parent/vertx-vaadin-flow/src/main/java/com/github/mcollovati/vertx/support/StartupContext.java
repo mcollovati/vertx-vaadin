@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +57,13 @@ public final class StartupContext {
         this.context = vertx.getOrCreateContext();
         this.vaadinOptions = vaadinOptions;
         this.vertx = vertx;
+    }
+
+    public Optional<String> resolveResource(String resource) {
+        String normalized = resource.replaceFirst("^/", "");
+        return resources.stream()
+            .filter(r -> normalized.equals(r) || r.replaceFirst("^META-INF/resources/", "").equals(normalized))
+            .findFirst();
     }
 
     public static Future<StartupContext> of(Vertx vertx, VaadinOptions vaadinOptions) {
@@ -154,7 +162,7 @@ public final class StartupContext {
 
 
             return resources.stream()
-                .filter(p -> p.startsWith("META-INF/resources/"+relativePath) || p.startsWith(relativePath))
+                .filter(p -> p.startsWith("META-INF/resources/" + relativePath) || p.startsWith(relativePath))
                 .map(p -> {
                     Matcher matcher = pattern.matcher(p);
                     matcher.find();

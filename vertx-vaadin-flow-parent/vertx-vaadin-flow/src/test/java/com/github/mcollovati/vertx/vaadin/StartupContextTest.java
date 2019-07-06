@@ -19,7 +19,7 @@ public class StartupContextTest {
     @Before
     public void setup() {
         JsonObject config = new JsonObject();
-        config.put("debug", false);
+        config.put("debug", true);
         startupContext = StartupContext.syncOf(Vertx.vertx(), new VaadinOptions(config));
     }
 
@@ -28,15 +28,29 @@ public class StartupContextTest {
         Set<String> resourcePaths = startupContext.servletContext().getResourcePaths("/");
         assertThat(resourcePaths).isNotEmpty()
             .allMatch(isChildOf(""));
+        System.out.println(resourcePaths);
 
         resourcePaths = startupContext.servletContext().getResourcePaths("");
         assertThat(resourcePaths).isNotEmpty()
             .allMatch(isChildOf(""));
+        System.out.println(resourcePaths);
 
         resourcePaths = startupContext.servletContext().getResourcePaths("webjars");
         assertThat(resourcePaths).isNotEmpty()
             .allMatch(isChildOf("webjars/"));
         System.out.println(resourcePaths);
+    }
+
+    @Test
+    public void testResolveResource() {
+        assertThat(startupContext.resolveResource("VAADIN/static/push/vaadinPushSockJS.js.gz"))
+            .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
+        assertThat(startupContext.resolveResource("/VAADIN/static/push/vaadinPushSockJS.js.gz"))
+            .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
+        assertThat(startupContext.resolveResource("vertx-version.txt"))
+            .hasValue("vertx-version.txt");
+        assertThat(startupContext.resolveResource("/vertx-version.txt"))
+            .hasValue("vertx-version.txt");
     }
 
     private Predicate<String> isChildOf(String parent) {

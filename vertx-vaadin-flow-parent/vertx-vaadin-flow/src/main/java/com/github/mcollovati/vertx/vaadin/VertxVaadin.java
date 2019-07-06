@@ -34,14 +34,13 @@ import java.util.regex.Pattern;
 import com.github.mcollovati.vertx.Sync;
 import com.github.mcollovati.vertx.http.HttpReverseProxy;
 import com.github.mcollovati.vertx.support.StartupContext;
-import com.github.mcollovati.vertx.vaadin.setup.DevModeWorker;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -212,18 +211,17 @@ public class VertxVaadin {
             ));
 
 
-        // TODO: Dev mode handler
-        MessageProducer<HttpReverseProxy.HttpRequestMessage> publisher = DevModeWorker.forwarder(vertx);
-        vaadinRouter.routeWithRegex(".+\\.js$").handler(ctx -> {
-            ctx.request().pause();
-            publisher.send(HttpReverseProxy.encodeRequest(ctx.request()), DevModeWorker.proxyResponseHandler(ctx));
-        });
+        if (DevModeHandler.getDevModeHandler() != null) {
+            getLogger().info("Setup DevModeHandler proxy");
+            HttpReverseProxy proxy = HttpReverseProxy.create(vertx, DevModeHandler.getDevModeHandler().getPort());
+            vaadinRouter.routeWithRegex(".+\\.js$").blockingHandler(proxy::forward);
+        }
 
         //
         //vaadinRouter.route("/VAADIN/dynamic/*").handler(this::handleVaadinRequest);
         vaadinRouter.route("/VAADIN/static/client/*")
             .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client", getClass().getClassLoader()));
-        vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build   ", getClass().getClassLoader()));
+        vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build", getClass().getClassLoader()));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static", getClass().getClassLoader()));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("META-INF/resources/VAADIN/static", getClass().getClassLoader()));
         vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
@@ -247,8 +245,8 @@ public class VertxVaadin {
 
         initSockJS(vaadinRouter, sessionHandler);
 
+        vaadinRouter.route("/*").handler(StaticHandler.create("META-INF/resources", getClass().getClassLoader()));
         vaadinRouter.route("/*").handler(this::handleVaadinRequest);
-
 
         serviceInitialized(vaadinRouter);
         return vaadinRouter;

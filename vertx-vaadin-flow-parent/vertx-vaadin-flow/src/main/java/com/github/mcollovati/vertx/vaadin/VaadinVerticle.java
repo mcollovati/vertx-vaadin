@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
-import com.github.mcollovati.vertx.vaadin.setup.DevModeWorker;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.BodySize;
@@ -70,7 +69,6 @@ import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.VertxException;
@@ -101,7 +99,6 @@ public class VaadinVerticle extends AbstractVerticle {
 
     private HttpServer httpServer;
     private VertxVaadinService vaadinService;
-    private String devModeWorkerDeploymentId;
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -192,29 +189,16 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void stop(Future<Void> stopFuture) throws Exception {
+    public void stop(Future<Void> stopFuture) {
         log.info("Stopping vaadin verticle " + getClass().getName());
         try {
             vaadinService.destroy();
         } catch (Exception ex) {
             log.error("Error during Vaadin service destroy", ex);
         }
-        Future<Void> devModeFuture = Future.future();
-        if (devModeWorkerDeploymentId != null) {
-            vertx.undeploy(devModeWorkerDeploymentId, devModeFuture.completer());
-        } else {
-            devModeFuture.complete();
-        }
-        Future<Void> serverStopFuture = Future.future();
-        httpServer.close(serverStopFuture.completer());
+
+        httpServer.close(stopFuture.completer());
         log.info("Stopped vaadin verticle " + getClass().getName());
-        CompositeFuture.all(devModeFuture, serverStopFuture).setHandler(event -> {
-            if (event.succeeded()) {
-                stopFuture.complete();
-            } else {
-                stopFuture.fail(event.cause());
-            }
-        });
     }
 
     // From VaadinServlet
@@ -293,7 +277,6 @@ public class VaadinVerticle extends AbstractVerticle {
                 map.putAll(seekRequiredClasses(scanResult));
             }
 
-            ServletContext servletContext = startupContext.servletContext();
             Future<Void> initializerFuture = Future.future();
             runInitializers(startupContext, initializerFuture, map);
             initializerFuture.map(unused -> {
@@ -321,11 +304,11 @@ public class VaadinVerticle extends AbstractVerticle {
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
             runInitializer(initializerFactory.apply(new AnnotationValidator())),
             runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-            startDevModeWorker(event2 -> {
+            runInitializer(event2 -> {
                 DevModeInitializer.initDevModeHandler(classes.get(DevModeInitializer.class), startupContext.servletContext(),
                     DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions())
                 );
-                event2.complete();
+                event2.complete(DevModeHandler.getDevModeHandler());
             })
         ).setHandler(event2 -> {
             if (event2.succeeded()) {
@@ -333,32 +316,6 @@ public class VaadinVerticle extends AbstractVerticle {
             } else {
                 future.fail(event2.cause());
             }
-        });
-    }
-
-    private Future<Void> startDevModeWorker(Handler<Future<Void>> devModeInitializer) {
-
-        return runInitializer(devModeInitializer).compose(event -> {
-            Future<String> future = Future.future();
-            DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
-            if (devModeHandler != null) {
-                log.info("Starting dev mode proxy");
-                DeploymentOptions options = new DeploymentOptions()
-                    .setWorker(true)
-                    .setConfig(new JsonObject().put("port", devModeHandler.getPort()));
-                vertx.deployVerticle(DevModeWorker.class, options, deployResult -> {
-                    if (deployResult.succeeded()) {
-                        devModeWorkerDeploymentId = deployResult.result();
-                        future.complete(devModeWorkerDeploymentId);
-                    } else {
-                        future.fail(deployResult.cause());
-                    }
-                });
-            } else {
-                log.info("Dev mode server not enabled");
-            }
-            return future.map(v -> (Void) null);
-
         });
     }
 
@@ -403,8 +360,8 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
 
-    private Future<Void> runInitializer(Handler<Future<Void>> op) {
-        Future<Void> future = Future.future();
+    private <T> Future<T> runInitializer(Handler<Future<T>> op) {
+        Future<T> future = Future.future();
         context.executeBlocking(op, future);
         return future;
     }
