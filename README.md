@@ -66,7 +66,7 @@ repositories {
 ## Compatibility matrix
 
 |Vaadin version|Vert.x version|vertx-vaadin version|Status|
-|--------------|--------------------|------|
+|--------------|--------------|--------------------|------|
 |8.x|3.5|vertx-vaadin8:1.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
 |10|3.5|vertx-vaadin-flow:10.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10)|
 |12|3.5|vertx-vaadin-flow:12.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12)|
