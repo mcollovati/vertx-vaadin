@@ -86,7 +86,7 @@
         <maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
         <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
 
-        <vertx.version>3.5.4</vertx.version>
+        <vertx.version>3.7.1</vertx.version>
         <vaadin.version>8.5.2</vaadin.version>
         <vaadin.platform.version>14.0-SNAPSHOT</vaadin.platform.version>
         <vaadin.flow.version>2.0-SNAPSHOT</vaadin.flow.version>
