@@ -65,12 +65,13 @@ repositories {
 
 ## Compatibility matrix
 
-|Vaadin version|vertx-vaadin version|Status|
+|Vaadin version|Vert.x version|vertx-vaadin version|Status|
 |--------------|--------------------|------|
-|8.x|vertx-vaadin8:1.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
-|10|vertx-vaadin-flow:10.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10)|
-|12|vertx-vaadin-flow:12.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12)|
-|13|vertx-vaadin-flow:13.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-13.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-13)|
+|8.x|3.5|vertx-vaadin8:1.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
+|10|3.5|vertx-vaadin-flow:10.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10)|
+|12|3.5|vertx-vaadin-flow:12.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12)|
+|13|3.5|vertx-vaadin-flow:13.0.1|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-13.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-13)|
+|14|3.7|vertx-vaadin-flow:14.0.0-SNAPSHOT|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
 
 
 ## Documentation
@@ -81,7 +82,10 @@ See [vertx-vaadin-8](vertx-vaadin-8-parent/vertx-vaadin8)  or [vertx-vaadin-flow
 
 A public demo based on Vaadin 8 archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
 
-Bookstore demo on Vaadin Flow is published on heroku and is available [here](https://vertx-vaadin10-example.herokuapp.com/)
+Bookstore demo on Vaadin Flow is published on heroku and is available at the following urls:
+
+* [vertx-vaadin-flow:13](https://vertx-vaadin10-example.herokuapp.com/)
+* [vertx-vaadin-flow:14](https://vertx-vaadin14-example.herokuapp.com/)
 
 Source code and other samples can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
 
