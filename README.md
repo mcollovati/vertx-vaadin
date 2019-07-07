@@ -3,8 +3,8 @@
 ## Status
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
-![Bintray](https://img.shields.io/bintray/v/mcollovati/maven-repo/vertx-vaadin.svg?label=vertx-vaadin8&colorB=blue)
-![Bintray](https://img.shields.io/bintray/v/mcollovati/maven-repo/vertx-vaadin-flow.svg?label=vertx-vaadin-flow&colorB=blue)
+![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin8.svg?label=vertx-vaadin8)
+![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow.svg?label=vertx-vaadin-flow)
 
 
 ## Description
