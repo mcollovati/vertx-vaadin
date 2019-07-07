@@ -29,6 +29,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.LocalSessionStore;
@@ -43,12 +44,18 @@ class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
 
     public ExtendedLocalSessionStoreImpl(Vertx vertx, String sessionMapName, long reaperInterval) {
         this.localMap = vertx.sharedData().getLocalMap(sessionMapName);
-        this.sessionsStore = new LocalSessionStoreImpl(vertx, sessionMapName, reaperInterval) {
+        this.sessionsStore = new LocalSessionStoreImpl() {
             @Override
             public synchronized void handle(Long tid) {
                 notifyExpiredSessions(() -> super.handle(tid));
             }
         };
+        this.sessionsStore.init(vertx, new JsonObject().put("mapName", sessionMapName).put("reaperInterval", reaperInterval));
+    }
+
+    @Override
+    public ExtendedSessionStore init(Vertx vertx, JsonObject options) {
+        return this;
     }
 
     @Override

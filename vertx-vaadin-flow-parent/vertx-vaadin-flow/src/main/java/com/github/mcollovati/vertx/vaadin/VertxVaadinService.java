@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,29 +30,32 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.github.mcollovati.vertx.adapters.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.VertxStreamRequestHandler;
+import com.github.mcollovati.vertx.vaadin.communication.VertxWebComponentBootstrapHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceContextUriResolver;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.impl.FileResolver;
 import io.vertx.core.http.impl.MimeMapping;
-import io.vertx.core.impl.FileResolver;
-import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,22 +78,22 @@ public class VertxVaadinService extends VaadinService {
         return vertxVaadin.vertx();
     }
 
-    JsonObject getVertxVaadinConfig() {
+    VaadinOptions getVaadinOptions() {
         return vertxVaadin.config();
+    }
+
+    public ServletContext getServletContext() {
+        return vertxVaadin.servletContext();
     }
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(stubServletContext());
+        return ApplicationRouteRegistry.getInstance(vertxVaadin.servletContext());
     }
 
     @Override
     protected PwaRegistry getPwaRegistry() {
-        return PwaRegistry.getInstance(stubServletContext());
-    }
-
-    private StubServletContext stubServletContext() {
-        return new StubServletContext(vertxVaadin.vertx(), vertxVaadin.config());
+        return PwaRegistry.getInstance(vertxVaadin.servletContext());
     }
 
 
@@ -105,8 +109,17 @@ public class VertxVaadinService extends VaadinService {
             }
             return requestHandler;
         });
-        handlers.add(0, new VertxBootstrapHandler());
+        handlers.add(0, new BootstrapHandler());
         return handlers;
+    }
+
+    private RequestHandler replaceRequestHandlers(RequestHandler requestHandler) {
+        if (requestHandler instanceof StreamRequestHandler) {
+            return new VertxStreamRequestHandler();
+        } else if (requestHandler instanceof WebComponentBootstrapHandler) {
+            return new VertxWebComponentBootstrapHandler();
+        }
+        return requestHandler;
     }
 
     @Override
@@ -214,6 +227,11 @@ public class VertxVaadinService extends VaadinService {
 
     }
 
+    @Override
+    protected VaadinContext constructVaadinContext() {
+        return new VertxVaadinContext(getVertx());
+    }
+
 
     private String getThemedOrRawPath(String url, WebBrowser browser,
                                       AbstractTheme theme) {
@@ -245,7 +263,7 @@ public class VertxVaadinService extends VaadinService {
         String relativePath = makePathRelative(path);
         if (fileSystem.existsBlocking(relativePath)) {
             try {
-                return new FileResolver(getVertx())
+                return new FileResolver()
                     .resolveFile(relativePath).toURI().toURL();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -299,7 +317,7 @@ public class VertxVaadinService extends VaadinService {
      * @param request the request for which the location should be determined
      * @return A relative path to the context root. Never ends with a slash (/).
      */
-    public static String getContextRootRelativePath(VaadinRequest request) {
+    public String getContextRootRelativePath(VaadinRequest request) {
         VertxVaadinRequest servletRequest = (VertxVaadinRequest) request;
         // Generate location from the request by finding how many "../" should
         // be added to the servlet path before we get to the context root
@@ -311,7 +329,11 @@ public class VertxVaadinService extends VaadinService {
             servletPath += pathInfo;
         }
 
-        return getCancelingRelativePath(servletPath);
+        String relativePath = getCancelingRelativePath(servletPath);
+        if (!relativePath.endsWith("/")) {
+            relativePath += "/";
+        }
+        return relativePath;
     }
 
     // Just to avoid direct calls to VaadinServletService

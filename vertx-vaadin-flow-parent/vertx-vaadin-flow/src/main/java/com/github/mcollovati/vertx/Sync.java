@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -54,7 +55,6 @@ public final class Sync {
             Thread.currentThread().interrupt();
             throw new VertxException(e);
         }
-
     }
 
 

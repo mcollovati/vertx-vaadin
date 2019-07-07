@@ -5,19 +5,20 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>1.0.v8v13</version>
+        <version>1.0.v8v14</version>
     </parent>
 
     <artifactId>vaadin-flow-sockjs</artifactId>
     <packaging>jar</packaging>
     <name>vaadin-flow-sockjs</name>
-    <version>13.0.0</version>
+    <version>14.0.0-SNAPSHOT</version>
     <description>Sockjs push connection implementation for Vaadin Flow</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
         <bintray.package>vertx-vaadin-flow</bintray.package>
         <flow-client.version>${vaadin.flow.version}</flow-client.version>
+        <skipBuild>false</skipBuild>
 
         <sockjs-client.version>1.1.4</sockjs-client.version>
         <checkstyle.skip>false</checkstyle.skip>
@@ -108,6 +109,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
+                            <skipMain>${skipBuild}</skipMain>
                             <compileSourceRoots>
                                 <compileSourceRoot>${flow-client-generated-sources}</compileSourceRoot>
                             </compileSourceRoots>
@@ -131,6 +133,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <skip>${skipBuild}</skip>
                     <!-- Assertions should be disabled once we introduce
                         a separate production build -->
                     <enableAssertions>true</enableAssertions>
@@ -155,6 +158,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin.version}</version>
                 <configuration>
+                    <skip>${skipBuild}</skip>
                     <archive>
                         <manifestEntries>
                             <Vaadin-Package-Version>1</Vaadin-Package-Version>
@@ -182,6 +186,7 @@
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipBuild}</skip>
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.vaadin</groupId>
@@ -203,6 +208,7 @@
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipBuild}</skip>
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.webjars.npm</groupId>
@@ -221,6 +227,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>${maven-resources-plugin.version}</version>
                 <configuration>
+                    <skip>${skipBuild}</skip>
                     <useDefaultDelimiters>false</useDefaultDelimiters>
                     <delimiters>
                         <delimiter>@@*@@</delimiter>
@@ -238,6 +245,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipBuild}</skip>
                             <exportAntProperties>true</exportAntProperties>
                             <target>
                                 <loadfile
@@ -254,6 +262,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipBuild}</skip>
                             <target>
                                 <property name="vaadinPushSockJS.js"
                                           location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js"/>
@@ -277,6 +286,7 @@
                     <execution>
                         <id>default-minify</id>
                         <configuration>
+                            <skipMinify>${skipBuild}</skipMinify>
                             <webappSourceDir>${project.build.outputDirectory}</webappSourceDir>
                             <webappTargetDir>${project.build.outputDirectory}</webappTargetDir>
                             <jsEngine>CLOSURE</jsEngine>
@@ -358,6 +368,12 @@
     </repositories>
 
     <profiles>
+        <profile>
+            <id>sdm</id>
+            <properties>
+                <gwt.module>com.github.mcollovati.vertx.vaadin.sockjs.SockjsClientEngineXSI</gwt.module>
+            </properties>
+        </profile>
         <profile>
             <id>do-release</id>
             <activation>

@@ -29,8 +29,10 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class ClassGraphTest {
 
     public static final String META_INF_RESOURCES_PATH = "META-INF/resources";

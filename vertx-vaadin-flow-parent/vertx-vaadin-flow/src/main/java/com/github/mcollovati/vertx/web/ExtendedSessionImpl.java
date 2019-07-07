@@ -29,18 +29,18 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.Session;
-import io.vertx.ext.web.sstore.impl.SessionImpl;
+import io.vertx.ext.web.sstore.impl.SharedDataSessionImpl;
 
 /**
  * Created by marco on 27/07/16.
  */
-public class ExtendedSessionImpl extends SessionImpl implements ExtendedSession, Shareable, ClusterSerializable {
+public class ExtendedSessionImpl extends SharedDataSessionImpl implements ExtendedSession, Shareable, ClusterSerializable {
 
     protected Session delegate;
     private long createdAt;
 
     public ExtendedSessionImpl() {
-        this.delegate = new SessionImpl();
+        this.delegate = new SharedDataSessionImpl();
     }
 
     public ExtendedSessionImpl(Session delegate) {

@@ -30,9 +30,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.ClusteredSessionStore;
+import io.vertx.ext.web.sstore.SessionStore;
 
 class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> {
 
@@ -51,6 +53,11 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
         this.clusteredSessionStore = ClusteredSessionStore.create(vertx, sessionMapName, retryTimeout);
         this.localMap = vertx.sharedData().getLocalMap(sessionMapName);
         this.setTimer();
+    }
+
+    @Override
+    public SessionStore init(Vertx vertx, JsonObject options) {
+        return this;
     }
 
     @Override

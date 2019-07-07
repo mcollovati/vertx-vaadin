@@ -41,7 +41,7 @@ import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.SessionStore;
-import io.vertx.ext.web.sstore.impl.SessionImpl;
+import io.vertx.ext.web.sstore.impl.SharedDataSessionImpl;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
@@ -276,7 +276,7 @@ public class NearCacheSessionStoreIT {
     }
 
     private ExtendedSession createSession(Vertx vertx) {
-        return ExtendedSession.adapt(new SessionImpl(new PRNG(vertx), 36000, DEFAULT_SESSIONID_LENGTH));
+        return ExtendedSession.adapt(new SharedDataSessionImpl(new PRNG(vertx), 36000, DEFAULT_SESSIONID_LENGTH));
     }
 
     private void assertSessionProperties(ExtendedSession session, Session rs) {

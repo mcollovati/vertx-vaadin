@@ -30,9 +30,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.ClusteredSessionStore;
+import io.vertx.ext.web.sstore.SessionStore;
 
 class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> {
 
@@ -56,6 +58,11 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
     @Override
     public NearCacheSessionStore expirationHandler(Handler<AsyncResult<String>> handler) {
         this.expirationHandler = Objects.requireNonNull(handler);
+        return this;
+    }
+
+    @Override
+    public SessionStore init(Vertx vertx, JsonObject options) {
         return this;
     }
 
@@ -87,19 +94,6 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }
         });
-        /*
-        if (localMap.containsKey(id)) {
-            resultHandler.handle(Future.succeededFuture(localMap.get(id)));
-        } else {
-            clusteredSessionStore.get(id, res -> {
-                if (res.succeeded()) {
-                    Optional.ofNullable(res.result()).ifPresent(s -> localMap.put(id, s));
-                    resultHandler.handle(Future.succeededFuture(res.result()));
-                } else {
-                    resultHandler.handle(Future.failedFuture(res.cause()));
-                }
-            });
-        }*/
     }
 
     @Override

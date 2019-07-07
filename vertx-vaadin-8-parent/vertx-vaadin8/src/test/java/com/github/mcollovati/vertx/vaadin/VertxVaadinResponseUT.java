@@ -46,7 +46,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -163,17 +165,18 @@ public class VertxVaadinResponseUT {
     @Test
     public void shouldDelegateSetCacheTimeForNoCache() throws Exception {
         vaadinResponse.setCacheTime(-1);
-        verify(httpServerResponse).putHeader(HttpHeaders.CACHE_CONTROL.toString(), "no-cache");
-        verify(httpServerResponse).putHeader("Pragma", "no-cache");
+        verify(httpServerResponse).putHeader(caseInsensitive(HttpHeaders.CACHE_CONTROL.toString()), eq("no-cache"));
+        verify(httpServerResponse).putHeader(caseInsensitive("Pragma"), eq("no-cache"));
         assertDateHeader(HttpHeaders.EXPIRES.toString(), LocalDateTime.of(1970, 1, 1, 0, 0, 0), "Thu, 1 Jan 1970 00:00:00", false);
     }
+
 
     @Test
     public void shouldDelegateSetCacheTime() throws Exception {
         long millis = 3000;
         vaadinResponse.setCacheTime(millis);
-        verify(httpServerResponse).putHeader(HttpHeaders.CACHE_CONTROL.toString(), "max-age=3");
-        verify(httpServerResponse).putHeader(eq(HttpHeaders.EXPIRES.toString()), anyString());
+        verify(httpServerResponse).putHeader(caseInsensitive(HttpHeaders.CACHE_CONTROL.toString()), eq("max-age=3"));
+        verify(httpServerResponse).putHeader(caseInsensitive(HttpHeaders.EXPIRES.toString()), anyString());
         verify(httpServerResponse).putHeader("Pragma", "cache");
     }
 
@@ -217,6 +220,7 @@ public class VertxVaadinResponseUT {
     private void assertDateHeader(String headerName, LocalDateTime dateTime, String expected) {
         assertDateHeader(headerName, dateTime, expected, true);
     }
+
     private void assertDateHeader(String headerName, LocalDateTime dateTime, String expected, boolean invoke) {
         long epochMilli = dateTime.atZone(ZoneId.of("GMT")).toEpochSecond() * 1000;
         String offset = DateTimeFormatter.ofPattern(" zzz").format(
@@ -228,7 +232,25 @@ public class VertxVaadinResponseUT {
         if (invoke) {
             vaadinResponse.setDateHeader(headerName, epochMilli);
         }
-        verify(httpServerResponse).putHeader(headerName, expected + offset);
+        verify(httpServerResponse).putHeader(caseInsensitive(headerName), eq(expected + offset));
+    }
+
+    private static String caseInsensitive(String arg) {
+        return Mockito.argThat(new CaseInsensitiveEquals(arg));
+    }
+
+    private static class CaseInsensitiveEquals extends ArgumentMatcher<String> {
+
+        public CaseInsensitiveEquals(String value) {
+            this.value = value;
+        }
+
+        private final String value;
+
+        @Override
+        public boolean matches(Object argument) {
+            return argument instanceof String && value.equalsIgnoreCase((String) argument);
+        }
     }
 
 }
