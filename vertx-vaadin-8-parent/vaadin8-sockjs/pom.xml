@@ -11,7 +11,7 @@
 
     <artifactId>vaadin8-sockjs</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.v8v14</version>
+    <version>1.0.2-SNAPSHOT</version>
     <name>vaadin8-sockjs</name>
     <description>Sockjs push connection implementation for Vaadin 8</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
