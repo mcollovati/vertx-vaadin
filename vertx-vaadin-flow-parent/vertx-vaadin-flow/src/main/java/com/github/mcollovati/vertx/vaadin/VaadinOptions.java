@@ -8,10 +8,10 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Constants;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PUSH_URL;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public final class VaadinOptions {
@@ -22,6 +22,7 @@ public final class VaadinOptions {
     public VaadinOptions() {
         this(new JsonObject());
     }
+
     public VaadinOptions(JsonObject config) {
         this.config = config;
     }
@@ -35,7 +36,11 @@ public final class VaadinOptions {
     }
 
     public String pushURL() {
-        return config.getString(Constants.SERVLET_PARAMETER_PUSH_URL, "");
+        String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
+        if (pushURL.startsWith(mountPoint())) {
+            return pushURL.substring(mountPoint().length());
+        }
+        return pushURL;
     }
 
     public String sessionCookieName() {
@@ -80,6 +85,5 @@ public final class VaadinOptions {
         }
         return object;
     }
-
 
 }
