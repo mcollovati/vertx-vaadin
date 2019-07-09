@@ -1,23 +1,11 @@
 package com.github.mcollovati.vertx.http;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.MessageCodec;
-import io.vertx.core.eventbus.impl.codecs.JsonObjectMessageCodec;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -45,8 +33,9 @@ public class HttpReverseProxy {
 
     public void forward(RoutingContext routingContext) {
         HttpServerRequest serverRequest = routingContext.request();
-        String requestURI = serverRequest.uri().replace(VAADIN_MAPPING, "");
-        System.out.println("Forwarding " + requestURI + " to webpack");
+        String requestURI = serverRequest.uri().substring(routingContext.mountPoint().length())
+            .replace(VAADIN_MAPPING, "");
+        System.out.println("Forwarding " + serverRequest.uri() + " to webpack as " + requestURI);
 
         serverRequest.pause();
         HttpClientRequest clientRequest = client.request(serverRequest.method(), requestURI);
