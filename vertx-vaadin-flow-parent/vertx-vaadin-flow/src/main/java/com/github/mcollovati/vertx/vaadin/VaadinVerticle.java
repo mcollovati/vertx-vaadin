@@ -121,7 +121,7 @@ public class VaadinVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.mountSubRouter(mountPoint, vertxVaadin.router());
 
-        httpServer = vertx.createHttpServer(serverOptions).requestHandler(router::accept);
+        httpServer = vertx.createHttpServer(serverOptions).requestHandler(router);
         Future<HttpServer> future = Future.<HttpServer>future()
             .setHandler(event -> {
                 if (event.succeeded()) {

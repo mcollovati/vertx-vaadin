@@ -1,9 +1,5 @@
 package com.github.mcollovati.vertx.vaadin;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,19 +9,12 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import elemental.json.impl.JsonUtil;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.io.FileUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PUSH_URL;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public final class VaadinOptions {
@@ -58,7 +47,11 @@ public final class VaadinOptions {
     }
 
     public String pushURL() {
-        return config.getString(Constants.SERVLET_PARAMETER_PUSH_URL, "");
+        String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
+        if (pushURL.startsWith(mountPoint())) {
+            return pushURL.substring(mountPoint().length());
+        }
+        return pushURL;
     }
 
     public String sessionCookieName() {
