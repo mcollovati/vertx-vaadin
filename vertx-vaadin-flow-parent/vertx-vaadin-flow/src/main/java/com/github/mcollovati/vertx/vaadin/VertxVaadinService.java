@@ -318,22 +318,7 @@ public class VertxVaadinService extends VaadinService {
      * @return A relative path to the context root. Never ends with a slash (/).
      */
     public String getContextRootRelativePath(VaadinRequest request) {
-        VertxVaadinRequest servletRequest = (VertxVaadinRequest) request;
-        // Generate location from the request by finding how many "../" should
-        // be added to the servlet path before we get to the context root
-
-        String servletPath = "";
-
-        String pathInfo = servletRequest.getPathInfo();
-        if (pathInfo != null && !pathInfo.isEmpty()) {
-            servletPath += pathInfo;
-        }
-
-        String relativePath = getCancelingRelativePath(servletPath);
-        if (!relativePath.endsWith("/")) {
-            relativePath += "/";
-        }
-        return relativePath;
+        return getCancelingRelativePath("/") + "/";
     }
 
     // Just to avoid direct calls to VaadinServletService
