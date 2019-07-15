@@ -128,6 +128,7 @@ public class VertxWrappedSessionUT {
     private void assertHttpSessionBindingEvent(String attrName, HttpSessionBindingEvent sessionBindingEvent) {
         assertHttpSessionBindingEvent(attrName, sessionBindingListenerObject, sessionBindingEvent);
     }
+
     private void assertHttpSessionBindingEvent(String attrName, Object value, HttpSessionBindingEvent sessionBindingEvent) {
         assertThat(sessionBindingEvent.getSession())
             .isInstanceOf(VertxHttpSession.class)
@@ -162,6 +163,7 @@ public class VertxWrappedSessionUT {
         vertxWrappedSession.invalidate();
         verify(session).destroy();
     }
+
     @Test
     public void shouldUnbindOnInvalidate() throws Exception {
 
@@ -208,6 +210,7 @@ public class VertxWrappedSessionUT {
         when(session.lastAccessed()).thenReturn(lastAccessed);
         assertThat(vertxWrappedSession.getLastAccessedTime()).isEqualTo(lastAccessed);
     }
+
     @Test
     public void getLastAccessedTimeShouldThrowExceptionWhenSessionIsInvalidated() {
         shouldThrowExceptionWhenSessionIsInvalidated(() -> vertxWrappedSession.getLastAccessedTime());
@@ -215,10 +218,11 @@ public class VertxWrappedSessionUT {
 
     @Test
     public void isNewShouldBeTrueIfLastAccessedIsNotSet() throws Exception {
-        when(session.lastAccessed()).thenReturn(0L,System.currentTimeMillis());
+        when(session.lastAccessed()).thenReturn(0L, System.currentTimeMillis());
         assertThat(vertxWrappedSession.isNew()).isTrue();
         assertThat(vertxWrappedSession.isNew()).isFalse();
     }
+
     @Test
     public void isNewShouldThrowExceptionWhenSessionIsInvalidated() {
         shouldThrowExceptionWhenSessionIsInvalidated(() -> vertxWrappedSession.isNew());
@@ -229,6 +233,7 @@ public class VertxWrappedSessionUT {
         vertxWrappedSession.removeAttribute("attrName");
         verify(session).remove("attrName");
     }
+
     @Test
     public void removeAttributeShuoldInvokeValueUnboundForHttpSessionBindingListeners() throws Exception {
         String attrName = "attributeName";
@@ -238,6 +243,7 @@ public class VertxWrappedSessionUT {
         verify(sessionBindingListenerObject).valueUnbound(sessionBindingEventCaptor.capture());
         assertHttpSessionBindingEvent(attrName, sessionBindingEventCaptor.getValue());
     }
+
     @Test
     public void removeAttributeShouldThrowExceptionWhenSessionIsInvalidated() {
         shouldThrowExceptionWhenSessionIsInvalidated(() -> vertxWrappedSession.removeAttribute("attr"));

@@ -58,7 +58,7 @@ public class StreamResourceHandler implements Serializable {
         session.lock();
         try {
 
-            ServletContext context = ((VertxVaadinRequest)request).getService().getServletContext();
+            ServletContext context = ((VertxVaadinRequest) request).getService().getServletContext();
             response.setContentType(streamResource.getContentTypeResolver()
                 .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());

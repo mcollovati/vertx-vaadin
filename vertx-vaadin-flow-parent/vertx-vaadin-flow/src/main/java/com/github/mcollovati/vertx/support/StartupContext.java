@@ -14,7 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -26,9 +25,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.github.mcollovati.vertx.Sync;
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;

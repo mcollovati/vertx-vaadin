@@ -33,7 +33,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.LocalSessionStore;
-import io.vertx.ext.web.sstore.SessionStore;
 import io.vertx.ext.web.sstore.impl.LocalSessionStoreImpl;
 
 class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {

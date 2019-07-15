@@ -46,7 +46,8 @@ public class VertxVaadinResponse implements VaadinResponse {
 
     private final RoutingContext routingContext;
     private final HttpServerResponse response;
-    private final VertxVaadinService service;;
+    private final VertxVaadinService service;
+    ;
     private Buffer outBuffer = Buffer.buffer();
     private boolean useOOS = false;
     private boolean useWriter = false;

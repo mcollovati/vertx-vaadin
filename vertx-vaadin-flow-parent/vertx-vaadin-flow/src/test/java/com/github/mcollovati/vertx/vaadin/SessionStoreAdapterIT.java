@@ -100,7 +100,7 @@ public class SessionStoreAdapterIT {
         @Override
         protected void init(VaadinRequest request) {
             request.getService().addSessionDestroyListener(e -> {
-                ((SessionTestVerticle)((VertxVaadinService) e.getService()).getVertx().getOrCreateContext().get("mySelf"))
+                ((SessionTestVerticle) ((VertxVaadinService) e.getService()).getVertx().getOrCreateContext().get("mySelf"))
                     .registerSessionEvent("Session destroyed");
             });
         }

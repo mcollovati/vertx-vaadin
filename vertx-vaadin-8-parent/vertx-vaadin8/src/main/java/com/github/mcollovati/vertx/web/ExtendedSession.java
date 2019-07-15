@@ -42,20 +42,18 @@ public interface ExtendedSession extends Session {
     /**
      * Add a handler that will be called after session expires.
      *
-     * @param handler  the handler
-     * @return  the id of the handler. This can be used if you later want to remove the handler.
+     * @param handler the handler
+     * @return the id of the handler. This can be used if you later want to remove the handler.
      */
     int addExpiredHandler(Handler<ExtendedSession> handler);
 
     /**
      * Remove a session espired handler
      *
-     * @param handlerID  the id as returned from {@link #addExpiredHandler(Handler)}.
+     * @param handlerID the id as returned from {@link #addExpiredHandler(Handler)}.
      * @return true if the handler existed and was removed, false otherwise
      */
     boolean removeHeadersEndHandler(int handlerID);
-
-
 
 
     static ExtendedSession adapt(Session session) {

@@ -31,7 +31,7 @@ import com.vaadin.flow.server.AbstractDeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
-        extends AbstractDeploymentConfiguration {
+    extends AbstractDeploymentConfiguration {
 
     private final String webComponentsPolyfillBase;
 

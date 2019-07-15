@@ -83,6 +83,7 @@ public class VertxWrappedSessionWithClusteredSessionStoreUT {
         session.setAttribute("key", listener1);
         session.setAttribute("key", new Object());
     }
+
     @Test(timeout = 5000L)
     public void shouldInvokeBindingListenerWhenSessionIsInvalidated(TestContext context) {
         final Async async = context.async(2);
@@ -91,6 +92,7 @@ public class VertxWrappedSessionWithClusteredSessionStoreUT {
         session.setAttribute("key", listener1);
         session.invalidate();
     }
+
     @Test(timeout = 5000L)
     public void shouldInvokeBindingListenerWhenSessionExpires(TestContext context) {
         final Async async = context.async(2);
@@ -98,7 +100,6 @@ public class VertxWrappedSessionWithClusteredSessionStoreUT {
         Listener listener1 = new Listener(async);
         session.setAttribute("key", listener1);
     }
-
 
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -116,7 +117,6 @@ public class VertxWrappedSessionWithClusteredSessionStoreUT {
             async.countDown();
         }
     }
-
 
 
 }

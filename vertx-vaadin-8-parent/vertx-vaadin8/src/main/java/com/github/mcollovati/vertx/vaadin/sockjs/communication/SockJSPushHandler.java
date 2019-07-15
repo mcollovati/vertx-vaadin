@@ -142,7 +142,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     private final PushEventCallback establishCallback = (PushEvent event, UI ui) -> {
         getLogger().log(Level.FINER,
             "New push connection for resource {0} with transport {1}",
-            new Object[] {event.socket().getUUID(), "resource.transport()"});
+            new Object[]{event.socket().getUUID(), "resource.transport()"});
 
         VaadinSession session = ui.getSession();
         PushSocket socket = event.socket;
@@ -401,7 +401,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             if (pushConnection == null) {
                 getLogger().log(Level.WARNING,
                     "Could not find push connection to close: {0} with transport {1}",
-                    new Object[] {id, "resource.transport()"});
+                    new Object[]{id, "resource.transport()"});
             } else {
                 if (!pushMode.isEnabled()) {
                     /*
@@ -417,7 +417,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                      */
                     getLogger().log(Level.FINER,
                         "Connection unexpectedly closed for resource {0} with transport {1}",
-                        new Object[] {id, "resource.transport()"});
+                        new Object[]{id, "resource.transport()"});
                 }
 
                 pushConnection.connectionLost();

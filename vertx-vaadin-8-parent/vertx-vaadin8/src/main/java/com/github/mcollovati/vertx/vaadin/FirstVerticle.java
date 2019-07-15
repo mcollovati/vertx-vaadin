@@ -32,7 +32,7 @@ public class FirstVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> fut) throws Exception {
-        
+
         vertx.createHttpServer()
             .requestHandler(req -> req.response().end("Mandi"))
             .listen(8080, result -> {

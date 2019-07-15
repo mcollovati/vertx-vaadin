@@ -23,7 +23,6 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;

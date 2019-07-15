@@ -2,7 +2,6 @@ package com.github.mcollovati.vertx.vaadin.communication;
 
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 
 public class VertxWebComponentBootstrapHandler extends WebComponentBootstrapHandler {
@@ -12,15 +11,17 @@ public class VertxWebComponentBootstrapHandler extends WebComponentBootstrapHand
 
     /**
      * Returns the request's base url to use in constructing and initialising ui.
+     *
      * @param request Request to the url for.
      * @return Request's url.
      */
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VertxVaadinRequest)request).getRequest().absoluteURI();
+        return ((VertxVaadinRequest) request).getRequest().absoluteURI();
     }
 
     /**
      * Returns the service url needed for initialising the UI.
+     *
      * @param request Request.
      * @return Service url for the given request.
      */

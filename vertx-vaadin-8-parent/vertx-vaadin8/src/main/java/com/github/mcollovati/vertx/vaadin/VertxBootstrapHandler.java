@@ -45,7 +45,7 @@ public class VertxBootstrapHandler extends BootstrapHandler {
     @Override
     public String getThemeName(BootstrapContext context) {
         String themeName = context.getRequest()
-                .getParameter(VaadinServlet.URL_PARAMETER_THEME);
+            .getParameter(VaadinServlet.URL_PARAMETER_THEME);
         if (themeName == null) {
             themeName = super.getThemeName(context);
         }
@@ -55,7 +55,7 @@ public class VertxBootstrapHandler extends BootstrapHandler {
     @Override
     protected String getContextRootPath(BootstrapContext context) {
         return VertxVaadinService
-                .getContextRootRelativePath(context.getRequest()) + "/";
+            .getContextRootRelativePath(context.getRequest()) + "/";
     }
 
 }

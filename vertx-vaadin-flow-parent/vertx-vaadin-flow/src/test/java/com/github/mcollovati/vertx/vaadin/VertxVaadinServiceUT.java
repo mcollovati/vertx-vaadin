@@ -39,7 +39,7 @@ import org.junit.Test;
 
 public class VertxVaadinServiceUT {
 
-    private final String[] es5es6 = new String[] {"es5", "es6"};
+    private final String[] es5es6 = new String[]{"es5", "es6"};
     private MockServiceSessionSetup mocks;
     private MockServiceSessionSetup.TestVertxVaadinService service;
 
