@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
@@ -51,11 +50,14 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public class VertxVaadin {
 
+    private static final Logger logger = LoggerFactory.getLogger(VertxVaadin.class);
     private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
     private static final String VERSION;
 
@@ -72,7 +74,7 @@ public class VertxVaadin {
             properties.load(VertxVaadin.class.getResourceAsStream("version.properties"));
             version = properties.getProperty("vertx-vaadin.version");
         } catch (Exception e) {
-            getLogger().warning("Unable to determine VertxVaadin version");
+            logger.warn("Unable to determine VertxVaadin version");
         }
         VERSION = version;
     }
@@ -152,13 +154,16 @@ public class VertxVaadin {
 
     protected ExtendedSessionStore createSessionStore() {
         if (vertx.isClustered()) {
+            logger.debug("Setup clustered session store");
             return NearCacheSessionStore.create(vertx);
         }
+        logger.debug("Setup local session store");
         return ExtendedLocalSessionStore.create(vertx);
     }
 
     private Router initRouter() {
 
+        logger.trace("Initializing router");
         String sessionCookieName = sessionCookieName();
         SessionHandler sessionHandler = SessionHandler.create(sessionStore)
             .setSessionTimeout(config().getLong("sessionTimeout", DEFAULT_SESSION_TIMEOUT))
@@ -209,7 +214,7 @@ public class VertxVaadin {
     }
 
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {
-
+        logger.debug("Routing PUSH requests on /PUSH/* ");
         SockJSHandlerOptions options = new SockJSHandlerOptions()
             .setSessionTimeout(config().getLong("sessionTimeout", DEFAULT_SESSION_TIMEOUT))
             .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
@@ -240,10 +245,6 @@ public class VertxVaadin {
 
     public static VertxVaadin create(Vertx vertx, JsonObject config) {
         return new VertxVaadin(vertx, config);
-    }
-
-    private static final Logger getLogger() {
-        return Logger.getLogger(VertxVaadin.class.getName());
     }
 
 

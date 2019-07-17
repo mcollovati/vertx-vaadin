@@ -35,7 +35,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
@@ -67,6 +66,8 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSSocket;
 import io.vertx.ext.web.impl.RoutingContextDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles incoming push connections and messages and dispatches them to the
@@ -76,6 +77,7 @@ import io.vertx.ext.web.impl.RoutingContextDecorator;
  */
 public class SockJSPushHandler implements Handler<RoutingContext> {
 
+    private static final Logger logger = LoggerFactory.getLogger(SockJSPushHandler.class);
 
     /**
      * Callback used when we receive a UIDL request through Atmosphere. If the
@@ -86,7 +88,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
      */
     private final PushEventCallback receiveCallback = (PushEvent event, UI ui) -> {
 
-        getLogger().log(Level.FINER, "Received message from resource {0}", event.socket().getUUID());
+        logger.debug("Received message from resource {}", event.socket().getUUID());
 
         PushSocket socket = event.socket;
         SockJSPushConnection connection = getConnectionForUI(ui);
@@ -116,13 +118,11 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             new ServerRpcHandler().handleRpc(ui, reader, vaadinRequest);
             connection.push(false);
         } catch (JsonException e) {
-            getLogger().log(Level.SEVERE, "Error writing JSON to response", e);
+            logger.error("Error writing JSON to response", e);
             // Refresh on client side
             sendRefreshAndDisconnect(socket);
         } catch (ServerRpcHandler.InvalidUIDLSecurityKeyException e) {
-            getLogger().log(Level.WARNING,
-                "Invalid security key received from {0}",
-                socket.remoteAddress());
+            logger.warn("Invalid security key received from {}", socket.remoteAddress());
             // Refresh on client side
             sendRefreshAndDisconnect(socket);
         }
@@ -138,9 +138,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
      * open. If there is a pending push, send it now.
      */
     private final PushEventCallback establishCallback = (PushEvent event, UI ui) -> {
-        getLogger().log(Level.FINER,
-            "New push connection for resource {0} with transport {1}",
-            new Object[]{event.socket().getUUID(), "resource.transport()"});
+        logger.trace("New push connection for resource {} with transport {}", event.socket().getUUID(), "resource.transport()");
 
         VaadinSession session = ui.getSession();
         PushSocket socket = event.socket;
@@ -149,9 +147,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
         String requestToken = request.getParam(ApplicationConstants.PUSH_ID_PARAMETER);
         if (!isPushIdValid(session, requestToken)) {
-            getLogger().log(Level.WARNING,
-                "Invalid identifier in new connection received from {0}",
-                socket.remoteAddress());
+            logger.warn("Invalid identifier in new connection received from {}", socket.remoteAddress());
             // Refresh on client side, create connection just for
             // sending a message
             sendRefreshAndDisconnect(socket);
@@ -209,7 +205,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     }
 
     private void onError(PushEvent ev, Throwable t) {
-        getLogger().log(Level.SEVERE, "Exception in push connection", t);
+        logger.error("Exception in push connection", t);
         connectionLost(ev);
     }
 
@@ -276,8 +272,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 try {
                     session.unlock();
                 } catch (Exception e) {
-                    getLogger().log(Level.WARNING,
-                        "Error while unlocking session", e);
+                    logger.warn("Error while unlocking session", e);
                     // can't call ErrorHandler, we (hopefully) don't have a lock
                 }
             }
@@ -285,7 +280,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             try {
                 service.requestEnd(vaadinRequest, null, session);
             } catch (Exception e) {
-                getLogger().log(Level.WARNING, "Error while ending request", e);
+                logger.warn("Error while ending request", e);
 
                 // can't call ErrorHandler, we don't have a lock
             }
@@ -317,7 +312,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             }
         } catch (Exception ex) {
             // Let's not allow error handling to cause trouble; log fails
-            getLogger().log(Level.WARNING, "ErrorHandler call failed", ex);
+            logger.warn("ErrorHandler call failed", ex);
         }
     }
 
@@ -336,9 +331,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             // preserving the session. After restart the client reconnects, gets
             // a session expired notification and then closes the connection and
             // ends up here
-            getLogger().log(Level.FINER,
-                "Session expired before push disconnect event was received",
-                e);
+            logger.trace("Session expired before push disconnect event was received", e);
             return;
         }
 
@@ -361,13 +354,13 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 ui = findUiUsingSocket(event.socket(), session.getUIs());
 
                 if (ui == null) {
-                    getLogger().log(Level.FINE,
+                    logger.debug(
                         "Could not get UI. This should never happen,"
                             + " except when reloading in Firefox and Chrome -"
                             + " see http://dev.vaadin.com/ticket/14251.");
                     return;
                 } else {
-                    getLogger().log(Level.INFO,
+                    logger.info(
                         "No UI was found based on data in the request,"
                             + " but a slower lookup based on the AtmosphereResource succeeded."
                             + " See http://dev.vaadin.com/ticket/14251 for more details.");
@@ -380,25 +373,20 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             String id = event.socket().getUUID();
 
             if (pushConnection == null) {
-                getLogger().log(Level.WARNING,
-                    "Could not find push connection to close: {0} with transport {1}",
-                    new Object[]{id, "resource.transport()"});
+                logger.warn("Could not find push connection to close: {} with transport {}", id, "resource.transport()");
             } else {
                 if (!pushMode.isEnabled()) {
                     /*
                      * The client is expected to close the connection after push
                      * mode has been set to disabled.
                      */
-                    getLogger().log(Level.FINER,
-                        "Connection closed for resource {0}", id);
+                    logger.trace("Connection closed for resource {}", id);
                 } else {
                     /*
                      * Unexpected cancel, e.g. if the user closes the browser
                      * tab.
                      */
-                    getLogger().log(Level.FINER,
-                        "Connection unexpectedly closed for resource {0} with transport {1}",
-                        new Object[]{id, "resource.transport()"});
+                    logger.trace("Connection unexpectedly closed for resource {} with transport {}", id, "resource.transport()");
                 }
 
                 pushConnection.connectionLost();
@@ -410,8 +398,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             try {
                 session.unlock();
             } catch (Exception e) {
-                getLogger().log(Level.WARNING, "Error while unlocking session",
-                    e);
+                logger.warn("Error while unlocking session", e);
                 // can't call ErrorHandler, we (hopefully) don't have a lock
             }
         }
@@ -444,13 +431,8 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             socket.send(notificationJson);
             socket.close();
         } catch (Exception e) {
-            getLogger().log(Level.FINEST,
-                "Failed to send critical notification to client", e);
+            logger.trace("Failed to send critical notification to client", e);
         }
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(SockJSPushHandler.class.getName());
     }
 
     private static SockJSPushConnection getConnectionForUI(UI ui) {
