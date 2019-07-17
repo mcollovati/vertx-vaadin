@@ -46,7 +46,7 @@ vaadin_releases=$($_mvn -N help:evaluate -q -Dexpression='vaadin.platform.versio
             _mvn_target="clean $_action"
         fi
 
-        echo $_mvn -B --fail-never -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target
+        $_mvn -B --fail-never -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target
         _last_built=${flow_client_version}
     done
 #done
