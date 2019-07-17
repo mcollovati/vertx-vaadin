@@ -67,7 +67,7 @@ jobs:
             - v2-dependencies-{{ checksum "pom.xml" }}
             - v2-dependencies-
       - run: ./mvnw -Prelease,release-vaadin8 -pl :vaadin8-sockjs,:vertx-vaadin8 -DskipTests clean deploy
-      - run: ./tools/build_v8_widgetsets.sh
+      - run: ./tools/build_v8_widgetsets.sh deploy
   deploy-vaadin-flow:
     docker:
       - image: circleci/openjdk:8-jdk
