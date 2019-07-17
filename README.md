@@ -67,7 +67,8 @@ repositories {
 
 |Vaadin version|Vert.x version|vertx-vaadin version|Status|
 |--------------|--------------|--------------------|------|
-|8.x|3.5|vertx-vaadin8:1.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
+|8.x -> 8.7|3.5|vertx-vaadin8:1.0.1|![CircleCI](https://img.shields.io/badge/stable-green.svg?style=for-the-badge)|
+|8.8|3.7|vertx-vaadin8:2.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
 |10|3.5|vertx-vaadin-flow:10.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-10)|
 |12|3.5|vertx-vaadin-flow:12.0.0|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-12)|
 |13|3.5|vertx-vaadin-flow:13.0.1|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-13.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-13)|
