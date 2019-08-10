@@ -23,6 +23,7 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -303,12 +304,7 @@ public class VaadinVerticle extends AbstractVerticle {
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
             runInitializer(initializerFactory.apply(new AnnotationValidator())),
             runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-            runInitializer(event2 -> {
-                DevModeInitializer.initDevModeHandler(classes.get(DevModeInitializer.class), startupContext.servletContext(),
-                    DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions())
-                );
-                event2.complete(DevModeHandler.getDevModeHandler());
-            })
+            runInitializer(event2 -> initializeDevModeHandler(event2, startupContext, classes.get(DevModeInitializer.class)))
         ).setHandler(event2 -> {
             if (event2.succeeded()) {
                 future.complete();
@@ -316,6 +312,17 @@ public class VaadinVerticle extends AbstractVerticle {
                 future.fail(event2.cause());
             }
         });
+    }
+
+    private void initializeDevModeHandler(Future<Object> future, StartupContext startupContext, Set<Class<?>> classes) {
+        try {
+            DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(),
+                DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions())
+            );
+            future.complete(DevModeHandler.getDevModeHandler());
+        } catch (ServletException e) {
+            future.fail(e);
+        }
     }
 
     private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult) {
