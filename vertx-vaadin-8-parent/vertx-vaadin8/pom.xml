@@ -12,14 +12,14 @@
     <artifactId>vertx-vaadin8</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin8</name>
-    <version>2.0.0</version>
+    <version>2.0.1-SNAPSHOT</version>
     <description>An adapter to run Vaadin 8 applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
         <sockjs-client.version>1.1.4</sockjs-client.version>
         <checkstyle.skip>false</checkstyle.skip>
-        <vaadin8-sockjs.version>2.0.0</vaadin8-sockjs.version>
+        <vaadin8-sockjs.version>${project.version}</vaadin8-sockjs.version>
     </properties>
 
     <dependencies>
