@@ -155,8 +155,8 @@ public class ExtendedSessionImpl extends SharedDataSessionImpl implements Extend
     }
 
     private Object wrapIfNeeded(Object obj) {
-        if ((obj instanceof Number || obj instanceof Character || obj instanceof String
-            || obj instanceof Boolean || obj instanceof ClusterSerializable)) {
+        if (obj == null || obj instanceof Number || obj instanceof Character || obj instanceof String
+            || obj instanceof Boolean || obj instanceof ClusterSerializable) {
             return obj;
         }
         return new SerializableHolder(obj);

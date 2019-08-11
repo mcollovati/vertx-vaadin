@@ -22,8 +22,10 @@
  */
 package com.github.mcollovati.vertx.web;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import com.github.mcollovati.vertx.web.serialization.SerializableHolder;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.shareddata.Shareable;
@@ -35,6 +37,7 @@ import io.vertx.ext.web.sstore.impl.SharedDataSessionImpl;
  * Created by marco on 27/07/16.
  */
 public class ExtendedSessionImpl extends SharedDataSessionImpl implements ExtendedSession, Shareable, ClusterSerializable {
+
 
     protected Session delegate;
     private long createdAt;
@@ -65,22 +68,24 @@ public class ExtendedSessionImpl extends SharedDataSessionImpl implements Extend
 
     @Override
     public Session put(String key, Object obj) {
-        return delegate.put(key, obj);
+        return delegate.put(key, wrapIfNeeded(obj));
     }
 
     @Override
     public <T> T get(String key) {
-        return delegate.get(key);
+        return unwrapIfNeeded(delegate.get(key));
     }
 
     @Override
     public <T> T remove(String key) {
-        return delegate.remove(key);
+        return unwrapIfNeeded(delegate.remove(key));
     }
 
     @Override
     public Map<String, Object> data() {
-        return delegate.data();
+        Map<String, Object> copy = new HashMap<>(delegate.data());
+        copy.replaceAll( (key, obj) -> unwrapIfNeeded(obj));
+        return copy;
     }
 
     @Override
@@ -140,4 +145,21 @@ public class ExtendedSessionImpl extends SharedDataSessionImpl implements Extend
         createdAt = buffer.getLong(pos);
         return ((ClusterSerializable) delegate).readFromBuffer(pos + 8, buffer);
     }
+
+    @SuppressWarnings("unchecked")
+    private <T> T unwrapIfNeeded(T obj) {
+        if (obj instanceof SerializableHolder) {
+            return (T) ((SerializableHolder) obj).get();
+        }
+        return obj;
+    }
+
+    private Object wrapIfNeeded(Object obj) {
+        if (obj == null || obj instanceof Number || obj instanceof Character || obj instanceof String
+            || obj instanceof Boolean || obj instanceof ClusterSerializable) {
+            return obj;
+        }
+        return new SerializableHolder(obj);
+    }
+
 }
