@@ -78,7 +78,7 @@ mvn archetype:generate  \
     -DarchetypeVersion=1.0
 ```
 
-Now you have a Vaadin project with Maven build script. You can build the `war` file using `mvn install`, start the project using `mvn jetty:run`, or import it into your IDE.
+Now you have a Vaadin project with Maven build script. You can build the `jar` file using `mvn install`, start the project using `mvn vertx:run`, or import it into your IDE.
 
 To make the Vaadin application ready to run on Vert.x, first, clean POM file from some servlet related stuff: 
 
