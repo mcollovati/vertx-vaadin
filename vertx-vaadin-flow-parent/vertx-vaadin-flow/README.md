@@ -2,10 +2,9 @@
 
 Vertx-Vaadin-Flow is an adapter library that allow [Vaadin 10.x](https://vaadin.com/docs/v14/index.html) (or higher) applications to run on a [Vert.x environment](https://vertx.io/).
 
-Vertx-vaadin provides a Vert.x verticle that starts an HTTP server and initialize `VertxVaadinService`, a custom implementation of VaadinService.
+Vertx-vaadin provides a Vert.x verticle that starts an HTTP server and initialize `VertxVaadinService`, a custom implementation of [VaadinService](https://github.com/vaadin/flow/blob/master/flow-server/src/main/java/com/vaadin/flow/server/VaadinService.java).
 
-VertxVaadinService is inspired from VaadinServletService and takes the same configuration parameters in the form
-of a json configuration file and from `@VaadinServletConfiguration` annotation on `VaadinVerticle` subclasses.
+VertxVaadinService is inspired from [VaadinServletService](https://github.com/vaadin/flow/blob/master/flow-server/src/main/java/com/vaadin/flow/server/VaadinServletService.java) and takes the same configuration parameters in the form of a `json` configuration file and from `@VaadinServletConfiguration` annotation on `VaadinVerticle` subclasses.
 
 All [Vaadin Servlet configuration parameters](https://vaadin.com/docs/v14/flow/advanced/tutorial-all-vaadin-properties.html) can be defined in a `json` file under the `vaadin` key.
  
@@ -19,8 +18,7 @@ All [Vaadin Servlet configuration parameters](https://vaadin.com/docs/v14/flow/a
 }
 ``` 
 
-Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and Servlet APIs (because Vaadin relies on them
-but they are not provided by Vert.x).
+Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and Servlet APIs (because Vaadin relies on them but they are not provided by Vert.x).
 
 ```xml
 <dependency>
@@ -37,11 +35,9 @@ but they are not provided by Vert.x).
 </dependency>
 ```
 
-
 ## PUSH support
 
-Vertx-Vaadin supports PUSH using a custom implementation based on SockJS that replaces the atmosphere stack on client and server side; 
-for this reason Vaadin `flow-push` and `flow-client` dependencies must be excluded
+Vertx-Vaadin supports PUSH using a custom implementation based on SockJS that replaces the [Atmosphere stack](https://github.com/Atmosphere/atmosphere) on the client and server side. For this reason, Vaadin `flow-push` and `flow-client` dependencies must be excluded:
 
 ```xml
 <dependency>
@@ -60,8 +56,7 @@ for this reason Vaadin `flow-push` and `flow-client` dependencies must be exclud
 </dependency>
 ```
 
-For better compatibility, add a dependency on the specific version of `vaadin-flow-sockjs` by specifying the classifier for
-the Vaadin version in use. For example:
+For better compatibility, add a dependency on the specific version of `vaadin-flow-sockjs` by specifying the classifier for the Vaadin version in use. For example:
 
 ```xml
 <dependency>
@@ -124,8 +119,7 @@ public class UIVerticle extends VaadinVerticle {
 
 Open your POM file and add the `vertx-maven-plugin` configuration. The *`<verticle>`* element inside plugin configuration must contain the fully qualified class name of your custom verticle.
 
-For further configuration of the plugin refer to the [documentation](https://reactiverse.io/vertx-maven-plugin/)/
-
+For further configuration of the plugin refer to the [documentation](https://reactiverse.io/vertx-maven-plugin/).
 
 ```xml
 <project>
@@ -136,7 +130,7 @@ For further configuration of the plugin refer to the [documentation](https://rea
             <plugin>
                 <groupId>io.reactiverse</groupId>
                 <artifactId>vertx-maven-plugin</artifactId>
-                <version>1.0.18</version>
+                <version>1.0.20</version>
                 <executions>
                     <execution>
                         <id>vmp-init-package</id>
