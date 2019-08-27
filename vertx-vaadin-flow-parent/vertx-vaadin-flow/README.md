@@ -1,15 +1,13 @@
 # Vertx-Vaadin-Flow
 
-Vertx-Vaadin-Flow is an adapter library that allow Vaadin 10.x (or higher) applications to run on a Vert.x environment.
+Vertx-Vaadin-Flow is an adapter library that allow [Vaadin 10.x](https://vaadin.com/docs/v14/index.html) (or higher) applications to run on a [Vert.x environment](https://vertx.io/).
 
-Vertx-vaadin provides a Vert.x verticle that starts an http server and initialize `VertxVaadinService`,
-a custom implementation of VaadinService.
+Vertx-vaadin provides a Vert.x verticle that starts an HTTP server and initialize `VertxVaadinService`, a custom implementation of VaadinService.
 
 VertxVaadinService is inspired from VaadinServletService and takes the same configuration parameters in the form
 of a json configuration file and from `@VaadinServletConfiguration` annotation on `VaadinVerticle` subclasses.
 
-All [Servlet Configuration Parameter](https://vaadin.com/docs/-/part/framework/application/application-environment.html#application.environment.parameters)
- can be defined in json file under `vaadin` key.
+All [Vaadin Servlet configuration parameters](https://vaadin.com/docs/v14/flow/advanced/tutorial-all-vaadin-properties.html) can be defined in a `json` file under the `vaadin` key.
  
 ```
 {
@@ -21,20 +19,20 @@ All [Servlet Configuration Parameter](https://vaadin.com/docs/-/part/framework/a
 }
 ``` 
 
-Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and servlet APIs (because Vaadin relies on them
-but they are not provided from Vert.x).
+Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and Servlet APIs (because Vaadin relies on them
+but they are not provided by Vert.x).
 
 ```xml
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin-flow</artifactId>
-  <version>0.2.0</version>
+  <version>13.0.2</version>
 </dependency>
 
 <dependency>
-    <groupId>javax.servlet</groupId>
-    <artifactId>javax.servlet-api</artifactId>
-    <version>${javax.servlet-api.version}</version>
+    <groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <version>4.0.2</version>
     <scope>runtime</scope>
 </dependency>
 ```
@@ -62,21 +60,21 @@ for this reason Vaadin `flow-push` and `flow-client` dependencies must be exclud
 </dependency>
 ```
 
-For better compatibility add a dependency to the version of `vaadin-flow-sockjs`, specifying the classifier for
-the vaadin version in use; for example
+For better compatibility, add a dependency on the specific version of `vaadin-flow-sockjs` by specifying the classifier for
+the Vaadin version in use. For example:
 
 ```xml
 <dependency>
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vaadin-flow-sockjs</artifactId>
-    <version>0.2.0</version>
+    <version>13.0.2</version>
     <classifier>vaadin-${vaadin.version}</classifier>
 </dependency>
 ```
 
 ## Getting started
 
-To create a Vaadin Flow application capable to run on Vertx start with a new project using Viritin Flow Maven archetype
+To create a Vaadin Flow application capable to run on Vertx start with a new project using Viritin Flow Maven archetype:
 
 ```
 mvn archetype:generate  \
@@ -85,17 +83,16 @@ mvn archetype:generate  \
     -DarchetypeVersion=1.0
 ```
 
-Now you have a Vaadin project with Maven build script. 
-You can build the war file using `mvn install`, start the project using `mvn jetty:run` or import it into your IDE.
+Now you have a Vaadin project with Maven build script. You can build the `war` file using `mvn install`, start the project using `mvn jetty:run`, or import it into your IDE.
 
-To make the Vaadin application ready to run on Vert.x first of all clean POM file from some servlet related stuff: 
+To make the Vaadin application ready to run on Vert.x, first, clean POM file from some servlet related stuff: 
 
 - change project packaging type from `war` to `jar`
 - remove `maven-war-plugin` and `jetty-maven-plugin` if present
 - exclude `flow-push` and `flow-client` dependencies are described in **PUSH support** section
 - move `src/main/webapp` content to `src/main/resources/META-INF/resources` 
 
-Then add a dependency to `vertx-vaadin-flow`
+Then add a dependency on `vertx-vaadin-flow`:
 
 ```xml
 <dependency>
@@ -105,13 +102,13 @@ Then add a dependency to `vertx-vaadin-flow`
 </dependency>
 ```
 
-Change the scope of the servlet API dependency from 'provided' to `runtime` (or `compile` if you need to refer those APIs in your code). 
+Change the scope of the Servlet API dependency from 'provided' to `runtime` (or `compile` if you need to refer those APIs in your code):
 
 ```xml
 <dependency>
-    <groupId>javax.servlet</groupId>
-    <artifactId>javax.servlet-api</artifactId>
-    <version>3.0.1</version>
+    <groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <version>4.0.2</version>
     <scope>runtime</scope>
 </dependency>
 ```
@@ -125,9 +122,9 @@ public class UIVerticle extends VaadinVerticle {
 }
 ```
 
-Open your POM file and add `vertx-maven-plugin` configuration; 
-the *`<verticle>`* element inside plugin configuration must contain the fully qualified class name of your custom verticle.
-For further configurations  of vertx maven plugin refer to [documentation]((https://vmp.fabric8.io/)
+Open your POM file and add the `vertx-maven-plugin` configuration. The *`<verticle>`* element inside plugin configuration must contain the fully qualified class name of your custom verticle.
+
+For further configuration of the plugin refer to the [documentation](https://reactiverse.io/vertx-maven-plugin/)/
 
 
 ```xml
@@ -166,7 +163,6 @@ For further configurations  of vertx maven plugin refer to [documentation]((http
 </project>
 ```
 
-Build the application with `mvn package`, run it with `mvn vertx:run` and
-point the browser at http://localhost:8080. 
+Build the application with `mvn package`, run it with `mvn vertx:run` and point the browser at http://localhost:8080. 
 
 You can also start the application with `java -jar target/<artifact-name>.jar` 
