@@ -100,6 +100,7 @@
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.21</slf4j.version>
         <checkstyle.version>8.20</checkstyle.version>
+        <uber-pom-maven-plugin.version>1.0.3</uber-pom-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -333,6 +334,36 @@
                         </gitFlowConfig>
                         <pushRemote>true</pushRemote>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.igormaznitsa</groupId>
+                    <artifactId>uber-pom</artifactId>
+                    <version>${uber-pom-maven-plugin.version}</version>
+                    <configuration>
+                        <remove>
+                            <section>parent</section>
+                            <section>modules</section>
+                            <section>profiles</section>
+                            <section>distributionManagement</section>
+                            <section>build/plugins</section>
+                            <section>build/pluginManagement</section>
+                        </remove>
+                        <deleteOnExit>true</deleteOnExit>
+                        <removeSiblingDuplications>true</removeSiblingDuplications>
+                        <removeDependencies>
+                            <dependency>
+                                <scope>test</scope>
+                                <systemPath>*</systemPath>
+                            </dependency>
+                        </removeDependencies>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>upom</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

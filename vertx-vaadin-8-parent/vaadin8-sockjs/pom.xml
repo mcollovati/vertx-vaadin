@@ -227,6 +227,10 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.igormaznitsa</groupId>
+                <artifactId>uber-pom</artifactId>
+            </plugin>
         </plugins>
     </build>
 
