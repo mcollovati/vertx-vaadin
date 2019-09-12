@@ -1,4 +1,4 @@
-/*
+    /*
  * The MIT License
  * Copyright © 2016-2019 Marco Collovati (mcollovati@gmail.com)
  *
@@ -34,7 +34,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
