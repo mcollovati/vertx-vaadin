@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euxo pipefail
 
 _base_dir="$(dirname $(realpath $0))/.."
 _newVersion=${1:?New version is missing}
