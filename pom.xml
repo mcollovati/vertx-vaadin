@@ -99,7 +99,7 @@
         <assertj.version>3.11.1</assertj.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.21</slf4j.version>
-        <checkstyle.version>8.20</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
         <uber-pom-maven-plugin.version>1.0.3</uber-pom-maven-plugin.version>
     </properties>
 
