@@ -59,11 +59,12 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VertxVaadin {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(VertxVaadin.class);
+    private static final Logger logger = LoggerFactory.getLogger(VertxVaadin.class);
     private static final String VAADIN_SESSION_EXPIRED_ADDRESS = "vaadin.session.expired";
     private static final String VERSION;
 
