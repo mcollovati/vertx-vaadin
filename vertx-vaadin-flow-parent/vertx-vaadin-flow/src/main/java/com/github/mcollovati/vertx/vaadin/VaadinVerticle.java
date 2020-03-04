@@ -43,6 +43,10 @@ import java.util.stream.Stream;
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
@@ -52,6 +56,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.UIInitListener;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -62,6 +68,7 @@ import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import elemental.json.impl.JsonUtil;
 import io.github.classgraph.ClassGraph;
@@ -340,7 +347,7 @@ public class VaadinVerticle extends AbstractVerticle {
         map.put(AnnotationValidator.class, new HashSet<>(
             scanResult.getAllClasses()
                 .filter(annotationFilterFactory.apply(new Class[]{
-                    Viewport.class, BodySize.class, Inline.class, Theme.class, Push.class
+                    Viewport.class, BodySize.class, Inline.class
                 })).loadClasses()
         ));
         map.put(ErrorNavigationTargetInitializer.class, new HashSet<>(
@@ -356,12 +363,21 @@ public class VaadinVerticle extends AbstractVerticle {
                     Theme.class, Push.class
                 })).loadClasses()
         ));
-        map.put(DevModeInitializer.class, new HashSet<>(Stream.concat(
-            scanResult.getSubclasses(WebComponentExporter.class.getName()).loadClasses().stream(),
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{Route.class, RouteAlias.class}))
-                .loadClasses().stream()
-        ).collect(Collectors.toList())));
+
+        HashSet<Class<?>> devModInitializerHandledTypes = new HashSet<>();
+        Stream.of(UIInitListener.class, VaadinServiceInitListener.class, WebComponentExporter.class, HasErrorParameter.class)
+            .flatMap(type -> scanResult.getSubclasses(type.getName()).loadClasses().stream())
+            .collect(Collectors.toCollection(() -> devModInitializerHandledTypes));
+
+        devModInitializerHandledTypes.addAll(
+            scanResult.getAllClasses().filter(annotationFilterFactory.apply(
+                Stream.of(Route.class, NpmPackage.class, NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
+                    CssImport.class, CssImport.Container.class, JavaScript.class, JavaScript.Container.class,
+                    Theme.class, NoTheme.class).toArray(Class[]::new)))
+                .loadClasses()
+        );
+
+        map.put(DevModeInitializer.class, devModInitializerHandledTypes);
         return map;
     }
 

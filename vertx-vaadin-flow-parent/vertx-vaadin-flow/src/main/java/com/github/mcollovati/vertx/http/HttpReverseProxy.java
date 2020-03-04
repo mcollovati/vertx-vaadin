@@ -55,8 +55,8 @@ public class HttpReverseProxy {
 
     public void forward(RoutingContext routingContext) {
         HttpServerRequest serverRequest = routingContext.request();
-        String requestURI = serverRequest.uri().substring(routingContext.mountPoint().length())
-            .replace(VAADIN_MAPPING, "");
+        String requestURI = serverRequest.uri().substring(routingContext.mountPoint().length());
+            //.replace(VAADIN_MAPPING, "");
         System.out.println("Forwarding " + serverRequest.uri() + " to webpack as " + requestURI);
 
         serverRequest.pause();

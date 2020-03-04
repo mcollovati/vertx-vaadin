@@ -367,7 +367,7 @@ public class SockJSPushConnection implements PushConnection {
                 @Override
                 public void onError(ResourceLoader.ResourceLoadEvent event) {
                     getConnectionStateHandler().pushScriptLoadError(
-                        event.getResourceUrl());
+                        event.getResourceData());
                 }
             };
             loader.loadScript(pushScriptUrl, loadListener);
