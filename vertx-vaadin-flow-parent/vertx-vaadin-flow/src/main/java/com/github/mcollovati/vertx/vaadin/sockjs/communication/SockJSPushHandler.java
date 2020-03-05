@@ -1,4 +1,4 @@
-    /*
+/*
  * The MIT License
  * Copyright © 2016-2019 Marco Collovati (mcollovati@gmail.com)
  *
@@ -59,6 +59,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.shareddata.LocalMap;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -71,7 +72,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles incoming push connections and messages and dispatches them to the
  * correct {@link UI}/ {@link SockJSPushConnection}.
- *
+ * <p>
  * Source code adapted from Vaadin {@link com.vaadin.flow.server.communication.PushHandler}
  */
 public class SockJSPushHandler implements Handler<RoutingContext> {
@@ -127,7 +128,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         }
     };
     private final VertxVaadinService service;
-    private final SockJSHandler sockJSHandler;
+    private final Router router;
     private final SessionHandler sessionHandler;
     private final LocalMap<String, SockJSSocket> connectedSocketsLocalMap;
 
@@ -162,11 +163,9 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     public SockJSPushHandler(VertxVaadinService service, SessionHandler sessionHandler, SockJSHandler sockJSHandler) {
         this.service = service;
         this.sessionHandler = sessionHandler;
-        this.sockJSHandler = sockJSHandler;
         this.connectedSocketsLocalMap = socketsMap(service.getVertx());
-        this.sockJSHandler.socketHandler(this::onConnect);
+        this.router = sockJSHandler.socketHandler(this::onConnect);
     }
-
 
     private void onConnect(SockJSSocket sockJSSocket) {
         RoutingContext routingContext = CurrentInstance.get(RoutingContext.class);
@@ -216,7 +215,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     public void handle(RoutingContext routingContext) {
         CurrentInstance.set(RoutingContext.class, routingContext);
         try {
-            sockJSHandler.handle(routingContext);
+            router.handleContext(routingContext);
         } finally {
             CurrentInstance.set(RoutingContext.class, null);
         }

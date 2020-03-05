@@ -55,6 +55,7 @@ import io.github.classgraph.ScanResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
@@ -86,19 +87,19 @@ public final class StartupContext {
     }
 
     public static Future<StartupContext> of(Vertx vertx, VaadinOptions vaadinOptions) {
-        Future<Set<String>> future = Future.future();
-        vertx.executeBlocking(StartupContext.scanResources(vaadinOptions), future.completer());
-        return future.map(res -> new StartupContext(vertx, res, vaadinOptions));
+        Promise<Set<String>> promise = Promise.promise();
+        vertx.executeBlocking(StartupContext.scanResources(vaadinOptions), promise);
+        return promise.future().map(res -> new StartupContext(vertx, res, vaadinOptions));
     }
 
     public static StartupContext syncOf(Vertx vertx, VaadinOptions vaadinOptions) {
-        Future<Set<String>> future = Future.future();
-        scanResources(vaadinOptions).handle(future);
-        return new StartupContext(vertx, future.result(), vaadinOptions);
+        Promise<Set<String>> promise = Promise.promise();
+        scanResources(vaadinOptions).handle(promise);
+        return new StartupContext(vertx, promise.future().result(), vaadinOptions);
     }
 
 
-    private static Handler<Future<Set<String>>> scanResources(VaadinOptions vaadinOptions) {
+    private static Handler<Promise<Set<String>>> scanResources(VaadinOptions vaadinOptions) {
         ClassGraph classGraph = new ClassGraph()
             .whitelistPaths()
             .removeTemporaryFilesAfterScan();
