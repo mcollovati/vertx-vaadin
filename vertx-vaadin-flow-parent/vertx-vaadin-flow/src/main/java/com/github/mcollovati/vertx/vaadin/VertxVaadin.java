@@ -277,10 +277,12 @@ public class VertxVaadin {
             .setSessionTimeout(config().sessionTimeout())
             .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
+
         SockJSPushHandler pushHandler = new SockJSPushHandler(service, sessionHandler, sockJSHandler);
 
         String pushPath = config.pushURL().replaceFirst("/$", "") + "/*";
         logger.debug("Setup PUSH communication on {}", pushPath);
+
         vaadinRouter.route(pushPath).handler(rc -> {
             if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
                 pushHandler.handle(rc);
@@ -288,6 +290,7 @@ public class VertxVaadin {
                 rc.next();
             }
         });
+
     }
 
 

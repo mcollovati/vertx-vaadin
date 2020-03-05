@@ -78,6 +78,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -266,7 +267,7 @@ public class VaadinVerticle extends AbstractVerticle {
             return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
         };
 
-        Future<VertxVaadin> future = Future.future();
+        Promise<VertxVaadin> promise = Promise.promise();
         vertx.executeBlocking(event -> {
 
             ClassGraph classGraph = new ClassGraph();
@@ -290,13 +291,13 @@ public class VaadinVerticle extends AbstractVerticle {
                 VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
                 vaadinService = vertxVaadin.vaadinService();
                 return vertxVaadin;
-            }).setHandler(event.completer());
-        }, future.completer());
-        return future;
+            }).setHandler(event);
+        }, promise);
+        return promise.future();
     }
 
     private void runInitializers(StartupContext startupContext, Future<Void> future, Map<Class<?>, Set<Class<?>>> classes) {
-        Function<ServletContainerInitializer, Handler<Future<Void>>> initializerFactory = initializer -> event2 -> {
+        Function<ServletContainerInitializer, Handler<Promise<Void>>> initializerFactory = initializer -> event2 -> {
             try {
                 initializer.onStartup(classes.get(initializer.getClass()), startupContext.servletContext());
                 event2.complete();
@@ -321,14 +322,14 @@ public class VaadinVerticle extends AbstractVerticle {
         });
     }
 
-    private void initializeDevModeHandler(Future<Object> future, StartupContext startupContext, Set<Class<?>> classes) {
+    private void initializeDevModeHandler(Promise<Object> promise, StartupContext startupContext, Set<Class<?>> classes) {
         try {
             DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(),
                 DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions())
             );
-            future.complete(DevModeHandler.getDevModeHandler());
+            promise.complete(DevModeHandler.getDevModeHandler());
         } catch (ServletException e) {
-            future.fail(e);
+            promise.fail(e);
         }
     }
 
@@ -382,10 +383,10 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
 
-    private <T> Future<T> runInitializer(Handler<Future<T>> op) {
-        Future<T> future = Future.future();
-        context.executeBlocking(op, future);
-        return future;
+    private <T> Future<T> runInitializer(Handler<Promise<T>> op) {
+        Promise<T> promise = Promise.promise();
+        context.executeBlocking(op, promise);
+        return promise.future();
     }
 
     private void readBuildInfo(JsonObject config) { // NOSONAR
