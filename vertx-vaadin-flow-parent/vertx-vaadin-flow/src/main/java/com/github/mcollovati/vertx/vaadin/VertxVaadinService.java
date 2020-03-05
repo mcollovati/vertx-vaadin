@@ -129,7 +129,7 @@ public class VertxVaadinService extends VaadinService {
 
     @Override
     public boolean ensurePushAvailable() {
-        return true;
+        return vertxVaadin.config().supportsSockJS();
     }
 
     @Override

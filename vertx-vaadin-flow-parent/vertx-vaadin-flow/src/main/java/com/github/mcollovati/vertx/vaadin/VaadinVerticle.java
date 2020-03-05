@@ -119,7 +119,7 @@ public class VaadinVerticle extends AbstractVerticle {
             .<Void>map(router -> {
                 serviceInitialized(vaadinService, router);
                 return null;
-            }).setHandler(startFuture.completer());
+            }).setHandler(startFuture);
     }
 
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
@@ -149,18 +149,18 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     private Future<Integer> httpPort() {
-        Future<Integer> portFuture = Future.future();
+        Promise<Integer> promise = Promise.promise();
         Integer httpPort = config().getInteger("httpPort", 8080);
         if (httpPort == 0) {
             try (ServerSocket socket = new ServerSocket(0)) {
-                portFuture.complete(socket.getLocalPort());
+                promise.complete(socket.getLocalPort());
             } catch (Exception e) {
-                portFuture.fail(e);
+                promise.fail(e);
             }
         } else {
-            portFuture.complete(httpPort);
+            promise.complete(httpPort);
         }
-        return portFuture;
+        return promise.future();
     }
 
     protected VertxVaadin createVertxVaadin(StartupContext startupContext) {
@@ -252,20 +252,17 @@ public class VaadinVerticle extends AbstractVerticle {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Future<VertxVaadin> initVertxVaadin(StartupContext startupContext) {
         VaadinOptions vaadinConfig = startupContext.vaadinOptions();
         List<String> pkgs = vaadinConfig.flowBasePackages();
+        if (!pkgs.isEmpty()) {
+            pkgs.add("com.github.mcollovati.vertx.vaadin.sockjs");
+        }
         boolean isDebug = vaadinConfig.debug();
 
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
 
         log.debug("Scanning packages {}", String.join(", ", pkgs));
-
-        Function<Class<?>[], ClassInfoList.ClassInfoFilter> annotationFilterFactory = annotationClazzes -> {
-            List<String> clazzNames = Stream.of(annotationClazzes).map(Class::getName).collect(Collectors.toList());
-            return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
-        };
 
         Promise<VertxVaadin> promise = Promise.promise();
         vertx.executeBlocking(event -> {
@@ -281,13 +278,15 @@ public class VaadinVerticle extends AbstractVerticle {
                 .ignoreParentClassLoaders()
                 .removeTemporaryFilesAfterScan();
             try (ScanResult scanResult = classGraph.scan()) {
-
                 map.putAll(seekRequiredClasses(scanResult));
+
+                boolean haSockJS = scanResult.getClassInfo("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection") != null;
+                vaadinConfig.sockJSSupport(haSockJS);
             }
 
-            Future<Void> initializerFuture = Future.future();
+            Promise<Void> initializerFuture = Promise.promise();
             runInitializers(startupContext, initializerFuture, map);
-            initializerFuture.map(unused -> {
+            initializerFuture.future().map(unused -> {
                 VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
                 vaadinService = vertxVaadin.vaadinService();
                 return vertxVaadin;
@@ -296,7 +295,7 @@ public class VaadinVerticle extends AbstractVerticle {
         return promise.future();
     }
 
-    private void runInitializers(StartupContext startupContext, Future<Void> future, Map<Class<?>, Set<Class<?>>> classes) {
+    private void runInitializers(StartupContext startupContext, Promise<Void> promise, Map<Class<?>, Set<Class<?>>> classes) {
         Function<ServletContainerInitializer, Handler<Promise<Void>>> initializerFactory = initializer -> event2 -> {
             try {
                 initializer.onStartup(classes.get(initializer.getClass()), startupContext.servletContext());
@@ -315,9 +314,9 @@ public class VaadinVerticle extends AbstractVerticle {
             runInitializer(event2 -> initializeDevModeHandler(event2, startupContext, classes.get(DevModeInitializer.class)))
         ).setHandler(event2 -> {
             if (event2.succeeded()) {
-                future.complete();
+                promise.complete();
             } else {
-                future.fail(event2.cause());
+                promise.fail(event2.cause());
             }
         });
     }

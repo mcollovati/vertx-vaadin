@@ -100,6 +100,14 @@ public final class VaadinOptions {
         return initParameters;
     }
 
+    void sockJSSupport(boolean enabled) {
+        config.put("sockJSSupport", enabled);
+    }
+
+    public boolean supportsSockJS() {
+        return config.getBoolean("sockJSSupport", true);
+    }
+
     @SuppressWarnings("unchecked")
     private Object adaptJson(Object object) {
         if (object instanceof Collection) {
