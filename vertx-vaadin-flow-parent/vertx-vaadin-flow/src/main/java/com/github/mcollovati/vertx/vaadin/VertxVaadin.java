@@ -96,10 +96,12 @@ public class VertxVaadin {
 
         this.service = createVaadinService();
 
-        logger.trace("Configuring SockJS Push connection");
-        this.service.addUIInitListener(event ->
-            event.getUI().getInternals().setPushConnection(new SockJSPushConnection(event.getUI()))
-        );
+        if (config.supportsSockJS()) {
+            logger.trace("Configuring SockJS Push connection");
+            this.service.addUIInitListener(event ->
+                event.getUI().getInternals().setPushConnection(new SockJSPushConnection(event.getUI()))
+            );
+        }
 
         logger.trace("Setup WebJar server");
         this.webJars = new WebJars(service.getDeploymentConfiguration());
@@ -273,24 +275,27 @@ public class VertxVaadin {
     }
 
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {
-        SockJSHandlerOptions options = new SockJSHandlerOptions()
-            .setSessionTimeout(config().sessionTimeout())
-            .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
-        SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
+        if (this.config.supportsSockJS()) {
+            SockJSHandlerOptions options = new SockJSHandlerOptions()
+                .setSessionTimeout(config().sessionTimeout())
+                .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
+            SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
 
-        SockJSPushHandler pushHandler = new SockJSPushHandler(service, sessionHandler, sockJSHandler);
+            SockJSPushHandler pushHandler = new SockJSPushHandler(service, sessionHandler, sockJSHandler);
 
-        String pushPath = config.pushURL().replaceFirst("/$", "") + "/*";
-        logger.debug("Setup PUSH communication on {}", pushPath);
+            String pushPath = config.pushURL().replaceFirst("/$", "") + "/*";
+            logger.debug("Setup PUSH communication on {}", pushPath);
 
-        vaadinRouter.route(pushPath).handler(rc -> {
-            if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
-                pushHandler.handle(rc);
-            } else {
-                rc.next();
-            }
-        });
-
+            vaadinRouter.route(pushPath).handler(rc -> {
+                if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
+                    pushHandler.handle(rc);
+                } else {
+                    rc.next();
+                }
+            });
+        } else {
+            logger.info("PUSH communication over SockJS is disabled");
+        }
     }
 
 

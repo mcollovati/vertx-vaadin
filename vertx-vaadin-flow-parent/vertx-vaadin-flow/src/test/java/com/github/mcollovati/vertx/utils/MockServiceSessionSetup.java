@@ -51,6 +51,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
 import org.mockito.Matchers;
@@ -95,6 +96,9 @@ public class MockServiceSessionSetup {
         Mockito.when(vertx.eventBus()).thenReturn(Mockito.mock(EventBus.class));
         Mockito.when(vertx.fileSystem()).thenReturn(fileSystem);
         Mockito.when(vertx.getOrCreateContext()).thenReturn(context);
+
+        JsonObject config = new JsonObject();
+        Mockito.when(context.config()).thenReturn(config);
 
         vertxVaadin = new TestVertxVaadin(vertx);
 
