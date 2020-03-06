@@ -201,7 +201,6 @@ public class VertxVaadin {
             .setStatusCode(302).end()
         );
 
-        vaadinRouter.route().handler(CookieHandler.create());
         vaadinRouter.route().handler(BodyHandler.create());
 
         // Disable SessionHandler for /VAADIN/ static resources
@@ -226,14 +225,15 @@ public class VertxVaadin {
         //
         //vaadinRouter.route("/VAADIN/dynamic/*").handler(this::handleVaadinRequest);
         vaadinRouter.route("/VAADIN/static/client/*")
-            .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client", getClass().getClassLoader()));
-        vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build", getClass().getClassLoader()));
-        vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static", getClass().getClassLoader()));
-        vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("META-INF/resources/VAADIN/static", getClass().getClassLoader()));
-        vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
-        vaadinRouter.route("/webroot/*").handler(StaticHandler.create("webroot", getClass().getClassLoader()));
-        vaadinRouter.route("/webjars/*").handler(StaticHandler.create("webroot", getClass().getClassLoader()));
-        vaadinRouter.route("/webjars/*").handler(StaticHandler.create("META-INF/resources/webjars", getClass().getClassLoader()));
+            //.handler(StaticHandler.create("META-INF/resources/VAADIN/static/client", getClass().getClassLoader()));
+            .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client"));
+        vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build"));
+        vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static"));
+        vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("META-INF/resources/VAADIN/static"));
+        vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN"));
+        vaadinRouter.route("/webroot/*").handler(StaticHandler.create("webroot"));
+        vaadinRouter.route("/webjars/*").handler(StaticHandler.create("webroot"));
+        vaadinRouter.route("/webjars/*").handler(StaticHandler.create("META-INF/resources/webjars"));
         vaadinRouter.routeWithRegex("/frontend/bower_components/(?<webjar>.*)").handler(ctx -> {
                 logger.trace("Rerouting bower component to {}/webjars/{}",
                     ctx.mountPoint(), Objects.toString(ctx.request().getParam("webjar"), "")
@@ -245,15 +245,15 @@ public class VertxVaadin {
         );
 
         logger.trace("Setup fronted routes");
-        vaadinRouter.route("/frontend/*").handler(StaticHandler.create("frontend", getClass().getClassLoader()));
-        vaadinRouter.route("/frontend/*").handler(StaticHandler.create("webroot", getClass().getClassLoader()));
-        vaadinRouter.route("/frontend/*").handler(StaticHandler.create("META-INF/resources/frontend", getClass().getClassLoader()));
-        vaadinRouter.route("/frontend-es6/*").handler(StaticHandler.create("frontend-es6", getClass().getClassLoader()));
-        vaadinRouter.route("/frontend-es6/*").handler(StaticHandler.create("META-INF/resources/frontend-es6", getClass().getClassLoader()));
+        vaadinRouter.route("/frontend/*").handler(StaticHandler.create("frontend"));
+        vaadinRouter.route("/frontend/*").handler(StaticHandler.create("webroot"));
+        vaadinRouter.route("/frontend/*").handler(StaticHandler.create("META-INF/resources/frontend"));
+        vaadinRouter.route("/frontend-es6/*").handler(StaticHandler.create("frontend-es6"));
+        vaadinRouter.route("/frontend-es6/*").handler(StaticHandler.create("META-INF/resources/frontend-es6"));
 
         initSockJS(vaadinRouter, sessionHandler);
 
-        vaadinRouter.route("/*").handler(StaticHandler.create("META-INF/resources", getClass().getClassLoader()));
+        vaadinRouter.route("/*").handler(StaticHandler.create("META-INF/resources"));
         vaadinRouter.route("/*").handler(this::handleVaadinRequest);
 
         serviceInitialized(vaadinRouter);
@@ -327,7 +327,7 @@ public class VertxVaadin {
         MessageProducer<String> sessionExpiredProducer = sessionExpiredProducer(service);
         store.expirationHandler(res -> {
             if (res.succeeded()) {
-                sessionExpiredProducer.send(res.result());
+                sessionExpiredProducer.write(res.result());
             } else {
                 res.cause().printStackTrace();
             }

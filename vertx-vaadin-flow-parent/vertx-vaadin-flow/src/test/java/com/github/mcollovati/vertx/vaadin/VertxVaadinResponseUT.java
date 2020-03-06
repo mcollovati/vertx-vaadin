@@ -196,9 +196,9 @@ public class VertxVaadinResponseUT {
         vaadinResponse.addCookie(cookie);
 
 
-        ArgumentCaptor<io.vertx.ext.web.Cookie> cookieCaptor = ArgumentCaptor.forClass(io.vertx.ext.web.Cookie.class);
+        ArgumentCaptor<io.vertx.core.http.Cookie> cookieCaptor = ArgumentCaptor.forClass(io.vertx.core.http.Cookie.class);
         verify(routingContext).addCookie(cookieCaptor.capture());
-        String expectedCookie = io.vertx.ext.web.Cookie.cookie(cookie.getName(), cookie.getValue())
+        String expectedCookie = io.vertx.core.http.Cookie.cookie(cookie.getName(), cookie.getValue())
             .setMaxAge(cookie.getMaxAge()).setSecure(cookie.getSecure())
             .setHttpOnly(cookie.isHttpOnly()).setPath(cookie.getPath())
             .setDomain(cookie.getDomain()).encode();

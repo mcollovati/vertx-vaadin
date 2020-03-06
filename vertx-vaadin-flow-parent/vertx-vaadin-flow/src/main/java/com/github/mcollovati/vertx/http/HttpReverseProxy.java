@@ -60,8 +60,7 @@ public class HttpReverseProxy {
         System.out.println("Forwarding " + serverRequest.uri() + " to webpack as " + requestURI);
 
         serverRequest.pause();
-        HttpClientRequest clientRequest = client.request(serverRequest.method(), requestURI);
-        clientRequest.handler(clientResponse -> {
+        HttpClientRequest clientRequest = client.request(serverRequest.method(), requestURI, clientResponse -> {
 
             if (clientResponse.statusCode() == HttpResponseStatus.NOT_FOUND.code()) {
                 System.out.printf("Resource not served by webpack %s%n", requestURI);

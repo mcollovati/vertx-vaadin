@@ -109,7 +109,7 @@ public class VaadinVerticle extends AbstractVerticle {
     private VertxVaadinService vaadinService;
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Promise<Void> startFuture) throws Exception {
         log.info("Starting vaadin verticle " + getClass().getName());
 
         prepareConfig()
@@ -130,18 +130,19 @@ public class VaadinVerticle extends AbstractVerticle {
         router.mountSubRouter(mountPoint, vertxVaadin.router());
 
         httpServer = vertx.createHttpServer(serverOptions).requestHandler(router);
-        Future<HttpServer> future = Future.<HttpServer>future()
-            .setHandler(event -> {
-                if (event.succeeded()) {
-                    log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result());
-                }
-            });
+        Promise<HttpServer> promise = Promise.promise();
+        Future<HttpServer> future = promise.future();
+        future.setHandler(event -> {
+            if (event.succeeded()) {
+                log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result());
+            }
+        });
 
         httpPort().setHandler(event -> {
             if (event.succeeded()) {
-                httpServer.listen(event.result(), future);
+                httpServer.listen(event.result(), promise);
             } else {
-                future.fail(event.cause());
+                promise.fail(event.cause());
             }
         });
 
@@ -197,7 +198,7 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void stop(Future<Void> stopFuture) {
+    public void stop(Promise<Void> stopFuture) {
         log.info("Stopping vaadin verticle " + getClass().getName());
         try {
             vaadinService.destroy();
@@ -205,7 +206,7 @@ public class VaadinVerticle extends AbstractVerticle {
             log.error("Error during Vaadin service destroy", ex);
         }
 
-        httpServer.close(stopFuture.completer());
+        httpServer.close(stopFuture);
         log.info("Stopped vaadin verticle " + getClass().getName());
     }
 
