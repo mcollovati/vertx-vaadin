@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.http;
 
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -55,7 +56,7 @@ public class HttpReverseProxy {
 
     public void forward(RoutingContext routingContext) {
         HttpServerRequest serverRequest = routingContext.request();
-        String requestURI = serverRequest.uri().substring(routingContext.mountPoint().length())
+        String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length())
             .replace(VAADIN_MAPPING, "");
         System.out.println("Forwarding " + serverRequest.uri() + " to webpack as " + requestURI);
 
