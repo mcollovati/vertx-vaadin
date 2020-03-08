@@ -30,11 +30,14 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 
 public class HttpReverseProxy {
 
+    private final static Logger logger = LoggerFactory.getLogger(HttpReverseProxy.class);
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
     private final HttpClient client;
@@ -58,16 +61,16 @@ public class HttpReverseProxy {
         HttpServerRequest serverRequest = routingContext.request();
         String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length())
             .replace(VAADIN_MAPPING, "");
-        System.out.println("Forwarding " + serverRequest.uri() + " to webpack as " + requestURI);
+        logger.debug("Forwarding {}  to webpack as {}" + requestURI, serverRequest.uri());
 
         serverRequest.pause();
         HttpClientRequest clientRequest = client.request(serverRequest.method(), requestURI, clientResponse -> {
 
             if (clientResponse.statusCode() == HttpResponseStatus.NOT_FOUND.code()) {
-                System.out.printf("Resource not served by webpack %s%n", requestURI);
+                logger.debug("Resource not served by webpack {}", requestURI);
                 routingContext.next();
             } else {
-                System.out.printf("Served resource by webpack: %d %s%n", clientResponse.statusCode(), requestURI);
+                logger.debug("Served resource by webpack: {} {}}", clientResponse.statusCode(), requestURI);
                 serverRequest.response().setChunked(true);
                 serverRequest.response().setStatusCode(clientResponse.statusCode());
                 serverRequest.response().headers().setAll(clientResponse.headers());
