@@ -134,7 +134,7 @@ public class VertxVaadinRequest implements VaadinRequest {
     }
 
     public static String extractContextPath(RoutingContext routingContext) {
-        // until vertx 3.8.3 routingContext.mountPoint() for "/" is "", since 3.84 it is "/"
+        // until vertx 3.8.3 routingContext.mountPoint() for "/" is "", since 3.8.4 it is "/"
         return Optional.ofNullable(routingContext.mountPoint())
             .orElse("")
             .replaceAll("/$", "");
