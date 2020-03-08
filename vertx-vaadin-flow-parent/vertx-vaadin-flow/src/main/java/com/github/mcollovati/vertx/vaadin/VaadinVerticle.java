@@ -186,6 +186,7 @@ public class VaadinVerticle extends AbstractVerticle {
         String mountPoint = vaadinConfig.getString("mountPoint");
         vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
         vaadinConfig.put(Constants.SERVLET_PARAMETER_PUSH_URL, mountPoint);
+        vaadinConfig.put(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
 
         return Future.succeededFuture(new VaadinOptions(vaadinConfig));
     }
