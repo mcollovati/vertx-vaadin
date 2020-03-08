@@ -269,7 +269,7 @@ public class VertxVaadin {
             service.handleRequest(request, response);
             response.end();
         } catch (ServiceException ex) {
-            logger.error("Error processing request {}" + routingContext.request().uri(), ex);
+            logger.error("Error processing request {}", routingContext.request().uri(), ex);
             routingContext.fail(ex);
         }
     }
