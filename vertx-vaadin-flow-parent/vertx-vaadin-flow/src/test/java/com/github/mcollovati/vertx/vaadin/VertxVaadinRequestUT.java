@@ -199,7 +199,11 @@ public class VertxVaadinRequestUT {
         assertThat(vaadinRequest.getContextPath()).isEqualTo("");
         when(routingContext.mountPoint()).thenReturn("");
         assertThat(vaadinRequest.getContextPath()).isEqualTo("");
+        when(routingContext.mountPoint()).thenReturn("/");
+        assertThat(vaadinRequest.getContextPath()).isEqualTo("");
         when(routingContext.mountPoint()).thenReturn("/ui");
+        assertThat(vaadinRequest.getContextPath()).isEqualTo("/ui");
+        when(routingContext.mountPoint()).thenReturn("/ui/");
         assertThat(vaadinRequest.getContextPath()).isEqualTo("/ui");
     }
 
