@@ -24,6 +24,7 @@ package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -34,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,31 +42,10 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.WebComponentExporterFactory;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Meta;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.UIInitListener;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ConnectEndpointsValidator;
@@ -77,8 +56,6 @@ import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
 import elemental.json.impl.JsonUtil;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -344,46 +321,38 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult) {
-        Function<Class<?>[], ClassInfoList.ClassInfoFilter> annotationFilterFactory = annotationClazzes -> {
-            List<String> clazzNames = Stream.of(annotationClazzes).map(Class::getName).collect(Collectors.toList());
-            return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
-        };
-
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
-        map.put(RouteRegistryInitializer.class, loadClasses(scanResult, Route.class, RouteAlias.class));
-        map.put(AnnotationValidator.class, loadClasses(scanResult, Viewport.class, BodySize.class, Inline.class));
-        map.put(ErrorNavigationTargetInitializer.class, loadClasses(scanResult, HasErrorParameter.class));
-        map.put(WebComponentConfigurationRegistryInitializer.class, loadClasses(scanResult, WebComponentExporter.class, WebComponentExporterFactory.class));
-        map.put(WebComponentExporterAwareValidator.class, loadClasses(scanResult, Push.class));
-        map.put(DevModeInitializer.class, loadClasses(scanResult, UIInitListener.class, VaadinServiceInitListener.class,
-            WebComponentExporter.class, HasErrorParameter.class, Route.class, NpmPackage.class, NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
-            CssImport.class, CssImport.Container.class, JavaScript.class, JavaScript.Container.class,
-            Theme.class, NoTheme.class));
-        map.put(VaadinAppShellInitializer.class, loadClasses(scanResult, AppShellConfigurator.class, Meta.class, Meta.Container.class,
-            PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-            BodySize.class, PageTitle.class, PageConfigurator.class, Push.class));
-        map.put(ConnectEndpointsValidator.class, loadClasses(scanResult, Endpoint.class));
+        Stream.of(
+            RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
+            WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
+            DevModeInitializer.class, VaadinAppShellInitializer.class, ConnectEndpointsValidator.class
+        ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }
 
-    private Set<Class<?>> loadClasses(ScanResult scanResult, Class... handledTypes) {
+    private void registerHandledTypes(ScanResult scanResult, Class<?> initializerClass, Map<Class<?>, Set<Class<?>>> map) {
 
-        Function<Class<?>, ClassInfoList> classFinder = type -> {
-            if (type.isAnnotation()) {
-                return scanResult.getClassesWithAnnotation(type.getCanonicalName());
-            } else if (type.isInterface()) {
-                return scanResult.getClassesImplementing(type.getCanonicalName());
-            } else {
-                return scanResult.getSubclasses(type.getCanonicalName());
+        HandlesTypes handledTypes = initializerClass.getAnnotation(HandlesTypes.class);
+        if (handledTypes != null) {
+            Function<Class<?>, ClassInfoList> classFinder = type -> {
+                if (type.isAnnotation()) {
+                    return scanResult.getClassesWithAnnotation(type.getCanonicalName());
+                } else if (type.isInterface()) {
+                    return scanResult.getClassesImplementing(type.getCanonicalName());
+                } else {
+                    return scanResult.getSubclasses(type.getCanonicalName());
+                }
+            };
+
+            Set<Class<?>> classes = Stream.of(handledTypes.value())
+                .map(classFinder)
+                .flatMap(c -> c.loadClasses().stream())
+                .collect(Collectors.toSet());
+
+            if (!classes.isEmpty()) {
+                map.put(initializerClass, classes);
             }
-        };
-
-        Set<Class<?>> classes = Stream.of(handledTypes)
-            .map(classFinder)
-            .flatMap(c -> c.loadClasses().stream())
-            .collect(Collectors.toSet());
-
-        return classes.isEmpty() ? null : classes;
+        }
     }
 
     private <T> Future<T> runInitializer(Handler<Promise<T>> op) {
@@ -438,19 +407,6 @@ public class VaadinVerticle extends AbstractVerticle {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    private static String getTokenFileContents(Properties initParameters) {
-        String json = null;
-        try {
-            json = getResourceFromFile(initParameters);
-            if (json == null) {
-                json = getResourceFromClassloader();
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return json;
     }
 
 }
