@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PUSH_URL;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
@@ -57,10 +56,6 @@ public final class VaadinOptions {
 
     public boolean productionMode() {
         return config.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-    }
-
-    public boolean compatibilityMode() {
-        return config.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
     }
 
     public String mountPoint() {
@@ -98,6 +93,10 @@ public final class VaadinOptions {
         Properties initParameters = new Properties();
         initParameters.putAll((Map<String, Object>) adaptJson(config.getMap()));
         return initParameters;
+    }
+
+    String getParameter(String name) {
+        return  config.getString(name);
     }
 
     void sockJSSupport(boolean enabled) {

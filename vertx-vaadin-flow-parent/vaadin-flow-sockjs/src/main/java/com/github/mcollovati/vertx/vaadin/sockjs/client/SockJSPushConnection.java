@@ -345,7 +345,7 @@ public class SockJSPushConnection implements PushConnection {
         } else {
             final String pushJs = getVersionedPushJs();
 
-            Console.log("Loading " + pushJs);
+            Console.log("Loading sockJS " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
                 .getContextRootUrl() + pushJs;
@@ -357,6 +357,7 @@ public class SockJSPushConnection implements PushConnection {
                         Console.log(pushJs + " loaded");
                         command.execute();
                     } else {
+                        Console.log("SockJS not loaded???????");
                         // If bootstrap tried to load vaadinPush.js,
                         // ResourceLoader assumes it succeeded even if
                         // it failed (#11673)
@@ -390,6 +391,7 @@ public class SockJSPushConnection implements PushConnection {
 
     private static native boolean isSockJSLoaded()
     /*-{
+        console.log("================== isSockJSLoaded", $wnd.vaadinPush);
         return $wnd.vaadinPush && $wnd.vaadinPush.SockJS;
     }-*/;
 

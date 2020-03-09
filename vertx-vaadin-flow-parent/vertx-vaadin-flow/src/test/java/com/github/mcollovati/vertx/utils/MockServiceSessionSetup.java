@@ -135,9 +135,6 @@ public class MockServiceSessionSetup {
             CurrentInstance.set(VaadinSession.class, session);
         }
 
-        //Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(browser.isEs6Supported()).thenReturn(true);
-
     }
 
     public TestVertxVaadinService getService() {
@@ -187,11 +184,7 @@ public class MockServiceSessionSetup {
     public void setProductionMode(boolean productionMode) {
         deploymentConfiguration.setProductionMode(productionMode);
     }
-
-    public void setBrowserEs6(boolean browserEs6) {
-        Mockito.when(browser.isEs6Supported()).thenReturn(browserEs6);
-    }
-
+    
     public static class TestRouteRegistry extends ApplicationRouteRegistry {
 
     }

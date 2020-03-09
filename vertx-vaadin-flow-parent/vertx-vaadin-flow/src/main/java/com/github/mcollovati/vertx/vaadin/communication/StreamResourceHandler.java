@@ -23,6 +23,7 @@
 package com.github.mcollovati.vertx.vaadin.communication;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -36,7 +37,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
- *
+ * <p>
  * Code adapted from the original {@link com.vaadin.flow.server.communication.StreamResourceHandler}
  */
 public class StreamResourceHandler implements Serializable {
@@ -67,11 +68,17 @@ public class StreamResourceHandler implements Serializable {
                 throw new IOException(
                     "Stream resource produces null input stream");
             }
+        } catch (Exception exception) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            throw exception;
         } finally {
             session.unlock();
         }
         try (OutputStream outputStream = response.getOutputStream()) {
             writer.accept(outputStream, session);
+        } catch (Exception exception) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            throw exception;
         }
     }
 

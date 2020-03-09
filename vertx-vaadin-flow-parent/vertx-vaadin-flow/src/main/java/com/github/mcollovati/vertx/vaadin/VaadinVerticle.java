@@ -31,10 +31,10 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,28 +43,37 @@ import java.util.stream.Stream;
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AnnotationValidator;
+import com.vaadin.flow.server.startup.ConnectEndpointsValidator;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
 import com.vaadin.flow.server.startup.RouteRegistryInitializer;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -89,7 +98,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -307,14 +315,15 @@ public class VaadinVerticle extends AbstractVerticle {
             }
         };
 
-        CompositeFuture.join(
+        CompositeFuture.join(asList(
+            runInitializer(initializerFactory.apply(new ConnectEndpointsValidator())),
             runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
             runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
             runInitializer(initializerFactory.apply(new AnnotationValidator())),
             runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
             runInitializer(event2 -> initializeDevModeHandler(event2, startupContext, classes.get(DevModeInitializer.class)))
-        ).setHandler(event2 -> {
+        )).setHandler(event2 -> {
             if (event2.succeeded()) {
                 promise.complete();
             } else {
@@ -341,48 +350,41 @@ public class VaadinVerticle extends AbstractVerticle {
         };
 
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
-        map.put(RouteRegistryInitializer.class, new HashSet<>(
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{Route.class, RouteAlias.class}))
-                .loadClasses()
-        ));
-        map.put(AnnotationValidator.class, new HashSet<>(
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{
-                    Viewport.class, BodySize.class, Inline.class
-                })).loadClasses()
-        ));
-        map.put(ErrorNavigationTargetInitializer.class, new HashSet<>(
-            scanResult.getClassesImplementing(HasErrorParameter.class.getName())
-                .loadClasses()
-        ));
-        map.put(WebComponentConfigurationRegistryInitializer.class, new HashSet<>(
-            scanResult.getSubclasses(WebComponentExporter.class.getName()).loadClasses()
-        ));
-        map.put(WebComponentExporterAwareValidator.class, new HashSet<>(
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{
-                    Theme.class, Push.class
-                })).loadClasses()
-        ));
-
-        HashSet<Class<?>> devModInitializerHandledTypes = new HashSet<>();
-        Stream.of(UIInitListener.class, VaadinServiceInitListener.class, WebComponentExporter.class, HasErrorParameter.class)
-            .flatMap(type -> scanResult.getSubclasses(type.getName()).loadClasses().stream())
-            .collect(Collectors.toCollection(() -> devModInitializerHandledTypes));
-
-        devModInitializerHandledTypes.addAll(
-            scanResult.getAllClasses().filter(annotationFilterFactory.apply(
-                Stream.of(Route.class, NpmPackage.class, NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
-                    CssImport.class, CssImport.Container.class, JavaScript.class, JavaScript.Container.class,
-                    Theme.class, NoTheme.class).toArray(Class[]::new)))
-                .loadClasses()
-        );
-
-        map.put(DevModeInitializer.class, devModInitializerHandledTypes);
+        map.put(RouteRegistryInitializer.class, loadClasses(scanResult, Route.class, RouteAlias.class));
+        map.put(AnnotationValidator.class, loadClasses(scanResult, Viewport.class, BodySize.class, Inline.class));
+        map.put(ErrorNavigationTargetInitializer.class, loadClasses(scanResult, HasErrorParameter.class));
+        map.put(WebComponentConfigurationRegistryInitializer.class, loadClasses(scanResult, WebComponentExporter.class, WebComponentExporterFactory.class));
+        map.put(WebComponentExporterAwareValidator.class, loadClasses(scanResult, Push.class));
+        map.put(DevModeInitializer.class, loadClasses(scanResult, UIInitListener.class, VaadinServiceInitListener.class,
+            WebComponentExporter.class, HasErrorParameter.class, Route.class, NpmPackage.class, NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
+            CssImport.class, CssImport.Container.class, JavaScript.class, JavaScript.Container.class,
+            Theme.class, NoTheme.class));
+        map.put(VaadinAppShellInitializer.class, loadClasses(scanResult, AppShellConfigurator.class, Meta.class, Meta.Container.class,
+            PWA.class, Inline.class, Inline.Container.class, Viewport.class,
+            BodySize.class, PageTitle.class, PageConfigurator.class, Push.class));
+        map.put(ConnectEndpointsValidator.class, loadClasses(scanResult, Endpoint.class));
         return map;
     }
 
+    private Set<Class<?>> loadClasses(ScanResult scanResult, Class... handledTypes) {
+
+        Function<Class<?>, ClassInfoList> classFinder = type -> {
+            if (type.isAnnotation()) {
+                return scanResult.getClassesWithAnnotation(type.getCanonicalName());
+            } else if (type.isInterface()) {
+                return scanResult.getClassesImplementing(type.getCanonicalName());
+            } else {
+                return scanResult.getSubclasses(type.getCanonicalName());
+            }
+        };
+
+        Set<Class<?>> classes = Stream.of(handledTypes)
+            .map(classFinder)
+            .flatMap(c -> c.loadClasses().stream())
+            .collect(Collectors.toSet());
+
+        return classes.isEmpty() ? null : classes;
+    }
 
     private <T> Future<T> runInitializer(Handler<Promise<T>> op) {
         Promise<T> promise = Promise.promise();
@@ -427,16 +429,6 @@ public class VaadinVerticle extends AbstractVerticle {
                     System.clearProperty(
                         VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
                 }
-                if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
-                    config.put(
-                        SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                            SERVLET_PARAMETER_COMPATIBILITY_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because it has priority in the configuration getter
-                    System.clearProperty(VAADIN_PREFIX
-                        + SERVLET_PARAMETER_COMPATIBILITY_MODE);
-                }
                 if (System.getProperty(PROJECT_BASEDIR) == null
                     && buildInfo.hasKey("npmFolder")) {
                     System.setProperty(PROJECT_BASEDIR,
@@ -446,6 +438,19 @@ public class VaadinVerticle extends AbstractVerticle {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static String getTokenFileContents(Properties initParameters) {
+        String json = null;
+        try {
+            json = getResourceFromFile(initParameters);
+            if (json == null) {
+                json = getResourceFromClassloader();
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return json;
     }
 
 }

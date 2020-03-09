@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>1.0.v8v14.1</version>
+        <version>1.0.v8v15</version>
     </parent>
 
     <artifactId>vaadin-flow-sockjs</artifactId>
     <packaging>jar</packaging>
     <name>vaadin-flow-sockjs</name>
-    <version>14.1.1-SNAPSHOT</version>
+    <version>15.0.0-SNAPSHOT</version>
     <description>Sockjs push connection implementation for Vaadin Flow</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
@@ -198,6 +198,15 @@
                                     <outputDirectory>${flow-client-generated-sources}</outputDirectory>
                                     <includes>com/vaadin/flow/linker/**,com/vaadin/client/**</includes>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.vaadin</groupId>
+                                    <artifactId>flow-client</artifactId>
+                                    <version>${flow-client.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${build.outputDirectory}</outputDirectory>
+                                    <includes>META-INF/resources/frontend/**</includes>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -256,8 +265,8 @@
                     </execution>
 
                     <execution>
-                        <id>compresspush</id>
-                        <phase>compile</phase>
+                        <id>prepare-js-files</id>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -272,6 +281,15 @@
                                 <!-- Gzipped versions -->
                                 <gzip src="${vaadinPushSockJS.js}" destfile="${vaadinPushSockJS.js}.gz"/>
                                 <gzip src="${vaadinPushSockJS-min.js}" destfile="${vaadinPushSockJS-min.js}.gz"/>
+
+                                <concat destfile="${project.build.outputDirectory}/META-INF/resources/frontend/FlowClient.js">
+                                    <string value="// Vertx-Vaadin FLowClient${line.separator}"/>
+                                    <string value="const init = function(){${line.separator}"/>
+                                    <fileset
+                                            dir="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/client"
+                                            includes="**/client-*.cache.js"/>
+                                    <string value="${line.separator}};${line.separator}export {init};${line.separator}"/>
+                                </concat>
                             </target>
                         </configuration>
                     </execution>

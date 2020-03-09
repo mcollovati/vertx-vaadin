@@ -22,6 +22,9 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.server.VaadinContext;
@@ -31,10 +34,8 @@ import io.vertx.core.Vertx;
 public class VertxVaadinContext implements VaadinContext {
 
     private transient final Context context;
-    private transient final Vertx vertx;
 
     public VertxVaadinContext(Vertx vertx) {
-        this.vertx = vertx;
         this.context = vertx.getOrCreateContext();
     }
 
@@ -49,7 +50,7 @@ public class VertxVaadinContext implements VaadinContext {
     }
 
     @Override
-    public <T> void setAttribute(T value) {
+    public <T> void setAttribute(Class<T> clazz, T value) {
         assert value != null;
         context.put(value.getClass().getName(), value);
     }
@@ -57,5 +58,17 @@ public class VertxVaadinContext implements VaadinContext {
     @Override
     public void removeAttribute(Class<?> clazz) {
         context.remove(clazz.getName());
+    }
+
+    // Not needed by Vertx-Vaadin
+    @Override
+    public Enumeration<String> getContextParameterNames() {
+        return Collections.emptyEnumeration();
+    }
+
+    // Not needed by Vertx-Vaadin
+    @Override
+    public String getContextParameter(String name) {
+        return null;
     }
 }

@@ -33,10 +33,10 @@ import com.vaadin.flow.shared.communication.PushMode;
 public class MockDeploymentConfiguration
     extends AbstractDeploymentConfiguration {
 
-    private final String webComponentsPolyfillBase;
-
     private boolean productionMode = false;
-    private boolean compatibilityMode = false;
+    private boolean enableDevServer = true;
+    private boolean reuseDevServer = true;
+    private boolean useDeprecatedV14Bootstrapping = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int webComponentDisconnect = 300;
@@ -48,23 +48,11 @@ public class MockDeploymentConfiguration
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
-
-    public MockDeploymentConfiguration() {
-        this(null);
-    }
-
-    public MockDeploymentConfiguration(String webComponentsPolyfillBase) {
-        this.webComponentsPolyfillBase = webComponentsPolyfillBase;
-    }
+    private boolean eagerServerLoad = false;
 
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
     }
 
     @Override
@@ -74,6 +62,24 @@ public class MockDeploymentConfiguration
 
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
+    }
+
+    public void setEnableDevServer(boolean enableDevServer) {
+        this.enableDevServer = enableDevServer;
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        return enableDevServer;
+    }
+
+    public void setReuseDevServer(boolean reuseDevServer) {
+        this.reuseDevServer = reuseDevServer;
+    }
+
+    @Override
+    public boolean reuseDevServer() {
+        return reuseDevServer;
     }
 
     @Override
@@ -173,8 +179,21 @@ public class MockDeploymentConfiguration
         this.brotli = brotli;
     }
 
-    public void setCompatibilityMode(boolean compatibility) {
-        compatibilityMode = compatibility;
+    @Override
+    public boolean useV14Bootstrap() {
+        return useDeprecatedV14Bootstrapping;
     }
 
+    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
+        this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
+    }
+
+    @Override
+    public boolean isEagerServerLoad() {
+        return this.eagerServerLoad;
+    }
+
+    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
+        this.eagerServerLoad = includeBootsrapInitialUidl;
+    }
 }
