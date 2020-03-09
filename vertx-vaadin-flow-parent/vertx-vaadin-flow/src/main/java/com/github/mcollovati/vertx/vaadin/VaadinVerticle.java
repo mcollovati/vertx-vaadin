@@ -24,6 +24,7 @@ package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -31,7 +32,6 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,22 +42,8 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.UIInitListener;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -68,8 +54,6 @@ import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
 import elemental.json.impl.JsonUtil;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -335,54 +319,39 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult) {
-        Function<Class<?>[], ClassInfoList.ClassInfoFilter> annotationFilterFactory = annotationClazzes -> {
-            List<String> clazzNames = Stream.of(annotationClazzes).map(Class::getName).collect(Collectors.toList());
-            return classInfo -> clazzNames.stream().anyMatch(classInfo::hasAnnotation);
-        };
-
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
-        map.put(RouteRegistryInitializer.class, new HashSet<>(
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{Route.class, RouteAlias.class}))
-                .loadClasses()
-        ));
-        map.put(AnnotationValidator.class, new HashSet<>(
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{
-                    Viewport.class, BodySize.class, Inline.class
-                })).loadClasses()
-        ));
-        map.put(ErrorNavigationTargetInitializer.class, new HashSet<>(
-            scanResult.getClassesImplementing(HasErrorParameter.class.getName())
-                .loadClasses()
-        ));
-        map.put(WebComponentConfigurationRegistryInitializer.class, new HashSet<>(
-            scanResult.getSubclasses(WebComponentExporter.class.getName()).loadClasses()
-        ));
-        map.put(WebComponentExporterAwareValidator.class, new HashSet<>(
-            scanResult.getAllClasses()
-                .filter(annotationFilterFactory.apply(new Class[]{
-                    Theme.class, Push.class
-                })).loadClasses()
-        ));
-
-        HashSet<Class<?>> devModInitializerHandledTypes = new HashSet<>();
-        Stream.of(UIInitListener.class, VaadinServiceInitListener.class, WebComponentExporter.class, HasErrorParameter.class)
-            .flatMap(type -> scanResult.getSubclasses(type.getName()).loadClasses().stream())
-            .collect(Collectors.toCollection(() -> devModInitializerHandledTypes));
-
-        devModInitializerHandledTypes.addAll(
-            scanResult.getAllClasses().filter(annotationFilterFactory.apply(
-                Stream.of(Route.class, NpmPackage.class, NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
-                    CssImport.class, CssImport.Container.class, JavaScript.class, JavaScript.Container.class,
-                    Theme.class, NoTheme.class).toArray(Class[]::new)))
-                .loadClasses()
-        );
-
-        map.put(DevModeInitializer.class, devModInitializerHandledTypes);
+        Stream.of(
+            RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
+            WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
+            DevModeInitializer.class
+        ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }
 
+    private void registerHandledTypes(ScanResult scanResult, Class<?> initializerClass, Map<Class<?>, Set<Class<?>>> map) {
+
+        HandlesTypes handledTypes = initializerClass.getAnnotation(HandlesTypes.class);
+        if (handledTypes != null) {
+            Function<Class<?>, ClassInfoList> classFinder = type -> {
+                if (type.isAnnotation()) {
+                    return scanResult.getClassesWithAnnotation(type.getCanonicalName());
+                } else if (type.isInterface()) {
+                    return scanResult.getClassesImplementing(type.getCanonicalName());
+                } else {
+                    return scanResult.getSubclasses(type.getCanonicalName());
+                }
+            };
+
+            Set<Class<?>> classes = Stream.of(handledTypes.value())
+                .map(classFinder)
+                .flatMap(c -> c.loadClasses().stream())
+                .collect(Collectors.toSet());
+
+            if (!classes.isEmpty()) {
+                map.put(initializerClass, classes);
+            }
+        }
+    }
 
     private <T> Future<T> runInitializer(Handler<Promise<T>> op) {
         Promise<T> promise = Promise.promise();
