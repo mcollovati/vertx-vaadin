@@ -39,7 +39,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-// Test borrowed from  vaadin codebae: VaadinServletContextTest
+// Test borrowed from Vaadin codebase: VaadinServletContextTest
 public class VertxVaadinContextTest {
 
     private VertxVaadinContext context;
