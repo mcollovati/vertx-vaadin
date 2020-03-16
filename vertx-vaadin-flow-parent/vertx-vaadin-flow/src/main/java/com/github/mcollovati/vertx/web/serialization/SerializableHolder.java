@@ -24,13 +24,16 @@ package com.github.mcollovati.vertx.web.serialization;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
+import lombok.NonNull;
 
-public class SerializableHolder implements ClusterSerializable {
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class SerializableHolder implements ClusterSerializable, Serializable {
 
     private transient Object object;
-
-    public SerializableHolder() {
-    }
 
     public SerializableHolder(Object object) {
         this.object = object;
@@ -52,5 +55,13 @@ public class SerializableHolder implements ClusterSerializable {
 
     public Object get() {
         return object;
+    }
+
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
     }
 }

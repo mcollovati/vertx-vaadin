@@ -28,21 +28,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.function.Consumer;
 
-import io.vertx.core.buffer.Buffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public final class SerializationSupport {
 
-public class SerializationSupport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SerializationSupport.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(SerializationSupport.class);
+    private SerializationSupport() {
+    }
 
-    public static void writeToBuffer(Buffer buffer, Object object) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectStream = new ObjectOutputStream(baos)) {
+    public static void writeToBuffer(final Buffer buffer, final Object object) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final ObjectOutputStream objectStream = new ObjectOutputStream(baos)) {
             objectStream.writeObject(object);
             objectStream.flush();
-        } catch (Exception ex) {
-            logger.error("Error serializing object of type {}", object.getClass(), ex);
+        } catch (final Exception ex) {
+            LOGGER.error("Error serializing object of type {}", object.getClass(), ex);
         }
         buffer.appendInt(baos.size());
         buffer.appendBytes(baos.toByteArray());
@@ -56,8 +55,8 @@ public class SerializationSupport {
         try (ObjectInputStream is = new ObjectInputStream(new ByteArrayInputStream(buffer.getBytes(pos, end)))) {
             Object object = is.readObject();
             objectConsumer.accept((T) object);
-        } catch (Exception ex) {
-            logger.error("Error deserializing object", ex);
+        } catch (final Exception ex) {
+            LOGGER.error("Error deserializing object", ex);
         }
         return end;
     }

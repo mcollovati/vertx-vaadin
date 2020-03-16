@@ -36,19 +36,18 @@ import io.vertx.ext.web.sstore.impl.SharedDataSessionImpl;
 /**
  * Created by marco on 27/07/16.
  */
-public class ExtendedSessionImpl extends SharedDataSessionImpl implements ExtendedSession, Shareable, ClusterSerializable {
+public class ExtendedSessionImpl extends SharedDataSessionImpl implements ExtendedSession {
 
-
-    protected Session delegate;
+    private final Session delegate;
     private long createdAt;
 
     public ExtendedSessionImpl() {
-        this.delegate = new SharedDataSessionImpl();
+        delegate = new SharedDataSessionImpl();
     }
 
     public ExtendedSessionImpl(Session delegate) {
         this.delegate = delegate;
-        this.createdAt = System.currentTimeMillis();
+        createdAt = System.currentTimeMillis();
     }
 
     @Override
