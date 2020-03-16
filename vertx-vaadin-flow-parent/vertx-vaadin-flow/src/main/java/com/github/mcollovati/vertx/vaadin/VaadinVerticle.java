@@ -369,7 +369,7 @@ public class VaadinVerticle extends AbstractVerticle {
             if (tokenLocation != null) {
                 File tokenFile = new File(tokenLocation);
                 if (tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
+                    json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8);
                 }
             }
 
