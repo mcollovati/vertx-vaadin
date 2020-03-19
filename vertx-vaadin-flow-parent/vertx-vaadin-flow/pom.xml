@@ -18,7 +18,7 @@
     <properties>
         <bintray.package>vertx-vaadin-flow</bintray.package>
         <checkstyle.skip>false</checkstyle.skip>
-        <classgraph.version>4.4.12</classgraph.version>
+        <classgraph.version>4.8.65</classgraph.version>
         <vaadin-flow-sockjs.version>${project.version}</vaadin-flow-sockjs.version>
     </properties>
 
