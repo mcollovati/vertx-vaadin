@@ -242,7 +242,8 @@ public class VaadinVerticle extends AbstractVerticle {
         VaadinOptions vaadinConfig = startupContext.vaadinOptions();
         List<String> pkgs = vaadinConfig.flowBasePackages();
         if (!pkgs.isEmpty()) {
-            pkgs.add("com.github.mcollovati.vertx.vaadin.sockjs");
+            pkgs.add("com.vaadin");
+            pkgs.add("com.github.mcollovati.vertx.vaadin");
         }
         boolean isDebug = vaadinConfig.debug();
 
