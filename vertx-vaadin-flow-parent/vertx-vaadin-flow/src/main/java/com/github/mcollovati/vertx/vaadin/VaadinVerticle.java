@@ -31,15 +31,18 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.github.mcollovati.vertx.support.BootstrapHelper;
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.Constants;
@@ -55,9 +58,6 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
 import elemental.json.impl.JsonUtil;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -93,7 +93,7 @@ public class VaadinVerticle extends AbstractVerticle {
     private VertxVaadinService vaadinService;
 
     @Override
-    public void start(Promise<Void> startFuture) throws Exception {
+    public void start(Promise<Void> startFuture) {
         log.info("Starting vaadin verticle " + getClass().getName());
 
         prepareConfig()
@@ -107,6 +107,7 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
+        log.trace("Starting http server");
         String mountPoint = vertxVaadin.config().mountPoint();
         HttpServerOptions serverOptions = new HttpServerOptions().setCompressionSupported(true);
 
@@ -119,6 +120,8 @@ public class VaadinVerticle extends AbstractVerticle {
         future.setHandler(event -> {
             if (event.succeeded()) {
                 log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result());
+            } else {
+                log.error("Failed to start http server", event.cause());
             }
         });
 
@@ -239,45 +242,39 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     private Future<VertxVaadin> initVertxVaadin(StartupContext startupContext) {
+        log.trace("Init VertxVaadin");
         VaadinOptions vaadinConfig = startupContext.vaadinOptions();
         List<String> pkgs = vaadinConfig.flowBasePackages();
         if (!pkgs.isEmpty()) {
             pkgs.add("com.vaadin");
             pkgs.add("com.github.mcollovati.vertx.vaadin");
         }
-        boolean isDebug = vaadinConfig.debug();
-
-        Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
 
         log.debug("Scanning packages {}", String.join(", ", pkgs));
 
         Promise<VertxVaadin> promise = Promise.promise();
         vertx.executeBlocking(event -> {
-
-            ClassGraph classGraph = new ClassGraph();
-            if (isDebug) {
-                classGraph.verbose();
-            }
-            classGraph.ignoreParentClassLoaders()
-                .enableClassInfo()
-                .enableAnnotationInfo()
-                .whitelistPackages(pkgs.toArray(new String[0]))
-                .ignoreParentClassLoaders()
-                .removeTemporaryFilesAfterScan();
-            try (ScanResult scanResult = classGraph.scan()) {
-                map.putAll(seekRequiredClasses(scanResult));
-
-                boolean haSockJS = scanResult.getClassInfo("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection") != null;
+            Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
+            AtomicReference<Exception> scanFailure = new AtomicReference<>();
+            BootstrapHelper.scanVaadinComponents(vaadinConfig, bootstrapTypes -> {
+                log.trace("scanVaadinComponents");
+                map.putAll(collectVaadinComponentClasses(bootstrapTypes));
+                log.trace("scanVaadinComponents done: {}", map);
+                boolean haSockJS = bootstrapTypes.hasClass("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection");
                 vaadinConfig.sockJSSupport(haSockJS);
-            }
+            }, scanFailure::set);
 
-            Promise<Void> initializerFuture = Promise.promise();
-            runInitializers(startupContext, initializerFuture, map);
-            initializerFuture.future().map(unused -> {
-                VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
-                vaadinService = vertxVaadin.vaadinService();
-                return vertxVaadin;
-            }).setHandler(event);
+            if (scanFailure.get() != null) {
+                event.fail(scanFailure.get());
+            } else {
+                Promise<Void> initializerFuture = Promise.promise();
+                runInitializers(startupContext, initializerFuture, map);
+                initializerFuture.future().map(unused -> {
+                    VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
+                    vaadinService = vertxVaadin.vaadinService();
+                    return vertxVaadin;
+                }).setHandler(event);
+            }
         }, promise);
         return promise.future();
     }
@@ -285,7 +282,10 @@ public class VaadinVerticle extends AbstractVerticle {
     private void runInitializers(StartupContext startupContext, Promise<Void> promise, Map<Class<?>, Set<Class<?>>> classes) {
         Function<ServletContainerInitializer, Handler<Promise<Void>>> initializerFactory = initializer -> event2 -> {
             try {
-                initializer.onStartup(classes.get(initializer.getClass()), startupContext.servletContext());
+                Class<? extends ServletContainerInitializer> initializerClass = initializer.getClass();
+                Set<Class<?>> types = classes.get(initializerClass);
+                log.trace("Run initializer {} with types {}", initializerClass, types);
+                initializer.onStartup(types, startupContext.servletContext());
                 event2.complete();
             } catch (Exception ex) {
                 event2.fail(ex);
@@ -319,35 +319,22 @@ public class VaadinVerticle extends AbstractVerticle {
         }
     }
 
-    private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult) {
+    public static Map<Class<?>, Set<Class<?>>> collectVaadinComponentClasses(BootstrapHelper.BootstrapTypes bootstrapTypes) {
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
         Stream.of(
             RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
             WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
             DevModeInitializer.class
-        ).forEach(type -> registerHandledTypes(scanResult, type, map));
+        ).forEach(type -> registerHandledTypes(bootstrapTypes, type, map));
+        log.info("Collected components: {}", map.values().stream().flatMap(Collection::stream)
+            .map(Class::getCanonicalName).collect(Collectors.joining("\n")));
         return map;
     }
 
-    private void registerHandledTypes(ScanResult scanResult, Class<?> initializerClass, Map<Class<?>, Set<Class<?>>> map) {
-
+    private static void registerHandledTypes(BootstrapHelper.BootstrapTypes bootstrapTypes, Class<?> initializerClass, Map<Class<?>, Set<Class<?>>> map) {
         HandlesTypes handledTypes = initializerClass.getAnnotation(HandlesTypes.class);
         if (handledTypes != null) {
-            Function<Class<?>, ClassInfoList> classFinder = type -> {
-                if (type.isAnnotation()) {
-                    return scanResult.getClassesWithAnnotation(type.getCanonicalName());
-                } else if (type.isInterface()) {
-                    return scanResult.getClassesImplementing(type.getCanonicalName());
-                } else {
-                    return scanResult.getSubclasses(type.getCanonicalName());
-                }
-            };
-
-            Set<Class<?>> classes = Stream.of(handledTypes.value())
-                .map(classFinder)
-                .flatMap(c -> c.loadClasses().stream())
-                .collect(Collectors.toSet());
-
+            Set<Class<?>> classes = bootstrapTypes.findHandledTypes(initializerClass, handledTypes.value());
             if (!classes.isEmpty()) {
                 map.put(initializerClass, classes);
             }

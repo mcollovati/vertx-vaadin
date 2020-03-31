@@ -49,9 +49,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.Resource;
-import io.github.classgraph.ScanResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -98,27 +95,8 @@ public final class StartupContext {
         return new StartupContext(vertx, promise.future().result(), vaadinOptions);
     }
 
-
     private static Handler<Promise<Set<String>>> scanResources(VaadinOptions vaadinOptions) {
-        ClassGraph classGraph = new ClassGraph()
-            .whitelistPaths()
-            .removeTemporaryFilesAfterScan();
-        if (vaadinOptions.debug()) {
-            classGraph.verbose();
-        }
-        return future -> {
-            try (ScanResult scanResult = classGraph.scan()) {
-                future.complete(
-                    scanResult.getAllResources()
-                        .nonClassFilesOnly()
-                        .stream()
-                        .map(Resource::getPathRelativeToClasspathElement)
-                        .collect(Collectors.toSet())
-                );
-            } catch (Exception ex) {
-                future.fail(ex);
-            }
-        };
+        return future -> BootstrapHelper.scanResources(vaadinOptions, future::complete, future::fail);
     }
 
     public VaadinOptions vaadinOptions() {
