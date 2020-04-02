@@ -118,7 +118,9 @@ public class VaadinVerticle extends AbstractVerticle {
         Future<HttpServer> future = promise.future();
         future.setHandler(event -> {
             if (event.succeeded()) {
-                log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result());
+                log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result().actualPort());
+            } else {
+                log.error("Cannot start http server", event.cause());
             }
         });
 
