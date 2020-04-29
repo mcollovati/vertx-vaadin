@@ -39,6 +39,7 @@ public class MockDeploymentConfiguration
     private boolean useDeprecatedV14Bootstrapping = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
+    private int maxMessageSuspendTimeout = 5000;
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
@@ -103,6 +104,11 @@ public class MockDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    @Override
+    public int getMaxMessageSuspendTimeout() {
+        return maxMessageSuspendTimeout;
     }
 
     @Override
