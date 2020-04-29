@@ -126,14 +126,20 @@ public final class StartupContext {
     }
 
     public ServletContext servletContext() {
-        return new FakeServletContext();
+        return new FakeServletContext(this);
     }
 
-    private class FakeServletContext implements ServletContext {
+    private static class FakeServletContext implements ServletContext {
+
+        private final StartupContext startupContext;
+
+        private FakeServletContext(StartupContext startupContext) {
+            this.startupContext = startupContext;
+        }
 
         @Override
         public String getContextPath() {
-            return vaadinOptions.mountPoint().replaceFirst("/$", "");
+            return startupContext.vaadinOptions.mountPoint().replaceFirst("/$", "");
         }
 
         @Override
@@ -181,7 +187,7 @@ public final class StartupContext {
             }
 
 
-            return resources.stream()
+            return startupContext.resources.stream()
                 .filter(p -> p.startsWith("META-INF/resources/" + relativePath) || p.startsWith(relativePath))
                 .map(p -> {
                     Matcher matcher = pattern.matcher(p);
@@ -202,7 +208,7 @@ public final class StartupContext {
             if (relativePath.startsWith("/")) {
                 relativePath = relativePath.substring(1);
             }
-            FileSystem fileSystem = vertx.fileSystem();
+            FileSystem fileSystem = startupContext.vertx.fileSystem();
             FileProps props = fileSystem.propsBlocking(relativePath);
             if (props != null && !props.isDirectory()) {
                 Buffer buffer = fileSystem.readFileBlocking(relativePath);
@@ -279,7 +285,7 @@ public final class StartupContext {
 
         @Override
         public Object getAttribute(String name) {
-            return context.get(name);
+            return startupContext.context.get(name);
         }
 
         @Override
@@ -289,12 +295,12 @@ public final class StartupContext {
 
         @Override
         public void setAttribute(String name, Object object) {
-            context.put(name, object);
+            startupContext.context.put(name, object);
         }
 
         @Override
         public void removeAttribute(String name) {
-            context.remove(name);
+            startupContext.context.remove(name);
         }
 
         @Override
@@ -410,7 +416,7 @@ public final class StartupContext {
 
         @Override
         public ClassLoader getClassLoader() {
-            return null;
+            return startupContext.getClass().getClassLoader();
         }
 
         @Override
@@ -427,14 +433,14 @@ public final class StartupContext {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            StartupContext that = (StartupContext) o;
-            return vertx.equals(that.vertx) &&
-                vaadinOptions.equals(that.vaadinOptions);
+            StartupContext.FakeServletContext that = (StartupContext.FakeServletContext) o;
+            return this.startupContext.vertx.equals( that.startupContext.vertx) &&
+                startupContext.vaadinOptions.equals(that.startupContext.vaadinOptions);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(vertx, vaadinOptions);
+            return Objects.hash(startupContext.vertx, startupContext.vaadinOptions);
         }
 
     }
