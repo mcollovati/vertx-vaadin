@@ -87,8 +87,8 @@
 
         <vertx.version>3.8.5</vertx.version>
         <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>15.0.0</vaadin.platform.version>
-        <vaadin.flow.version>3.0.0</vaadin.flow.version>
+        <vaadin.platform.version>15.0.5</vaadin.platform.version>
+        <vaadin.flow.version>3.0.6</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
