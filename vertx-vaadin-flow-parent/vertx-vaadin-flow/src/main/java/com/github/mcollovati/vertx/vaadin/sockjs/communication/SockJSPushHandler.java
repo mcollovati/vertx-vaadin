@@ -42,7 +42,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandler;
-import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinRequest;
@@ -234,7 +234,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 session = service.findVaadinSession(vaadinRequest);
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
-                sendNotificationAndDisconnect(socket, VaadinService.createSessionExpiredJSON());
+                sendNotificationAndDisconnect(socket, VaadinService.createSessionExpiredJSON(true));
                 return;
             }
 
@@ -246,7 +246,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
                 if (ui == null) {
                     sendNotificationAndDisconnect(
-                        socket, VaadinService.createUINotFoundJSON()
+                        socket, VaadinService.createUINotFoundJSON(true)
                     );
                 } else {
                     callback.run(event, ui);
@@ -255,7 +255,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 callErrorHandler(session, e);
             } catch (final Exception e) {
                 SystemMessages msg = service.getSystemMessages(
-                    ServletHelper.findLocale(null, vaadinRequest),
+                    HandlerHelper.findLocale(null, vaadinRequest),
                     vaadinRequest);
 
                 /* TODO: verify */

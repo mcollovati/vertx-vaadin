@@ -22,11 +22,15 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.server.Constants;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +53,7 @@ public class VertxVaadinContextTest {
     }
 
     private final Map<String, Object> attributeMap = new HashMap<>();
+    private Map<String, String> properties;
 
     @Before
     public void setUp() {
@@ -58,7 +63,16 @@ public class VertxVaadinContextTest {
         doAnswer(i -> attributeMap.put(i.getArgumentAt(0, String.class), i.getArguments()[1])).when(vertxContext).put(anyString(), any());
         doAnswer(i -> attributeMap.remove(i.getArgumentAt(0, String.class)) != null).when(vertxContext).remove(anyString());
         when(vertxContext.get(anyString())).thenAnswer(i -> attributeMap.get(i.getArgumentAt(0, String.class)));
-        context = new VertxVaadinContext(vertx);
+
+        properties = new HashMap<>();
+        properties.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        properties.put(Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, "false");
+
+        JsonObject opts = new JsonObject();
+        properties.forEach(opts::put);
+        VaadinOptions vaadinOptions = new VaadinOptions(opts);
+
+        context = new VertxVaadinContext(vertx, vaadinOptions);
     }
 
     @Test
@@ -67,9 +81,9 @@ public class VertxVaadinContextTest {
 
         String value = context.getAttribute(String.class,
             VertxVaadinContextTest::testAttributeProvider);
-        assertEquals(testAttributeProvider(), value);
+        Assert.assertEquals(testAttributeProvider(), value);
 
-        assertEquals("Value from provider should be persisted",
+        Assert.assertEquals("Value from provider should be persisted",
             testAttributeProvider(), context.getAttribute(String.class));
     }
 
@@ -89,28 +103,70 @@ public class VertxVaadinContextTest {
         String value = testAttributeProvider();
         context.setAttribute(value);
         String result = context.getAttribute(String.class);
-        assertEquals(value, result);
+        Assert.assertEquals(value, result);
         // overwrite
         String newValue = "this is a new value";
         context.setAttribute(newValue);
         result = context.getAttribute(String.class);
-        assertEquals(newValue, result);
+        Assert.assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
-        result = context.getAttribute(String.class,
-            () -> {
-                throw new AssertionError("Should not be called");
-            });
-        assertEquals(newValue, result);
+        result = context.getAttribute(String.class, () -> {
+            throw new AssertionError("Should not be called");
+        });
+        Assert.assertEquals(newValue, result);
     }
 
     @Test
-    public void removeAttribute() {
-        TestObj value = new TestObj();
+    public void setValueBasedOnSuperType_implicitClass_notFound() {
+        String value = testAttributeProvider();
         context.setAttribute(value);
-        assertEquals(value, context.getAttribute(TestObj.class));
-        context.removeAttribute(TestObj.class);
-        assertNull(context.getAttribute(TestObj.class));
+
+        CharSequence retrieved = context.getAttribute(CharSequence.class);
+        Assert.assertNull(
+            "Value set base on its own type should not be found based on a super type",
+            retrieved);
     }
 
-    private static class TestObj {}
+    @Test
+    public void setValueBasedOnSuperType_explicitClass_found() {
+        String value = testAttributeProvider();
+        context.setAttribute(CharSequence.class, value);
+
+        CharSequence retrieved = context.getAttribute(CharSequence.class);
+        Assert.assertSame(
+            "Value should be found based on the type used when setting",
+            value, retrieved);
+    }
+
+    @Test
+    public void removeValue_removeMethod_valueIsRemoved() {
+        context.setAttribute(testAttributeProvider());
+        context.removeAttribute(String.class);
+
+        Assert.assertNull("Value should be removed",
+            context.getAttribute(String.class));
+    }
+
+    @Test
+    public void removeValue_setWithClass_valueIsRemoved() {
+        context.setAttribute(testAttributeProvider());
+        context.setAttribute(String.class, null);
+
+        Assert.assertNull("Value should be removed",
+            context.getAttribute(String.class));
+    }
+
+    @Test
+    public void getPropertyNames_returnsExpectedProperties() {
+        List<String> list = Collections
+            .list(context.getContextParameterNames());
+        Assert.assertEquals(
+            "Context should return only keys defined in ServletContext",
+            properties.size(), list.size());
+        for (String key : properties.keySet()) {
+            Assert.assertEquals(String.format(
+                "Value should be same from context for key '%s'", key),
+                properties.get(key), context.getContextParameter(key));
+        }
+    }
 }

@@ -22,7 +22,11 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.VaadinContext;
 import io.vertx.core.Context;
@@ -32,10 +36,12 @@ public class VertxVaadinContext implements VaadinContext {
 
     private transient final Context context;
     private transient final Vertx vertx;
+    private transient final Properties vaadinOptions;
 
-    public VertxVaadinContext(Vertx vertx) {
+    public VertxVaadinContext(Vertx vertx, VaadinOptions vaadinOptions) {
         this.vertx = vertx;
         this.context = vertx.getOrCreateContext();
+        this.vaadinOptions = vaadinOptions.asProperties();
     }
 
     @Override
@@ -49,13 +55,28 @@ public class VertxVaadinContext implements VaadinContext {
     }
 
     @Override
-    public <T> void setAttribute(T value) {
-        assert value != null;
-        context.put(value.getClass().getName(), value);
+    public <T> void setAttribute(Class<T> clazz, T value) {
+        if (value == null) {
+            removeAttribute(clazz);
+        } else {
+            context.put(clazz.getName(), value);
+        }
     }
 
     @Override
     public void removeAttribute(Class<?> clazz) {
         context.remove(clazz.getName());
+    }
+
+    @Override
+    public Enumeration<String> getContextParameterNames() {
+        return Collections.enumeration(vaadinOptions.keySet()
+            .stream().map(String.class::cast)
+            .collect(Collectors.toList()));
+    }
+
+    @Override
+    public String getContextParameter(String name) {
+        return vaadinOptions.getProperty(name);
     }
 }

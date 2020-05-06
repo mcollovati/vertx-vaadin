@@ -229,7 +229,7 @@ public class VertxVaadinService extends VaadinService {
 
     @Override
     protected VaadinContext constructVaadinContext() {
-        return new VertxVaadinContext(getVertx());
+        return new VertxVaadinContext(getVertx(), getVaadinOptions());
     }
 
 
