@@ -35,6 +35,11 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core</artifactId>
             <version>${vaadin.platform.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${vaadin.flow.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.vaadin</groupId>
@@ -45,11 +50,6 @@
                     <artifactId>flow-client</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
-            <version>${vaadin.flow.version}</version>
         </dependency>
 
         <dependency>
