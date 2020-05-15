@@ -261,6 +261,7 @@ public class VaadinVerticle extends AbstractVerticle {
             }
             classGraph.ignoreParentClassLoaders()
                 .enableClassInfo()
+                .ignoreClassVisibility()
                 .enableAnnotationInfo()
                 .whitelistPackages(pkgs.toArray(new String[0]))
                 .ignoreParentClassLoaders()
