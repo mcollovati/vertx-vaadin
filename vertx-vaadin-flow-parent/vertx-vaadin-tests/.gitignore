@@ -1,0 +1,13 @@
+selenium_standalone_zips/
+driver/
+driver_zips/
+**/error-screenshots
+
+bower_components
+node
+node_modules
+*/flow-*/frontend
+package.json
+package-lock.json
+webpack.config.js
+**/webpack.generated.js
