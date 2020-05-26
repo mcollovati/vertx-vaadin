@@ -53,7 +53,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.ext.web.FileUpload;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,9 +166,6 @@ public class StreamReceiverHandler implements Serializable {
         } catch (Exception e) {
             getLogger().warn("File upload failed.", e);
         }
-        // Create a new file upload handler
-        ServletFileUpload upload = new ServletFileUpload();
-
         sendUploadResponse(response);
     }
 
