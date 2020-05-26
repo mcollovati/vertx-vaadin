@@ -176,7 +176,7 @@ public class StreamReceiverHandler implements Serializable {
     private void handleStream(VaadinSession session, FileSystem fileSystem,
                               StreamReceiver streamReceiver, StateNode owner, long contentLength,
                               FileUpload item) {
-        String name = item.name();
+        String name = item.fileName();
         Buffer buffer = fileSystem.readFileBlocking(item.uploadedFileName());
         InputStream stream = new BufferInputStreamAdapter(buffer);
         try {
