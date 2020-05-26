@@ -430,6 +430,7 @@
             <modules>
                 <module>vertx-vaadin-flow-parent/vaadin-flow-sockjs</module>
                 <module>vertx-vaadin-flow-parent/vertx-vaadin-flow</module>
+                <module>vertx-vaadin-flow-parent/vertx-vaadin-tests</module>
             </modules>
         </profile>
         <profile>
