@@ -34,7 +34,6 @@ import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.VertxStreamRequestHandler;
 import com.github.mcollovati.vertx.vaadin.communication.VertxWebComponentBootstrapHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
@@ -103,13 +102,8 @@ public class VertxVaadinService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
-        handlers.replaceAll(requestHandler -> {
-            if (requestHandler instanceof StreamRequestHandler) {
-                return new VertxStreamRequestHandler();
-            }
-            return requestHandler;
-        });
-        handlers.add(0, new BootstrapHandler());
+        handlers.replaceAll(this::replaceRequestHandlers);
+        handlers.add(0, new VertxBootstrapHandler());
         return handlers;
     }
 
