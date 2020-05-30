@@ -25,11 +25,14 @@ package com.github.mcollovati.vertx.http;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,37 +41,79 @@ public class HttpReverseProxy {
     private final static Logger logger = LoggerFactory.getLogger(HttpReverseProxy.class);
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
-    private final HttpClient client;
+    private final WebClient client;
 
-    public HttpReverseProxy(HttpClient client) {
+    public HttpReverseProxy(WebClient client) {
         this.client = client;
     }
 
 
     public static HttpReverseProxy create(Vertx vertx, int devServerPort) {
-        HttpClientOptions options = new HttpClientOptions()
+        WebClientOptions options = new WebClientOptions()
             .setLogActivity(true)
             .setConnectTimeout(DEFAULT_TIMEOUT)
             .setIdleTimeout(DEFAULT_TIMEOUT)
             .setDefaultHost("localhost")
             .setDefaultPort(devServerPort);
-        return new HttpReverseProxy(vertx.createHttpClient(options));
+
+        return new HttpReverseProxy(WebClient.create(vertx, options));
     }
 
     public void forward(RoutingContext routingContext) {
         HttpServerRequest serverRequest = routingContext.request();
         String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
+        logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
+
+
+        HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), requestURI);
+
+        serverRequest.headers().forEach(entry -> {
+            String valueOk = "Connection".equals(entry.getKey()) ? "close" : entry.getValue();
+            clientRequest.putHeader(entry.getKey(), valueOk);
+        });
+
+        clientRequest.sendBuffer(routingContext.getBody(), ar -> {
+            if (ar.succeeded()) {
+                HttpResponse<Buffer> clientResponse = ar.result();
+                int statusCode = clientResponse.statusCode();
+                HttpServerResponse serverResponse = routingContext.response();
+                if (statusCode == HttpResponseStatus.OK.code()) {
+                    logger.debug("Served resource by webpack: {} {}", clientResponse.statusCode(), requestURI);
+                    serverResponse.setStatusCode(statusCode).setChunked(true);
+                    serverResponse.headers().setAll(clientResponse.headers());
+                    serverResponse.end(clientResponse.body());
+                } else if (statusCode == HttpResponseStatus.NOT_FOUND.code()) {
+                    logger.debug("Resource not served by webpack {}", requestURI);
+                    routingContext.next();
+                } else if (statusCode < 400) {
+                    logger.debug("Webpack response {} for resource {}", statusCode, requestURI);
+                    serverResponse.setStatusCode(statusCode).end();
+                } else {
+                    logger.debug("Webpack failed with status {} for resource {}", statusCode, requestURI);
+                    routingContext.fail(statusCode);
+                }
+            } else {
+                logger.warn("Request to webpack failed: {}", requestURI, ar.cause());
+                routingContext.next();
+            }
+        });
+    }
+
+    /*
+    public void forward2(RoutingContext routingContext) {
+        HttpServerRequest serverRequest = routingContext.request();
+        String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
         //.replace(VAADIN_MAPPING, "");
-        logger.debug("Forwarding {}  to webpack as {}" + requestURI, serverRequest.uri());
+        logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
 
         serverRequest.pause();
         HttpClientRequest clientRequest = client.request(serverRequest.method(), requestURI, clientResponse -> {
-
+            serverRequest.resume();
             if (clientResponse.statusCode() == HttpResponseStatus.NOT_FOUND.code()) {
                 logger.debug("Resource not served by webpack {}", requestURI);
                 routingContext.next();
             } else {
-                logger.debug("Served resource by webpack: {} {}}", clientResponse.statusCode(), requestURI);
+                logger.debug("Served resource by webpack: {} {}", clientResponse.statusCode(), requestURI);
                 serverRequest.response().setChunked(true);
                 serverRequest.response().setStatusCode(clientResponse.statusCode());
                 serverRequest.response().headers().setAll(clientResponse.headers());
@@ -82,7 +127,6 @@ public class HttpReverseProxy {
         });
         clientRequest.setChunked(true);
         clientRequest.end(routingContext.getBody());
-        serverRequest.resume();
     }
-
+    */
 }
