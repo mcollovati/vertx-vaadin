@@ -68,6 +68,7 @@ import org.mockito.junit.MockitoRule;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.list;
+import static java.util.Collections.singletonList;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -106,18 +107,18 @@ public class VertxVaadinRequestUT {
 
 
     @Property(trials = TRIALS)
-    public void shouldDelegateGetParameterToHttpServerRequest(@From(RandomStringGenerator.class) String paramName,
+    public void shouldDelegateGetParameterToRoutingContext(@From(RandomStringGenerator.class) String paramName,
                                                               @From(RandomStringGenerator.class) String value) {
-        when(httpServerRequest.getParam(paramName)).thenReturn(value);
+        when(routingContext.queryParam(paramName)).thenReturn(singletonList(value));
         assertThat(vaadinRequest.getParameter(paramName)).isEqualTo(value);
         assertThat(vaadinRequest.getParameter(paramName + "NotExists")).isNull();
     }
 
     @Property(trials = TRIALS)
-    public void shouldDelegateGetParameterMapToHttpServerRequest(Map<String, List<String>> map) {
+    public void shouldDelegateGetParameterMapToRoutingContext(Map<String, List<String>> map) {
         MultiMap multiMap = map.entrySet().stream().collect(MultiMap::caseInsensitiveMultiMap,
             (mm, kv) -> mm.add(kv.getKey(), kv.getValue()), MultiMap::addAll);
-        when(httpServerRequest.params()).thenReturn(multiMap);
+        when(routingContext.queryParams()).thenReturn(multiMap);
         Map.Entry<String, String[]>[] expected = map.entrySet().stream()
             .map(e -> entry(e.getKey(),
                 e.getValue().stream().toArray(String[]::new)))
