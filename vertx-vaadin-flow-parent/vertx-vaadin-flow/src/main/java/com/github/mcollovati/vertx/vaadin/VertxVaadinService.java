@@ -28,6 +28,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.Future;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.VertxJavaScriptBootstrapHandler;
@@ -38,6 +40,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
@@ -54,6 +57,8 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.AbstractTheme;
+import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.impl.FileResolver;
@@ -80,12 +85,22 @@ public class VertxVaadinService extends VaadinService {
         return vertxVaadin.vertx();
     }
 
-    VaadinOptions getVaadinOptions() {
+    public VaadinOptions getVaadinOptions() {
         return vertxVaadin.config();
     }
 
     public ServletContext getServletContext() {
         return vertxVaadin.servletContext();
+    }
+
+    /*
+     * Wrap command so they are execute in vert.x context
+     */
+    @Override
+    public Future<Void> accessSession(VaadinSession session, Command command) {
+        Context context = vertxVaadin.vertx().getOrCreateContext();
+        Command runCommandOnContext = VertxCommand.wrap(context, command);
+        return super.accessSession(session, runCommandOnContext);
     }
 
     @Override
@@ -233,7 +248,7 @@ public class VertxVaadinService extends VaadinService {
         }
         /*
         if (url == null) {
-            logger.trace("Path {} not found into META-INF/resources/, try with webjars");
+            logger.trace("Path {} not found into META-INF/resources/, try with webjars", path);
             url = vertxVaadin.webJars.getWebJarResourcePath(path)
                 .map(this::tryResolveFile).orElse(null);
         }*/
@@ -294,6 +309,7 @@ public class VertxVaadinService extends VaadinService {
      * @param request the request for which the location should be determined
      * @return A relative path to the context root. Never ends with a slash (/).
      */
+    @Override
     public String getContextRootRelativePath(VaadinRequest request) {
         return getCancelingRelativePath("/") + "/";
     }
