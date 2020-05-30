@@ -194,6 +194,11 @@ public class VaadinVerticle extends AbstractVerticle {
             log.error("Error during Vaadin service destroy", ex);
         }
 
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        if (handler != null && !handler.reuseDevServer()) {
+            handler.stop();
+        }
+
         httpServer.close(stopFuture);
         log.info("Stopped vaadin verticle " + getClass().getName());
     }
