@@ -117,12 +117,11 @@ public class SockJSPushConnection implements PushConnection {
 
         // Should block until disconnection happens
         try {
-            this.socket.close().thenRun(this::connectionLost)
-                .toCompletableFuture().get();
+            this.socket.close().toCompletableFuture().get();
         } catch (Exception e) {
             getLogger().log(Level.INFO, "Error waiting for disconnection");
-            this.connectionLost();
         }
+        this.connectionLost();
     }
 
     @Override

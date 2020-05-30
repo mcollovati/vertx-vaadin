@@ -28,11 +28,9 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
@@ -171,13 +169,16 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         RoutingContext routingContext = CurrentInstance.get(RoutingContext.class);
 
         String uuid = sockJSSocket.writeHandlerID();
+        // Send an ACK
+        sockJSSocket.write("ACK-CONN|" + uuid);
+
         connectedSocketsLocalMap.put(uuid, sockJSSocket);
         PushSocket socket = new PushSocketImpl(sockJSSocket);
 
         initSocket(sockJSSocket, routingContext, socket);
 
         // Send an ACK
-        socket.send("ACK-CONN|" + uuid);
+        //socket.send("ACK-CONN|" + uuid);
 
         sessionHandler.handle(new SockJSRoutingContext(routingContext, rc ->
             callWithUi(new PushEvent(socket, routingContext, null), establishCallback)
@@ -500,24 +501,19 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
         @Override
         public boolean isConnected() {
-            try {
-                return runCommand(Objects::nonNull).get(1000, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                return false;
-            }
+            return tryGetSocket() != null;
         }
 
-        // Should run sync to avoid hanging on vaadin session
+        private SockJSSocket tryGetSocket() {
+            Vertx vertx = Vertx.currentContext().owner();
+            return SockJSPushHandler.socketsMap(vertx).get(socketUUID);
+        }
+
         private <T> CompletableFuture<T> runCommand(Function<SockJSSocket, T> action) {
             CompletableFuture<T> future = new CompletableFuture<>();
-            Vertx vertx = Vertx.currentContext().owner();
-            SockJSSocket socket = SockJSPushHandler.socketsMap(vertx).get(socketUUID);
+            SockJSSocket socket = tryGetSocket();
             if (socket != null) {
-                try {
-                    future.complete(action.apply(socket));
-                } catch (Exception ex) {
-                    future.completeExceptionally(ex);
-                }
+                future = CompletableFuture.supplyAsync(() -> action.apply(socket));
             } else {
                 future.completeExceptionally(new RuntimeException("Socket not registered: " + socketUUID));
             }
