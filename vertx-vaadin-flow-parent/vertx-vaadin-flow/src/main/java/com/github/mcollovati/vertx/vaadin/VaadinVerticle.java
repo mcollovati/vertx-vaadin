@@ -109,36 +109,37 @@ public class VaadinVerticle extends AbstractVerticle {
 
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
         String mountPoint = vertxVaadin.config().mountPoint();
-        HttpServerOptions serverOptions = new HttpServerOptions().setCompressionSupported(true);
-
         Router router = Router.router(vertx);
         router.mountSubRouter(mountPoint, vertxVaadin.router());
+        log.debug("Mounted Vaadin router on {}", mountPoint);
+
+        HttpServerOptions serverOptions = new HttpServerOptions(
+            config().getJsonObject("server", new JsonObject())
+        ).setCompressionSupported(true);
 
         httpServer = vertx.createHttpServer(serverOptions).requestHandler(router);
-        Promise<HttpServer> promise = Promise.promise();
-        Future<HttpServer> future = promise.future();
-        future.setHandler(event -> {
-            if (event.succeeded()) {
-                log.info("Started vaadin verticle " + getClass().getName() + " on port " + event.result().actualPort());
-            } else {
-                log.error("Cannot start http server", event.cause());
-            }
-        });
+        Promise<Router> promise = Promise.promise();
 
-        httpPort().setHandler(event -> {
-            if (event.succeeded()) {
-                httpServer.listen(event.result(), promise);
-            } else {
-                promise.fail(event.cause());
-            }
-        });
-
-        return future.map(router);
+        httpPort().flatMap(port -> {
+            Promise<HttpServer> p = Promise.promise();
+            httpServer.listen(port, p);
+            return p.future();
+        }).compose(srv -> {
+            log.info("Started Vaadin verticle {} on port {}", getClass().getName(), srv.actualPort());
+            return Future.succeededFuture(router);
+        }, t -> {
+            log.error("Cannot start http server", t);
+            return Future.failedFuture(t);
+        }).setHandler(promise);
+        return promise.future();
     }
 
     private Future<Integer> httpPort() {
         Promise<Integer> promise = Promise.promise();
-        Integer httpPort = config().getInteger("httpPort", 8080);
+        // search first new port key server.port, then, for backward compatibility
+        // fallback to httpPort
+        Integer httpPort = config().getJsonObject("server", new JsonObject())
+            .getInteger("port", config().getInteger("httpPort", 8080));
         if (httpPort == 0) {
             try (ServerSocket socket = new ServerSocket(0)) {
                 promise.complete(socket.getLocalPort());
@@ -303,7 +304,7 @@ public class VaadinVerticle extends AbstractVerticle {
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
             runInitializer(initializerFactory.apply(new AnnotationValidator())),
             runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-            runInitializer(event2 -> initializeDevModeHandler(event2, startupContext, classes.get(DevModeInitializer.class)))
+            runInitializer(event2 -> initializeDevModeHandler(getClass(), event2, startupContext, classes.get(DevModeInitializer.class)))
         )).setHandler(event2 -> {
             if (event2.succeeded()) {
                 promise.complete();
@@ -313,14 +314,21 @@ public class VaadinVerticle extends AbstractVerticle {
         });
     }
 
-    private void initializeDevModeHandler(Promise<Object> promise, StartupContext startupContext, Set<Class<?>> classes) {
-        try {
-            DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(),
-                DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions())
-            );
-            promise.complete(DevModeHandler.getDevModeHandler());
-        } catch (ServletException e) {
-            promise.fail(e);
+    private static synchronized void initializeDevModeHandler(Class<?> verticleClass, Promise<Object> promise,
+                                                              StartupContext startupContext, Set<Class<?>> classes) {
+        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
+        if (devModeHandler == null) {
+            try {
+                DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(),
+                    DeploymentConfigurationFactory.createDeploymentConfiguration(verticleClass, startupContext.vaadinOptions())
+                );
+                promise.complete(DevModeHandler.getDevModeHandler());
+            } catch (ServletException e) {
+                promise.fail(e);
+            }
+        } else {
+            log.info("DevModeHandler already running on port {}", devModeHandler.getPort());
+            promise.complete(devModeHandler);
         }
     }
 
