@@ -35,6 +35,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import com.github.mcollovati.vertx.Sync;
 import com.github.mcollovati.vertx.web.ExtendedSession;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.WrappedSession;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
@@ -55,9 +57,7 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Created by marco on 16/07/16.
@@ -88,13 +88,22 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     @Override
     public String getParameter(String parameter) {
-        return request.getParam(parameter);
+        //return request.getParam(parameter);
+        return routingContext.queryParam(parameter)
+            .stream().findFirst().orElse(null);
     }
 
     @Override
     public Map<String, String[]> getParameterMap() {
+        Map<String, String[]> params = new HashMap<>();
+        MultiMap multiMap = routingContext.queryParams();
+        multiMap.names()
+            .forEach(param -> params.put(param, multiMap.getAll(param).toArray(new String[0])));
+        return params;
+        /*
         return request.params().names()
             .stream().collect(toMap(identity(), k -> request.params().getAll(k).toArray(new String[0])));
+         */
     }
 
     @Override
