@@ -28,19 +28,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.Future;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
-import com.github.mcollovati.vertx.vaadin.communication.VertxJavaScriptBootstrapHandler;
-import com.github.mcollovati.vertx.vaadin.communication.VertxStreamRequestHandler;
-import com.github.mcollovati.vertx.vaadin.communication.VertxWebComponentBootstrapHandler;
+import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
@@ -52,12 +48,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
@@ -97,7 +89,7 @@ public class VertxVaadinService extends VaadinService {
      * Wrap command so they are execute in vert.x context
      */
     @Override
-    public Future<Void> accessSession(VaadinSession session, Command command) {
+    public java.util.concurrent.Future<Void> accessSession(VaadinSession session, Command command) {
         Context context = vertxVaadin.vertx().getOrCreateContext();
         Command runCommandOnContext = VertxCommand.wrap(context, command);
         return super.accessSession(session, runCommandOnContext);
@@ -120,7 +112,7 @@ public class VertxVaadinService extends VaadinService {
         List<RequestHandler> handlers = super.createRequestHandlers();
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
-        handlers.replaceAll(this::replaceRequestHandlers);
+        handlers.replaceAll(RequestHandlerReplacements::replace);
         addBootstrapHandler(handlers);
         return handlers;
     }
@@ -134,17 +126,6 @@ public class VertxVaadinService extends VaadinService {
             handlers.add(0, new IndexHtmlRequestHandler());
             logger.debug("Using '{}' in client mode bootstrapping", IndexHtmlRequestHandler.class.getName());
         }
-    }
-
-    private RequestHandler replaceRequestHandlers(RequestHandler requestHandler) {
-        if (requestHandler instanceof StreamRequestHandler) {
-            return new VertxStreamRequestHandler();
-        } else if (requestHandler instanceof WebComponentBootstrapHandler) {
-            return new VertxWebComponentBootstrapHandler();
-        } else if (requestHandler instanceof JavaScriptBootstrapHandler) {
-            return new VertxJavaScriptBootstrapHandler();
-        }
-        return requestHandler;
     }
 
     @Override
@@ -319,5 +300,4 @@ public class VertxVaadinService extends VaadinService {
     public static String getCancelingRelativePath(String servletPath) {
         return HandlerHelper.getCancelingRelativePath(servletPath);
     }
-
 }

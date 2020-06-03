@@ -4,6 +4,8 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorHandlingCommand;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Vaadin {@link Command} implementation that executes logic
@@ -12,8 +14,11 @@ import io.vertx.core.Vertx;
  * @param <T> Commant type
  */
 class VertxCommand<T extends Command> implements Command {
-    final Context context;
-    final T delegate;
+
+    private static final Logger logger = LoggerFactory.getLogger(VertxCommand.class);
+
+    protected final Context context;
+    protected final T delegate;
 
     public VertxCommand(Context context, T delegate) {
         this.context = context;
@@ -27,9 +32,11 @@ class VertxCommand<T extends Command> implements Command {
 
     protected final void runOnContext(Runnable runnable) {
         if (context == Vertx.currentContext()) {
+            logger.trace("Running command on current context");
             runnable.run();
         } else {
             context.executeBlocking(p -> {
+                logger.trace("Running command on worker thread");
                 try {
                     runnable.run();
                 } finally {

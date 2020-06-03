@@ -37,4 +37,5 @@ public interface PushSocket extends Serializable {
 
     boolean isConnected();
 
+    boolean isClosed();
 }

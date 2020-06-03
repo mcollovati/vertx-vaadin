@@ -281,7 +281,11 @@ public class SockJSPushConnection implements PushConnection {
             getConnectionStateHandler().pushInvalidContent(this, message);
         } else {
             Console.log("Received push (" + getTransportType() + ") message: " + message);
-            registry.getMessageHandler().handleMessage(json);
+            if (!registry.getUILifecycle().isTerminated()) {
+                registry.getMessageHandler().handleMessage(json);
+            } else {
+                Console.warn("Received push (" + getTransportType() + ") message, but ui is already terminated: " + message);
+            }
         }
     }
 

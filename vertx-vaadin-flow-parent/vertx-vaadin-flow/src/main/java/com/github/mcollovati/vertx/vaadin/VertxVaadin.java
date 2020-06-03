@@ -39,6 +39,7 @@ import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -204,15 +205,11 @@ public class VertxVaadin {
         vaadinRouter.routeWithRegex("^(?!/(VAADIN(?!/dynamic)|frontend|frontend-es6|webjars|webroot)/).*$")
             .handler(sessionHandler);
 
-        // Forward vaadinPush javascript to sockjs implementation
-        vaadinRouter.routeWithRegex("/VAADIN/static/push/vaadinPush(?<min>-min)?\\.js(?<compressed>\\.gz)?")
-            .handler(ctx -> ctx.reroute(
-                String.format("%s/VAADIN/static/push/vaadinPushSockJS%s.js%s", ctx.mountPoint(),
-                    Objects.toString(ctx.request().getParam("min"), ""),
-                    Objects.toString(ctx.request().getParam("compressed"), "")
-                )
-            ));
-
+        // Serve push javascript
+        StaticHandler metaInfVaadinStatic = StaticHandler.create("META-INF/resources/VAADIN/static");
+        vaadinRouter.routeWithRegex("/VAADIN/static/push/vaadinPush(SockJS)?(?<suffix>.*)")
+            .handler(ctx -> ctx.response().sendFile("META-INF/resources/VAADIN/static/push/vaadinPushSockJS"
+                + ctx.request().getParam("suffix")));
 
         if (DevModeHandler.getDevModeHandler() != null) {
             logger.info("Starting DevModeHandler proxy");
@@ -226,11 +223,12 @@ public class VertxVaadin {
             .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client"));
         vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build"));
         vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static"));
-        vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("META-INF/resources/VAADIN/static"));
+        vaadinRouter.route("/VAADIN/static/*").handler(metaInfVaadinStatic);
         vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN"));
         vaadinRouter.route("/webroot/*").handler(StaticHandler.create("webroot"));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("webroot"));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("META-INF/resources/webjars"));
+
         vaadinRouter.routeWithRegex("/frontend/bower_components/(?<webjar>.*)").handler(ctx -> {
                 logger.trace("Rerouting bower component to {}/webjars/{}",
                     ctx.mountPoint(), Objects.toString(ctx.request().getParam("webjar"), "")
@@ -257,35 +255,25 @@ public class VertxVaadin {
         initSockJS(vaadinRouter, sessionHandler);
 
         vaadinRouter.route("/*").handler(StaticHandler.create("META-INF/resources"));
-        vaadinRouter.route("/*").handler(this::handleVaadinRequest);
+        vaadinRouter.route("/*").blockingHandler(this::handleVaadinRequest);
 
         serviceInitialized(vaadinRouter);
         return vaadinRouter;
     }
 
     private void handleVaadinRequest(RoutingContext routingContext) {
+        CurrentInstance.clearAll();
         VertxVaadinRequest request = new VertxVaadinRequest(service, routingContext);
         VertxVaadinResponse response = new VertxVaadinResponse(service, routingContext);
-
-        routingContext.request().pause();
-        vertx.executeBlocking(p -> {
-            try {
-                logger.trace("Handling Vaadin request: {}", routingContext.request().uri());
-                service.handleRequest(request, response);
-                logger.trace("Vaadin request completed: {}", routingContext.request().uri());
-                p.complete();
-            } catch (Exception ex) {
-                logger.error("Error processing request {}", routingContext.request().uri(), ex);
-                p.fail(ex);
-            }
-        }, ev -> {
-            routingContext.request().resume();
-            if (ev.succeeded()) {
-                response.end();
-            } else {
-                routingContext.fail(ev.cause());
-            }
-        });
+        try {
+            logger.trace("Handling Vaadin request: {}", routingContext.request().uri());
+            service.handleRequest(request, response);
+            logger.trace("Vaadin request completed: {}", routingContext.request().uri());
+            response.end();
+        } catch (Exception ex) {
+            logger.error("Error processing request {}", routingContext.request().uri(), ex);
+            routingContext.fail(ex);
+        }
     }
 
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {
