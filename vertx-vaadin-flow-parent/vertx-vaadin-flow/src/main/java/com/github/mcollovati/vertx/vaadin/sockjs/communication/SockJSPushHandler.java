@@ -136,7 +136,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
      * open. If there is a pending push, send it now.
      */
     private final PushEventCallback establishCallback = (PushEvent event, UI ui) -> {
-        logger.trace("New push connection for resource {} with transport {}", event.socket().getUUID(), "resource.transport()");
+        logger.trace("New push connection for resource {}", event.socket().getUUID());
 
         VaadinSession session = ui.getSession();
         PushSocket socket = event.socket;
@@ -161,8 +161,8 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     public SockJSPushHandler(VertxVaadinService service, SessionHandler sessionHandler, SockJSHandler sockJSHandler) {
         this.service = service;
         this.sessionHandler = sessionHandler;
-        this.connectedSocketsLocalMap = socketsMap(service.getVertx());
-        this.router = sockJSHandler.socketHandler(this::onConnect);
+        connectedSocketsLocalMap = socketsMap(service.getVertx());
+        router = sockJSHandler.socketHandler(this::onConnect);
     }
 
     private void onConnect(SockJSSocket sockJSSocket) {
@@ -176,9 +176,6 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         PushSocket socket = new PushSocketImpl(sockJSSocket);
 
         initSocket(sockJSSocket, routingContext, socket);
-
-        // Send an ACK
-        //socket.send("ACK-CONN|" + uuid);
 
         sessionHandler.handle(new SockJSRoutingContext(routingContext, rc ->
             callWithUi(new PushEvent(socket, routingContext, null), establishCallback)
@@ -200,7 +197,9 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
     private void onDisconnect(PushEvent ev) {
         connectedSocketsLocalMap.remove(ev.socket.getUUID());
-        connectionLost(ev);
+        if (!ev.socket.isClosed()) {
+            connectionLost(ev);
+        }
     }
 
     private void onError(PushEvent ev, Throwable t) {
@@ -467,10 +466,11 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
         private final String socketUUID;
         private final String remoteAddress;
+        private boolean closed;
 
         PushSocketImpl(SockJSSocket socket) {
-            this.socketUUID = socket.writeHandlerID();
-            this.remoteAddress = socket.remoteAddress().toString();
+            socketUUID = socket.writeHandlerID();
+            remoteAddress = socket.remoteAddress().toString();
         }
 
         @Override
@@ -487,6 +487,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         public CompletionStage<?> send(String message) {
             return runCommand(socket -> {
                 socket.write(Buffer.buffer(message));
+                logger.debug("Message sent {}", message);
                 return Boolean.TRUE;
             });
         }
@@ -495,13 +496,19 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         public CompletionStage<Boolean> close() {
             return runCommand(socket -> {
                 socket.close();
+                closed = true;
                 return Boolean.TRUE;
             });
         }
 
         @Override
         public boolean isConnected() {
-            return tryGetSocket() != null;
+            return tryGetSocket() != null && !closed;
+        }
+
+        @Override
+        public boolean isClosed() {
+            return closed;
         }
 
         private SockJSSocket tryGetSocket() {
@@ -513,7 +520,16 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             CompletableFuture<T> future = new CompletableFuture<>();
             SockJSSocket socket = tryGetSocket();
             if (socket != null) {
-                future = CompletableFuture.supplyAsync(() -> action.apply(socket));
+                Vertx.currentContext().runOnContext(v -> {
+                    try {
+                        logger.trace("Running socket command");
+                        action.apply(socket);
+                        future.complete(null);
+                    } catch (Exception ex) {
+                        logger.trace("Socket command failed", ex);
+                        future.completeExceptionally(ex);
+                    }
+                });
             } else {
                 future.completeExceptionally(new RuntimeException("Socket not registered: " + socketUUID));
             }
@@ -569,7 +585,7 @@ class SockJSRoutingContext extends RoutingContextDecorator {
 
     @Override
     public Session session() {
-        return this.session;
+        return session;
     }
 
     @Override
