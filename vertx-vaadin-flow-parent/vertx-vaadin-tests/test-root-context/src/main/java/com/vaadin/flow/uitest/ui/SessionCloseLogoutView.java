@@ -24,7 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 
 @Route(value = "com.vaadin.flow.uitest.ui.SessionCloseLogoutView")
-@Push(transport = Transport.LONG_POLLING)
+@Push(transport = Transport.WEBSOCKET_XHR)
 public class SessionCloseLogoutView extends Div {
 
     public SessionCloseLogoutView() {

@@ -23,29 +23,29 @@
 package com.github.mcollovati.vertx.vaadin.sockjs.communication;
 
 import java.io.Reader;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.communication.UidlWriter;
 import elemental.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SockJSPushConnection implements PushConnection {
 
+    private static final Logger logger = LoggerFactory.getLogger(SockJSPushConnection.class);
     private static final long serialVersionUID = -1336533816978562477L;
 
     private final int uiId;
     private PushSocket socket;
     private State state = State.DISCONNECTED;
-    private transient Future<?> outgoingMessage;
+    private transient CompletableFuture<?> outgoingMessage;
 
     public SockJSPushConnection(UI ui) {
-        this.uiId = ui.getUIId();
+        uiId = ui.getUIId();
     }
 
     @Override
@@ -70,7 +70,7 @@ public class SockJSPushConnection implements PushConnection {
             }
         } else {
             try {
-                UI ui = VaadinSession.getCurrent().getUIById(this.uiId);
+                UI ui = VaadinSession.getCurrent().getUIById(uiId);
                 JsonObject response = new UidlWriter().createUidl(ui, async);
                 sendMessage("for(;;);[" + response.toJson() + "]");
             } catch (Exception e) {
@@ -80,7 +80,8 @@ public class SockJSPushConnection implements PushConnection {
     }
 
     private void sendMessage(String message) {
-        this.outgoingMessage = socket.send(message).toCompletableFuture();
+        logger.debug("Sending push message {}", message);
+        outgoingMessage = socket.send(message).toCompletableFuture();
     }
 
     protected Reader receiveMessage(Reader data) {
@@ -95,33 +96,14 @@ public class SockJSPushConnection implements PushConnection {
         if (socket == null) {
             // Already disconnected. Should not happen but if it does, we don't
             // want to cause NPEs
-            getLogger().fine(
-                "SockJSPushConnection.disconnect() called twice, this should not happen");
+            logger.debug("SockJSPushConnection.disconnect() called twice, this should not happen");
             return;
         }
 
-        if (outgoingMessage != null) {
-            // Wait for the last message to be sent before closing the
-            // connection (assumes that futures are completed in order)
-            try {
-                outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException e) {
-                getLogger().log(Level.INFO,
-                    "Timeout waiting for messages to be sent to client before disconnect");
-            } catch (Exception e) {
-                getLogger().log(Level.INFO,
-                    "Error waiting for messages to be sent to client before disconnect");
-            }
-            outgoingMessage = null;
-        }
-
-        // Should block until disconnection happens
-        try {
-            this.socket.close().toCompletableFuture().get();
-        } catch (Exception e) {
-            getLogger().log(Level.INFO, "Error waiting for disconnection");
-        }
-        this.connectionLost();
+        Optional.of(outgoingMessage)
+            .orElseGet(() -> CompletableFuture.completedFuture(null))
+            .thenCompose(unused -> socket.close())
+            .thenRun(this::connectionLost);
     }
 
     @Override
@@ -164,10 +146,6 @@ public class SockJSPushConnection implements PushConnection {
         return socket;
     }
 
-    private static Logger getLogger() {
-        return Logger.getLogger(SockJSPushConnection.class.getName());
-    }
-
     protected enum State {
         /**
          * Not connected. Trying to push will set the connection state to
@@ -191,7 +169,7 @@ public class SockJSPushConnection implements PushConnection {
         /**
          * Connected. Messages can be sent through the connection.
          */
-        CONNECTED;
+        CONNECTED
 
     }
 

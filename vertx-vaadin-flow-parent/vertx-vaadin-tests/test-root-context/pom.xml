@@ -36,12 +36,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-client</artifactId>
-            <version>${vertx.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server-compatibility-mode</artifactId>
             <version>${vaadin.flow.version}</version>
@@ -302,7 +296,7 @@
                         </executions>
                         <configuration>
                             <compatibilityMode>false</compatibilityMode>
-                            <productionMode>true</productionMode>
+                            <productionMode>false</productionMode>
                         </configuration>
                     </plugin>
                     <plugin>

@@ -37,23 +37,26 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by marco on 16/07/16.
  */
 public class VertxVaadinResponse implements VaadinResponse {
 
+    private static final Logger logger = LoggerFactory.getLogger(VertxVaadinResponse.class);
+
     private final RoutingContext routingContext;
     private final HttpServerResponse response;
     private final VertxVaadinService service;
-    ;
     private Buffer outBuffer = Buffer.buffer();
     private boolean useOOS = false;
     private boolean useWriter = false;
 
     public VertxVaadinResponse(VertxVaadinService service, RoutingContext routingContext) {
         this.routingContext = routingContext;
-        this.response = routingContext.response();
+        response = routingContext.response();
         this.service = service;
     }
 
@@ -84,47 +87,61 @@ public class VertxVaadinResponse implements VaadinResponse {
     }
 
     @Override
-    public OutputStream getOutputStream() throws IOException {
+    public OutputStream getOutputStream() {
         if (useWriter) {
             throw new IllegalStateException("getWriter() has already been called for this response");
         }
         useOOS = true;
         return new OutputStream() {
             @Override
-            public void write(int b) throws IOException {
+            public void write(int b) {
                 outBuffer.appendByte((byte) b);
             }
 
             @Override
-            public void close() throws IOException {
-                response.end(outBuffer);
+            public void close() {
+                doClose();
+            }
+
+            @Override
+            public void flush() {
+                doFlush();
             }
         };
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException {
+    public PrintWriter getWriter() {
         if (useOOS) {
             throw new IllegalStateException("getOutputStream() has already been called for this response");
         }
         useWriter = true;
         return new PrintWriter(new Writer() {
             @Override
-            public void write(char[] cbuf, int off, int len) throws IOException {
+            public void write(char[] cbuf, int off, int len) {
                 outBuffer.appendString(new String(cbuf, off, len));
             }
 
             @Override
-            public void flush() throws IOException {
-                response.write(outBuffer);
-                outBuffer = Buffer.buffer();
+            public void flush() {
+                doFlush();
             }
 
             @Override
-            public void close() throws IOException {
-                response.end(outBuffer);
+            public void close() {
+                doClose();
             }
         });
+    }
+
+    private void doFlush() {
+        Buffer copy = outBuffer.copy();
+        outBuffer = Buffer.buffer();
+        response.write(copy);
+    }
+
+    private void doClose() {
+        response.end(outBuffer);
     }
 
     @Override
@@ -154,11 +171,12 @@ public class VertxVaadinResponse implements VaadinResponse {
 
     /**
      * Ends the response.
-     *
+     * <p>
      * Does nothing if response is already endend or if it is chunked.
      */
-    void end() {
-        if (!response.ended() && !response.isChunked()) {
+    public void end() {
+        //if (!response.ended() && !response.isChunked()) {
+        if (!response.ended()) {
             response.end(outBuffer);
         }
     }
