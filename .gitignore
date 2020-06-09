@@ -1,5 +1,14 @@
 .vertx/
 
+uber-pom.xml
+node_modules/
+package.json
+package-lock.json
+webpack.config.js
+webpack.generated.js
+
+
+
 # Created by https://www.gitignore.io/api/maven
 
 ### Maven ###
