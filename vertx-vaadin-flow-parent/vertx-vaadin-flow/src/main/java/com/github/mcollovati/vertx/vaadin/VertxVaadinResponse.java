@@ -137,6 +137,9 @@ public class VertxVaadinResponse implements VaadinResponse {
     private void doFlush() {
         Buffer copy = outBuffer.copy();
         outBuffer = Buffer.buffer();
+        if (!response.isChunked()) {
+            response.setChunked(true);
+        }
         response.write(copy);
     }
 
