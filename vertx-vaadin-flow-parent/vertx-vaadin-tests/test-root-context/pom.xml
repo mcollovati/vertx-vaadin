@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>vertx-vaadin-test</artifactId>
-        <version>14.1.3-SNAPSHOT</version>
+        <version>14.2.1-uitests-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>vertx-vaadin-test-root-context</artifactId>
@@ -20,6 +20,7 @@
             DependenciesLoadingAnnotationsIT, FrontendInlineApiIT,
             RouteNotFoundProdModeIT
         </exclude.it.tests>
+        <verticleStartTimeout>60000</verticleStartTimeout>
     </properties>
 
     <dependencies>
@@ -174,7 +175,7 @@
                         </goals>
                         <configuration>
                             <url>http://localhost:8888/view/</url>
-                            <timeout>60000</timeout>
+                            <timeout>${verticleStartTimeout}</timeout>
                             <skip>${skipTests}</skip>
                         </configuration>
                     </execution>

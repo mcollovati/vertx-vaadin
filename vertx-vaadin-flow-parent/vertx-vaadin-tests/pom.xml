@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>1.0.v8v14.1</version>
+        <version>1.0.v8v14.2</version>
         <relativePath/>
     </parent>
     <groupId>com.github.mcollovati.vertx.tests</groupId>
     <artifactId>vertx-vaadin-test</artifactId>
-    <version>14.1.3-SNAPSHOT</version>
+    <version>14.2.1-uitests-SNAPSHOT</version>
     <name>vertx-vaadin tests</name>
     <packaging>pom</packaging>
     <properties>
