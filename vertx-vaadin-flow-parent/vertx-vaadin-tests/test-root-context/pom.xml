@@ -326,5 +326,25 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>circleci</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <parallel>none</parallel>
+                            <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                            <threadCount>1</threadCount>
+                            <systemPropertyVariables>
+                                <com.vaadin.testbench.Parameters.testsInParallel>1
+                                </com.vaadin.testbench.Parameters.testsInParallel>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
