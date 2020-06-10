@@ -20,7 +20,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
+      MAVEN_CONFIG: "-s ~/.circleci/.circleci.settings.xml"
 
     steps:
       - checkout
@@ -65,7 +65,6 @@ jobs:
       - restore_cache:
           keys:
             - v2-dependencies-{{ checksum "pom.xml" }}
-            - v2-dependencies-
       - run: ./mvnw -Prelease,release-vaadin8 -pl :vaadin8-sockjs,:vertx-vaadin8 -DskipTests clean deploy
       - run: ./tools/build_v8_widgetsets.sh deploy
   deploy-vaadin-flow:
@@ -84,13 +83,67 @@ jobs:
             - v2-dependencies-
       - run: ./mvnw -Prelease,release-flow -pl :vaadin-flow-sockjs,:vertx-vaadin-flow -DskipTests clean deploy
       - run: ./tools/build_flow_widgetsets.sh deploy
+  ui-tests:
+    docker:
+      - image: circleci/openjdk:8-jdk-browsers
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx1024m
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - ui-tests-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: "Setup custom environment variables"
+          command: |
+            echo "export WKDIR=$(pwd)" >> $BASH_ENV
+            echo "export MAVEN_CONFIG='-s $(pwd)/.circleci/.circleci.settings.xml'" >> $BASH_ENV
+
+      - run:
+          name: "Install artifacts"
+          command: ./mvnw -N install && ./mvnw -Prelease-flow install -DskipTests -DskipVertxRun=true
+      - run: >
+          cd vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context &&
+          $WKDIR/mvnw -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver
+          -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Xmx512M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
+          verify
+      - save_cache:
+          paths:
+            - ~/.vaadin
+            - ~/.m2
+          key: ui-tests-dependencies-{{ checksum "pom.xml" }}
+          when: always
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit-uitests/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit-uitests/ \;
+            find . -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/junit-uitests/ \;
+            find . -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/junit-uitests/ \;
+            find . -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/junit-uitests/ \;
+            cp /tmp/verticle.log ~/junit-uitests/
+          when: always
+      - store_test_results:
+          path: ~/junit-uitests
+      - store_artifacts:
+          path: ~/junit-uitests
+      - store_artifacts:
+          path: ~/repo/vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context/error-screenshots
+          destination: error-screenshots
 
 
 workflows:
   version: 2
   build-only:
     jobs:
-      - build
+      - ui-tests:
+          filters:
+            branches:
+              only: /^.*ui_tests.*/
   build-deploy:
     jobs:
       - build:
