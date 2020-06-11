@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -12,28 +12,32 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.router.RouterLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.SessionCloseLogoutView")
-@Push(transport = Transport.LONG_POLLING)
-public class SessionCloseLogoutView extends Div {
+@Push
+@Route("com.vaadin.flow.uitest.ui.PushLayout")
+public class PushLayout extends Div
+    implements RouterLayout, BeforeEnterObserver {
 
-    public SessionCloseLogoutView() {
-        NativeButton btn = new NativeButton("Logout!");
-        btn.addClickListener(evt -> getUI().ifPresent(ui -> {
+    public static String FORWARD_PATH = "forward-no-route";
 
-            ui.getPage().executeJs(String.format("window.location.href='%s'", BaseHrefView.class.getName()));
-            ui.getSession().close();
-        }));
-        add(btn);
+    public PushLayout() {
+        setId("push-layout");
     }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (FORWARD_PATH.equals(event.getLocation().getPath())) {
+            event.forwardTo(ForwardPage.class);
+        }
+    }
+
 }

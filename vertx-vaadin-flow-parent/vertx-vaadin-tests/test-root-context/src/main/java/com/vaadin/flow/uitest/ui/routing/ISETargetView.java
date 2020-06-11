@@ -13,19 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui.routing;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLayout;
 
-@Push
-@Route("com.vaadin.flow.uitest.ui.PushLayout")
-public class PushLayout extends Div implements RouterLayout {
+@Route("ise")
+public class ISETargetView extends Div {
 
-    public PushLayout() {
-        setId("push-layout");
+    public ISETargetView() {
+        throw new IllegalStateException();
     }
-
 }
