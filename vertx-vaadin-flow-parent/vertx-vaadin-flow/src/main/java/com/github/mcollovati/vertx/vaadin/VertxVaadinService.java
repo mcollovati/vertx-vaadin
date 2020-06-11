@@ -119,7 +119,7 @@ public class VertxVaadinService extends VaadinService {
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
         if (getDeploymentConfiguration().useV14Bootstrap()) {
-            handlers.add(0, new VertxBootstrapHandler());
+            handlers.add(0, VertxBootstrapHandler.patchIfNeeded());
             logger.debug("Using '{}' in deprecated V14 bootstrapping", BootstrapHandler.class.getName());
             UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
         } else {

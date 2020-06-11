@@ -17,12 +17,30 @@ import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import io.vertx.core.VertxException;
 
 /**
  * Replacement of Vaadin BootstrapHandler to get rid of some explicit casts
  * in BootstrapUtils.
  */
 public class VertxBootstrapHandler extends BootstrapHandler {
+
+    private static final boolean APPLY_PATCH = VertxBC.Delegator.shouldPatch();
+
+    /**
+     * Some versions of flow uses a {@link BootstrapHandler} implementation that has explicit casts
+     * on VaadinServletRequest. We try to detect if there's the need for a patched {@link BootstrapHandler}
+     * or if we can use the original one.
+     *
+     * @return
+     */
+    public static BootstrapHandler patchIfNeeded() {
+        if (APPLY_PATCH) {
+            return new VertxBootstrapHandler();
+        }
+        return new BootstrapHandler();
+    }
+
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request, VaadinResponse response, UI ui, Function<VaadinRequest, String> contextPathCallback) {
@@ -59,14 +77,28 @@ public class VertxBootstrapHandler extends BootstrapHandler {
 
             @SuppressWarnings("unchecked")
             private static <T> T invoke(String name, Class<?>[] paramTypes, Object... args) {
+                return findMethod(name, paramTypes).map(method -> {
+                    try {
+                        return (T) method.invoke(null, args);
+                    } catch (Exception e) {
+                        throw new VertxException(e);
+                    }
+                }).orElseThrow(() -> new VertxException("Cannot invoke BootstrapUtils." + name));
+            }
+
+            private static Optional<Method> findMethod(String name, Class<?>[] paramTypes) {
                 try {
                     Class<?> bootstrapUtilsClass = Class.forName("com.vaadin.flow.server.BootstrapUtils");
                     Method method = bootstrapUtilsClass.getDeclaredMethod(name, paramTypes);
                     method.setAccessible(true);
-                    return (T) method.invoke(null, args);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    return Optional.of(method);
+                } catch (ClassNotFoundException | NoSuchMethodException e) {
+                    return Optional.empty();
                 }
+            }
+
+            private static boolean shouldPatch() {
+                return findMethod("resolveRouteNotFoundNavigationTarget", new Class[]{ServletContext.class}).isPresent();
             }
 
             public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui, VaadinRequest request) {
