@@ -112,7 +112,7 @@ public class VertxVaadinService extends VaadinService {
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
         handlers.replaceAll(RequestHandlerReplacements::replace);
-        handlers.add(0, new VertxBootstrapHandler());
+        handlers.add(0, VertxBootstrapHandler.patchIfNeeded());
         return handlers;
     }
 
