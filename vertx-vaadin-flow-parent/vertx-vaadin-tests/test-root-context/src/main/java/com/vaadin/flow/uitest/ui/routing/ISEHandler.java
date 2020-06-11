@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,34 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.temp;
-
-import org.slf4j.LoggerFactory;
+package com.vaadin.flow.uitest.ui.routing;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.ParentLayout;
 
-/**
- * @author Vaadin Ltd
- * @since 1.0
- *
- */
-public class NPEHandler extends Div
-        implements HasErrorParameter<NullPointerException> {
+@ParentLayout(ISELayout.class)
+public class ISEHandler extends Div
+    implements HasErrorParameter<IllegalStateException> {
 
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NullPointerException> parameter) {
-        getElement().setText("NPE is thrown " + event.getLocation().getPath());
-
-        Exception exception = parameter.getCaughtException();
-        LoggerFactory.getLogger(NPEHandler.class).error(exception.getMessage(),
-                exception);
-
-        setId("no-route");
+                                 ErrorParameter<IllegalStateException> parameter) {
         return 500;
     }
-
 }
