@@ -1,10 +1,12 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
+import elemental.json.JsonObject;
 
 @Route("com.vaadin.flow.uitest.ui.RouterLinkView")
 public class RouterLinkView extends AbstractDivView {
@@ -25,6 +27,10 @@ public class RouterLinkView extends AbstractDivView {
         getPage().getHistory().setHistoryStateChangeHandler(e -> {
             location.setText(e.getLocation().getPath());
             queryParams.setText(e.getLocation().getQueryParameters().getQueryString());
+            if (e.getState().isPresent()) {
+                UI.getCurrent().getPage().getHistory().pushState(null,
+                    ((JsonObject) e.getState().get()).getString("href"));
+            }
         });
 
         addImageLink();
@@ -45,17 +51,22 @@ public class RouterLinkView extends AbstractDivView {
 
     protected void addLinks() {
         getElement().appendChild(
-                // inside servlet mapping
-                ElementFactory.createDiv("inside this servlet"), ElementFactory.createRouterLink("", "empty"),
-                new Element("p"), createRouterLink("foo"), new Element("p"), createRouterLink("foo/bar"),
-                new Element("p"), createRouterLink("./foobar"), new Element("p"), createRouterLink("./foobar?what=not"),
-                new Element("p"), createRouterLink("./foobar?what=not#fragment"), new Element("p"),
-                createRouterLink("/view/baz"), new Element("p"),
-                // outside
-                ElementFactory.createDiv("outside this servlet"), createRouterLink("/run"), new Element("p"),
-                createRouterLink("/foo/bar"), new Element("p"),
-                // external
-                ElementFactory.createDiv("external"), createRouterLink("http://example.net/"));
+            // inside servlet mapping
+            ElementFactory.createDiv("inside this servlet"),
+            ElementFactory.createRouterLink("", "empty"), new Element("p"),
+            createRouterLink("foo"), new Element("p"),
+            createRouterLink("foo/bar"), new Element("p"),
+            createRouterLink("./foobar"), new Element("p"),
+            createRouterLink("./foobar?what=not"), new Element("p"),
+            createRouterLink("./foobar?what=not#fragment"), new Element("p"),
+            createRouterLink("/view/baz"), new Element("p"),
+            // outside
+            ElementFactory.createDiv("outside this servlet"),
+            createRouterLink("/run"), new Element("p"),
+            createRouterLink("/foo/bar"), new Element("p"),
+            // external
+            ElementFactory.createDiv("external"),
+            createRouterLink("http://example.net/"));
     }
 
     private Element createRouterLink(String target) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,18 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.temp;
+package com.vaadin.flow.uitest.ui.routing;
 
-import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.BeforeEnterEvent;
 
-@Route(value = "npe")
-public class NPETargetView extends AbstractDivView {
+@Route("com.vaadin.flow.uitest.ui.routing.ForwardPage")
+public class ForwardPage extends Div {
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        event.rerouteToError(NullPointerException.class);
+    public ForwardPage() {
+        setId("forwarded");
+        setText("Forwarded");
     }
-
 }
