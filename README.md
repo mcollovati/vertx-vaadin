@@ -113,4 +113,9 @@ Vertx Vaadin is distributed under MIT License. For license terms, see [LICENSE](
 
 ## Acknowledgements
 
-Thanks to [David Sowerby](https://github.com/davidsowerby) (author of [Krail framework](https://github.com/davidsowerby/krail)) for all his precious technical and non technical support.
+Thanks to:
+ 
+* [David Sowerby](https://github.com/davidsowerby) (author of [Krail framework](https://github.com/davidsowerby/krail)) for all his precious technical and non technical support.
+* [Vaadin](https://vaadin.com/), and especially [Pekka Hyvönen](https://twitter.com/plekuu), for allowing me to use
+Flow UI test code and for the [Testbench](https://vaadin.com/testbench) license.
+* [Dudeplayz](https://github.com/Dudeplayz) for his valuable feedback.
