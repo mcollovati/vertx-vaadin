@@ -168,6 +168,8 @@
 
     <modules>
         <module>test-common</module>
+        <module>test-resources</module>
         <module>test-root-context</module>
+        <module>test-scalability</module>
     </modules>
 </project>
