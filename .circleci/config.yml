@@ -105,7 +105,7 @@ jobs:
 
       - run:
           name: "Install artifacts"
-          command: ./mvnw -N install && ./mvnw -Prelease-flow install -DskipTests -DskipVertxRun=true
+          command: ./mvnw -N install && ./mvnw -Prelease-flow,flow-ui-tests install -DskipTests -DskipVertxRun=true
       - run: >
           cd vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context &&
           $WKDIR/mvnw -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver
@@ -139,6 +139,12 @@ jobs:
 workflows:
   version: 2
   build-only:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /^.*ui_tests.*/
+  ui-tests:
     jobs:
       - ui-tests:
           filters:

@@ -30,6 +30,7 @@ public class PushRouteNotFoundIT extends ChromeBrowserTest {
     public void renderRouteNotFoundErrorPage_pushIsSpecifiedViaParentLayout() {
         open();
 
+        waitUntil(driver -> isElementPresent(By.cssSelector("#push-layout #push-mode")));
         TestBenchElement push = $(TestBenchElement.class).id("push-layout")
                 .$(TestBenchElement.class).id("push-mode");
         Assert.assertEquals("Push mode: AUTOMATIC", push.getText());
