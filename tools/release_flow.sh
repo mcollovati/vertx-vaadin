@@ -6,3 +6,4 @@ _mvn="$_base_dir/mvnw -f $_base_dir/pom.xml"
 
 $_mvn -Prelease-flow -pl :vaadin-flow-sockjs versions:set -DnewVersion=${_newVersion}
 $_mvn -Prelease-flow -pl :vertx-vaadin-flow versions:set -DnewVersion=${_newVersion}
+$_mvn -Prelease-flow,flow-ui-tests -pl :vertx-vaadin-test versions:set -DnewVersion=${_newVersion}
