@@ -147,11 +147,15 @@ workflows:
             branches:
               ignore: /^.*ui_tests.*/
   ui-tests:
-    jobs:
-      - ui-tests:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
           filters:
             branches:
-              only: /^.*ui_tests.*/
+              only:
+                - master
+    jobs:
+      - ui-tests
   build-deploy:
     jobs:
       - build:
