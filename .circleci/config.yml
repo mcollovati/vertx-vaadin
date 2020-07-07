@@ -20,7 +20,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s ~/.circleci/.circleci.settings.xml -ntp -B"
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B"
 
     steps:
       - checkout
