@@ -17,16 +17,13 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.List;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerModelPropertiesIT extends ChromeBrowserTest {
 
@@ -36,7 +33,7 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
 
         WebElement initial = findElement(By.id("property-value"));
         Assert.assertEquals("Property value:foo, model value: foo",
-                initial.getText());
+            initial.getText());
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         TestBenchElement input = template.$(TestBenchElement.class).id("input");
@@ -45,11 +42,11 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
 
         // property update event comes immediately
         List<WebElement> propertyUpdates = findElements(
-                By.id("property-update-event"));
+            By.id("property-update-event"));
         WebElement propertyUpdate = propertyUpdates
-                .get(propertyUpdates.size() - 1);
+            .get(propertyUpdates.size() - 1);
         Assert.assertEquals("Property value:x, model value: x",
-                propertyUpdate.getText());
+            propertyUpdate.getText());
 
         // now move focus out of the input and check that value change event is
         // fired
@@ -58,6 +55,6 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
         List<WebElement> valueUpdates = findElements(By.id("value-update"));
         WebElement valueUpdate = valueUpdates.get(valueUpdates.size() - 1);
         Assert.assertEquals("Property value:x, model value: x",
-                valueUpdate.getText());
+            valueUpdate.getText());
     }
 }

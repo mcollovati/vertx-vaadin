@@ -17,14 +17,11 @@ package com.vaadin.flow.uitest.ui.template.collections;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.WebElement;
 
 /**
  * Normal tests with @Before are not implemented because each @Test starts new
@@ -44,34 +41,34 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
     }
 
     private void checkMessagesRemoval(TestBenchElement template,
-            int initialSize) {
+                                      int initialSize) {
         for (int i = 0; i < initialSize; i++) {
             List<TestBenchElement> currentMessages = template
-                    .$(TestBenchElement.class).attribute("class", "submsg")
-                    .all();
+                .$(TestBenchElement.class).attribute("class", "submsg")
+                .all();
             Assert.assertEquals("Wrong amount of nested messages",
-                    initialSize - i, currentMessages.size());
+                initialSize - i, currentMessages.size());
 
             WebElement messageToRemove = currentMessages.iterator().next();
             String messageToRemoveText = messageToRemove.getText();
             messageToRemove.click();
 
             String removedMessageLabelText = template.$(TestBenchElement.class)
-                    .id("removedMessage").getText();
+                .id("removedMessage").getText();
             Assert.assertEquals("Expected removed message text to appear",
-                    "Removed message: " + messageToRemoveText,
-                    removedMessageLabelText);
+                "Removed message: " + messageToRemoveText,
+                removedMessageLabelText);
         }
     }
 
     private void checkAllElementsUpdated(TestBenchElement template,
-            int initialSize) {
+                                         int initialSize) {
         template.$(TestBenchElement.class).id("updateAllElements").click();
         List<TestBenchElement> msgs = template.$(TestBenchElement.class)
-                .attribute("class", "submsg").all();
+            .attribute("class", "submsg").all();
         Assert.assertEquals("Wrong amount of nested messages", initialSize,
-                msgs.size());
+            msgs.size());
         msgs.forEach(msg -> Assert.assertEquals("Message was not updated",
-                ListInsideListBindingView.UPDATED_TEXT, msg.getText()));
+            ListInsideListBindingView.UPDATED_TEXT, msg.getText()));
     }
 }

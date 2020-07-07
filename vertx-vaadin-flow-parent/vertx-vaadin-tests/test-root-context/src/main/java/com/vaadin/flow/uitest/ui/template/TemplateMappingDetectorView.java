@@ -19,7 +19,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -27,15 +26,15 @@ import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateMappingDetectorView", layout = ViewTestLayout.class)
 public class TemplateMappingDetectorView extends AbstractDivView {
 
     @Tag("div")
     public static class TemplateMappingDetector extends Component
-            implements HasText {
+        implements HasText {
 
         public TemplateMappingDetector() {
             setText("Template mapped: " + isTemplateMapped());
@@ -44,23 +43,22 @@ public class TemplateMappingDetectorView extends AbstractDivView {
     }
 
     public static class TemplateMappingDetectorComposite
-            extends Composite<TemplateMappingDetector> {
+        extends Composite<TemplateMappingDetector> {
 
         @Override
         protected TemplateMappingDetector initContent() {
             TemplateMappingDetector detector = super.initContent();
             detector.setText("Composite template mapped: " + isTemplateMapped()
-                    + " " + detector.getText());
+                + " " + detector.getText());
             return detector;
         }
 
     }
 
     @Tag("template-mapping-detector")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateMappingDetector.html")
     @JsModule("TemplateMappingDetector.js")
     public static class TemplateMappingDetectorContainer
-            extends PolymerTemplate<TemplateModel> {
+        extends PolymerTemplate<TemplateModel> {
         @Id
         TemplateMappingDetector detector1;
 
@@ -85,16 +83,15 @@ public class TemplateMappingDetectorView extends AbstractDivView {
     }
 
     @Tag("template-mapping-detector-parent")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateMappingDetectorParent.html")
     @JsModule("TemplateMappingDetectorParent.js")
     public static class TemplateMappingDetectorContainerParent
-            extends PolymerTemplate<TemplateModel> {
+        extends PolymerTemplate<TemplateModel> {
         @Id
         TemplateMappingDetectorContainer detector;
     }
 
     public static class TemplateMappingDetectorContainerComposite
-            extends Composite<TemplateMappingDetectorContainer> {
+        extends Composite<TemplateMappingDetectorContainer> {
     }
 
     @Override

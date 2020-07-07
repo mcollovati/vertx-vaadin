@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.routing;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
-@Category(IgnoreOSGi.class)
 public class PushRouteNotFoundIT extends ChromeBrowserTest {
 
     @Test
@@ -32,19 +29,19 @@ public class PushRouteNotFoundIT extends ChromeBrowserTest {
 
         waitUntil(driver -> isElementPresent(By.cssSelector("#push-layout #push-mode")));
         TestBenchElement push = $(TestBenchElement.class).id("push-layout")
-                .$(TestBenchElement.class).id("push-mode");
+            .$(TestBenchElement.class).id("push-mode");
         Assert.assertEquals("Push mode: AUTOMATIC", push.getText());
     }
 
     @Test
     public void renderRouteNotFoundErrorPage_parentLayoutReroute_reroutingIsDone() {
         String url = getTestURL(getRootURL(),
-                doGetTestPath(PushLayout.FORWARD_PATH), new String[0]);
+            doGetTestPath(PushLayout.FORWARD_PATH), new String[0]);
 
         getDriver().get(url);
 
         waitUntil(driver -> driver.getCurrentUrl()
-                .endsWith(ForwardPage.class.getName()));
+            .endsWith(ForwardPage.class.getName()));
 
         Assert.assertTrue(isElementPresent(By.id("forwarded")));
     }

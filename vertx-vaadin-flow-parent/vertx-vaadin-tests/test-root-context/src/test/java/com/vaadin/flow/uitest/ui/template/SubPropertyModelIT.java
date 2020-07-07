@@ -18,15 +18,12 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 public class SubPropertyModelIT extends ChromeBrowserTest {
 
@@ -36,12 +33,12 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         Assert.assertEquals("message",
-                template.$(TestBenchElement.class).id("msg").getText());
+            template.$(TestBenchElement.class).id("msg").getText());
 
         template.$(TestBenchElement.class).id("button").click();
 
         Assert.assertEquals("Updated",
-                template.$(TestBenchElement.class).id("msg").getText());
+            template.$(TestBenchElement.class).id("msg").getText());
 
         template.$(TestBenchElement.class).id("sync").click();
 
@@ -54,17 +51,17 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
 
         List<WebElement> valueUpdate = findElements(By.id("value-update"));
         Optional<WebElement> result = valueUpdate.stream()
-                .filter(element -> element.getText().equals("foo")).findAny();
+            .filter(element -> element.getText().equals("foo")).findAny();
         Assert.assertTrue("Unable to find updated input value element. "
                 + "Looks like input hasn't sent an event for subproperty",
-                result.isPresent());
+            result.isPresent());
 
         // click message
         template.$(TestBenchElement.class).id("msg").click();
 
         Assert.assertEquals(
-                "Clicking status message did not get the same modelData as in the message box.",
-                template.$(TestBenchElement.class).id("msg").getText(),
-                findElement(By.id("statusClick")).getText());
+            "Clicking status message did not get the same modelData as in the message box.",
+            template.$(TestBenchElement.class).id("msg").getText(),
+            findElement(By.id("statusClick")).getText());
     }
 }

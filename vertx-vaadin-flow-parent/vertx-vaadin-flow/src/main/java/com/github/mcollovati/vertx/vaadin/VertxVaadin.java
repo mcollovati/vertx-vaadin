@@ -211,11 +211,12 @@ public class VertxVaadin {
             .handler(ctx -> ctx.response().sendFile("META-INF/resources/VAADIN/static/push/vaadinPushSockJS"
                 + ctx.request().getParam("suffix")));
 
-        if (DevModeHandler.getDevModeHandler() != null) {
+        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
+        if (devModeHandler != null) {
             logger.info("Starting DevModeHandler proxy");
-            HttpReverseProxy proxy = HttpReverseProxy.create(vertx, DevModeHandler.getDevModeHandler().getPort());
+            HttpReverseProxy proxy = HttpReverseProxy.create(vertx, devModeHandler);
             //vaadinRouter.routeWithRegex(".+\\.js$").blockingHandler(proxy::forward);
-            vaadinRouter.routeWithRegex("(?!/VAADIN/static/push/).+\\.js$").blockingHandler(proxy::forward);
+            vaadinRouter.routeWithRegex("/VAADIN/(?!static/push/).+\\.js$").blockingHandler(proxy::forward);
         }
 
         //

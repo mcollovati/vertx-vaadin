@@ -1,14 +1,11 @@
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
 
@@ -35,11 +32,11 @@ public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
     private void assertTextsCorrect(String expected) {
         Assert.assertEquals(expected, secondPropDiv.getText());
         Assert.assertEquals(secondPropDiv.getText(),
-                serverSetTextDiv.getText());
+            serverSetTextDiv.getText());
     }
 
     private WebElement getElementById(String id) {
         return $("properties-updated-before-change-events").first()
-                .$(TestBenchElement.class).id(id);
+            .$(TestBenchElement.class).id(id);
     }
 }

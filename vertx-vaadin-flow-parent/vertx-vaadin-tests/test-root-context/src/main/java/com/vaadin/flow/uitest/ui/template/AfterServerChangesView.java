@@ -18,18 +18,16 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.UUID;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.AfterServerChangesView", layout = ViewTestLayout.class)
 public class AfterServerChangesView extends AbstractDivView {
 
     @Tag("after-server-changes")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AfterServerChanges.html")
     @JsModule("AfterServerChanges.js")
     public static class AfterServerChanges extends PolymerTemplate<Message> {
 
@@ -47,19 +45,19 @@ public class AfterServerChangesView extends AbstractDivView {
         add(new OneWayPolymerBindingView());
 
         add(createButton("Remove the second component", "remove",
-                event -> remove(component)));
+            event -> remove(component)));
 
         add(createButton("Update components", "update",
-                event -> updateComponents()));
+            event -> updateComponents()));
     }
 
     private void updateComponents() {
         getChildren()
-                .filter(component -> component.getClass()
-                        .equals(AfterServerChanges.class))
-                .map(AfterServerChanges.class::cast)
-                .forEach(component -> component.getModel()
-                        .setText(UUID.randomUUID().toString()));
+            .filter(component -> component.getClass()
+                .equals(AfterServerChanges.class))
+            .map(AfterServerChanges.class::cast)
+            .forEach(component -> component.getModel()
+                .setText(UUID.randomUUID().toString()));
     }
 
 }

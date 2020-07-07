@@ -20,7 +20,6 @@ import java.util.UUID;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
@@ -32,12 +31,11 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Tag("updatable-model-properties")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpdatableModelProperties.html")
 @Route(value = "com.vaadin.flow.uitest.ui.template.UpdatableModelPropertiesView", layout = ViewTestLayout.class)
 @JsModule("UpdatableModelProperties.js")
 public class UpdatableModelPropertiesView extends
-        PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
-        implements HasComponents {
+    PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
+    implements HasComponents {
 
     public interface UpdatablePropertiesModel extends TemplateModel {
 
@@ -62,23 +60,23 @@ public class UpdatableModelPropertiesView extends
         add(label);
 
         getElement().addPropertyChangeListener("name",
-                event -> label.setText(getModel().getName()));
+            event -> label.setText(getModel().getName()));
         getElement().addPropertyChangeListener("email",
-                event -> label.setText(getModel().getEmail()));
+            event -> label.setText(getModel().getEmail()));
         getElement().addPropertyChangeListener("age",
-                event -> label.setText(getElement().getProperty("age")));
+            event -> label.setText(getElement().getProperty("age")));
         getElement().addPropertyChangeListener("text",
-                event -> label.setText(getElement().getProperty("text")));
+            event -> label.setText(getElement().getProperty("text")));
     }
 
     @EventHandler
     private void syncAge() {
-        getElement().synchronizeProperty("age", "age-changed");
+        getElement().addPropertyChangeListener("age", "age-changed", event -> {});
     }
 
     @ClientCallable
     private void updateStatus() {
         getElement().setProperty("updateStatus",
-                "Update Done " + UUID.randomUUID().toString());
+            "Update Done " + UUID.randomUUID().toString());
     }
 }

@@ -16,13 +16,10 @@
 
 package com.vaadin.flow.uitest.ui.template;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Vaadin Ltd
@@ -38,11 +35,11 @@ public class DomRepeatIT extends ChromeBrowserTest {
 
         for (int i = 0; i < DomRepeatView.NUMBER_OF_EMPLOYEES; i++) {
             template.$(TestBenchElement.class)
-                    .id(DomRepeatView.TR_ID_PREFIX + i).click();
+                .id(DomRepeatView.TR_ID_PREFIX + i).click();
             String eventIndex = template.$(TestBenchElement.class)
-                    .id(DomRepeatView.EVENT_INDEX_ID).getText();
+                .id(DomRepeatView.EVENT_INDEX_ID).getText();
             String repeatIndex = template.$(TestBenchElement.class)
-                    .id(DomRepeatView.REPEAT_INDEX_ID).getText();
+                .id(DomRepeatView.REPEAT_INDEX_ID).getText();
 
             Assert.assertEquals(eventIndex, repeatIndex);
             Assert.assertEquals(i, Integer.parseInt(repeatIndex));

@@ -20,7 +20,6 @@ import java.util.Locale;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -32,7 +31,6 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.EventHandlerView", layout = ViewTestLayout.class)
 @Tag("event-handler")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/EventHandler.html")
 @JsModule("EventHandler.js")
 public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     public EventHandlerView() {
@@ -48,15 +46,15 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
 
     @EventHandler
     private void sendData(@EventData("event.button") int button,
-            @EventData("event.type") String type,
-            @EventData("event.srcElement.tagName") String tag) {
+                          @EventData("event.type") String type,
+                          @EventData("event.srcElement.tagName") String tag) {
         Element container = ElementFactory.createDiv();
         container.appendChild(ElementFactory
-                .createDiv("Received event from the client with the data:"));
+            .createDiv("Received event from the client with the data:"));
         container.appendChild(ElementFactory.createDiv("button: " + button));
         container.appendChild(ElementFactory.createDiv("type: " + type));
         container.appendChild(ElementFactory
-                .createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
+            .createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
         container.setAttribute("id", "event-data");
         getParent().get().getElement().appendChild(container);
     }
@@ -64,7 +62,7 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     @EventHandler
     private void overriddenClick(@EventData("event.result") String result) {
         Element label = ElementFactory.createLabel(
-                "Overridden server event was invoked with result: " + result);
+            "Overridden server event was invoked with result: " + result);
         label.setAttribute("id", "overridden-event-handler-result");
         getParent().get().getElement().appendChild(label);
     }
@@ -72,7 +70,7 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     @ClientCallable
     private void handleClientCall(String msg, boolean enabled) {
         Element div = ElementFactory.createDiv(
-                "Call from client, message: " + msg + ", " + enabled);
+            "Call from client, message: " + msg + ", " + enabled);
         div.setAttribute("id", "client-call");
         getParent().get().getElement().appendChild(div);
     }

@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
 
@@ -32,7 +29,7 @@ public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
         open();
 
         WebElement target = $(TestBenchElement.class).id("template")
-                .$(TestBenchElement.class).id("target");
+            .$(TestBenchElement.class).id("target");
         Assert.assertEquals("Server Side Text", target.getText());
 
         // replace the template with a label
@@ -45,7 +42,7 @@ public class RestoreViewWithAttachedByIdIT extends ChromeBrowserTest {
         button.click();
 
         target = $(TestBenchElement.class).id("template")
-                .$(TestBenchElement.class).id("target");
+            .$(TestBenchElement.class).id("target");
         Assert.assertEquals("Server Side Text", target.getText());
     }
 }

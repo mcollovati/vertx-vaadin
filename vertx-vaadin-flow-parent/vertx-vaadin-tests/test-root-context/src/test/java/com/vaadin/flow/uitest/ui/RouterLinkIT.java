@@ -14,6 +14,10 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
         verifySamePage();
 
+        if (hasClientIssue("7575")) {
+            return;
+        }
+
         testInsideServlet("foo", "foo", "", "foo");
         testInsideServlet("./foobar", "foobar", "", "foobar");
         testInsideServlet("foo/bar", "foo/bar", "", "foo/bar");
@@ -66,6 +70,11 @@ public class RouterLinkIT extends ChromeBrowserTest {
         findElement(By.tagName("img")).click();
 
         verifyInsideServletLocation("image/link");
+
+        if (hasClientIssue("7575")) {
+            return;
+        }
+
         verifyPopStateEvent("image/link");
     }
 

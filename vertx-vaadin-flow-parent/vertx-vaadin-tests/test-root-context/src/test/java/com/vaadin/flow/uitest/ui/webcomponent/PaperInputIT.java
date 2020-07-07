@@ -17,14 +17,11 @@ package com.vaadin.flow.uitest.ui.webcomponent;
 
 import java.util.List;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PaperInputIT extends ChromeBrowserTest {
 
@@ -37,10 +34,10 @@ public class PaperInputIT extends ChromeBrowserTest {
         input.sendKeys(Keys.END + "bar");
 
         List<WebElement> updateValueElements = findElements(
-                By.className("update-value"));
+            By.className("update-value"));
         WebElement lastUpdateValue = updateValueElements
-                .get(updateValueElements.size() - 1);
+            .get(updateValueElements.size() - 1);
         org.junit.Assert.assertEquals(originalValue + "bar",
-                lastUpdateValue.getText());
+            lastUpdateValue.getText());
     }
 }

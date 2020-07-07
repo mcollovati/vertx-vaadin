@@ -5,14 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.WebElement;
 
 /**
  * @author Vaadin Ltd
@@ -29,28 +26,28 @@ public class ClearListIT extends ChromeBrowserTest {
         List<String> initialMessages = getMessages(template);
 
         Assert.assertEquals("Initial page does not contain expected messages",
-                Arrays.asList("1", "2"), initialMessages);
+            Arrays.asList("1", "2"), initialMessages);
 
         template.$(TestBenchElement.class).id("clearList").click();
 
         Assert.assertTrue(
-                "Page should not contain elements after we've cleared them",
-                getMessages(template).isEmpty());
+            "Page should not contain elements after we've cleared them",
+            getMessages(template).isEmpty());
     }
 
     private void checkThatModelHasNoDefaultConstructor() {
         Constructor<?>[] modelConstructors = ClearListView.Message.class
-                .getConstructors();
+            .getConstructors();
         Assert.assertEquals("Expect model to have one constructor exactly", 1,
-                modelConstructors.length);
+            modelConstructors.length);
         Assert.assertTrue(
-                "Expect model to have at least one parameter in its single constructor",
-                modelConstructors[0].getParameterCount() > 0);
+            "Expect model to have at least one parameter in its single constructor",
+            modelConstructors[0].getParameterCount() > 0);
     }
 
     private List<String> getMessages(TestBenchElement template) {
         return template.$(TestBenchElement.class).attribute("class", "msg")
-                .all().stream().map(WebElement::getText)
-                .collect(Collectors.toList());
+            .all().stream().map(WebElement::getText)
+            .collect(Collectors.toList());
     }
 }

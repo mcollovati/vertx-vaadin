@@ -1,14 +1,10 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.testbench.SelectElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import com.vaadin.flow.component.html.testbench.SelectElement;
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-@Category(IgnoreOSGi.class)
 public class ViewTitleIT extends ChromeBrowserTest {
 
     @Override
@@ -47,7 +43,7 @@ public class ViewTitleIT extends ChromeBrowserTest {
 
     private void verifyTitle(String title) {
         Assert.assertEquals("Page title does not match", title,
-                getDriver().getTitle());
+            getDriver().getTitle());
     }
 
 }

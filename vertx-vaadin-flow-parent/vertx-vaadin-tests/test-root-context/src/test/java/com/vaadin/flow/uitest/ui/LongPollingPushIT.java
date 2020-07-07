@@ -15,23 +15,19 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-@Category(IgnoreOSGi.class)
 public class LongPollingPushIT extends ChromeBrowserTest {
 
     @Test
     public void openPage_thereAreNoErrorsInTheConsole() {
         open();
         checkLogsForErrors(msg -> msg.contains("sockjs-node")
-                || msg.contains("[WDS] Disconnected!"));
+            || msg.contains("[WDS] Disconnected!"));
 
         waitForElementNotPresent(By.cssSelector("span#child"));
 
@@ -50,7 +46,7 @@ public class LongPollingPushIT extends ChromeBrowserTest {
          * This entry may be ignored.
          */
         checkLogsForErrors(msg -> msg.contains("sockjs-node")
-                || msg.contains("[WDS] Disconnected!"));
+            || msg.contains("[WDS] Disconnected!"));
     }
 
 }

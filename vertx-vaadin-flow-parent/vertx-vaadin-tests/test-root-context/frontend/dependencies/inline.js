@@ -13,23 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.dependencies;
 
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
-
-/**
- * The test for {@link FrontendInlineApiView}.
- * <p>
- * The test code is inside superclass.
- *
- *
- * @author Vaadin Ltd
- * @since 1.0
- *
- */
-@Category(IgnoreNPM.class)
-public class FrontendInlineApiIT extends AbstractFrontendInlineIT {
-
-}
+// document.body might not yet be accessible, so just leave a message
+window.messages = window.messages || [];
+window.messages.push("inline.js");

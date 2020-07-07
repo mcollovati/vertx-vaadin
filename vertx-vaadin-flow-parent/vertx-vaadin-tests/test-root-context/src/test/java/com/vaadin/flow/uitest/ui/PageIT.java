@@ -6,6 +6,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -74,6 +75,10 @@ public class PageIT extends ChromeBrowserTest {
     public void testSetLocation() {
         open();
 
+        if (hasClientIssue("7575")) {
+            return;
+        }
+
         findElement(By.id("setLocation")).click();
         Assert.assertThat(getDriver().getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName()));
@@ -82,6 +87,9 @@ public class PageIT extends ChromeBrowserTest {
     @Test
     public void testOpenUrlInNewTab() {
         open();
+        if (hasClientIssue("7575")) {
+            return;
+        }
 
         findElement(By.id("open")).click();
         ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
@@ -89,5 +97,25 @@ public class PageIT extends ChromeBrowserTest {
                 getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName())
         );
+    }
+
+    @Test
+    public void testOpenUrlInIFrame() throws InterruptedException {
+        open();
+        if (hasClientIssue("7575")) {
+            return;
+        }
+
+        findElement(By.id("openInIFrame")).click();
+
+        waitUntil(driver -> !getIframeUrl().equals("about:blank"));
+
+        Assert.assertThat(getIframeUrl(),
+            Matchers.endsWith(BaseHrefView.class.getName()));
+    }
+
+    private String getIframeUrl() {
+        return (String) ((JavascriptExecutor) driver).executeScript(
+            "return document.getElementById('newWindow').contentWindow.location.href;");
     }
 }

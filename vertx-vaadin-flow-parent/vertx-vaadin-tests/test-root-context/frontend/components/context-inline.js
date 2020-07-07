@@ -13,23 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.dependencies;
 
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
-
-/**
- * The test for {@link AnnotatedFrontendInlineView}.
- * <p>
- * The test code is inside superclass.
- *
- *
- * @author Vaadin Ltd
- * @since 1.0
- *
- */
-@Category(IgnoreNPM.class)
-public class AnnotatedFrontendInlineIT extends AbstractFrontendInlineIT {
-
+function doNotifyJsExecution(){
+  var lbl = document.createElement("label");
+  lbl.setAttribute("id", "js");
+  lbl.innerHTML='Inlined JS';
+  document.body.appendChild(lbl);
 }
+
+function notifyJsExecution(){
+  if ( document.body) {
+    doNotifyJsExecution()
+  } else {
+    setTimeout(notifyJsExecution, 50);
+  }
+}
+
+//notifyJsExecution();

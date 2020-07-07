@@ -22,17 +22,15 @@ import java.util.List;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.collections.ModelListView.MyModel;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ModelListView", layout = ViewTestLayout.class)
 @Tag("model-list")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ModelList.html")
 @JsModule("ModelList.js")
 public class ModelListView extends PolymerTemplate<MyModel> {
 
@@ -112,7 +110,7 @@ public class ModelListView extends PolymerTemplate<MyModel> {
         getModel().getItems().add(new Item("Item 1"));
         getModel().getMoreItems().add(new Item("Item 2"));
         getModel().setLotsOfItems(
-                Arrays.asList(new ArrayList<>(), new ArrayList<>()));
+            Arrays.asList(new ArrayList<>(), new ArrayList<>()));
         getModel().getLotsOfItems().get(0).add(new Item("Item 3"));
         getModel().getLotsOfItems().get(1).add(new Item("Item 4"));
 
@@ -146,10 +144,10 @@ public class ModelListView extends PolymerTemplate<MyModel> {
         getModel().getItems().forEach(item -> item.setText(null));
         getModel().getMoreItems().forEach(item -> item.setText(null));
         getModel().getLotsOfItems()
-                .forEach(list -> list.forEach(item -> item.setText(null)));
+            .forEach(list -> list.forEach(item -> item.setText(null)));
 
         getModel().getItemWithItems().getItems()
-                .forEach(item -> item.setText(null));
+            .forEach(item -> item.setText(null));
 
         getModel().getItemWithItem().getItem().setText(null);
     }

@@ -44,9 +44,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         event.getSource().addUIInitListener(this::handleUIInit);
         initCount.incrementAndGet();
 
-        RouteConfiguration configuration = RouteConfiguration.forRegistry(ApplicationRouteRegistry.getInstance(
-            ((VertxVaadinService)event.getSource()).getServletContext()
-        ));
+        RouteConfiguration configuration = RouteConfiguration.forApplicationScope();
+
         if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
             configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
                     DynamicallyRegisteredRoute.class);

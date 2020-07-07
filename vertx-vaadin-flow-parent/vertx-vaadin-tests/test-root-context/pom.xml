@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>vertx-vaadin-test</artifactId>
-        <version>14.2.1-uitests-SNAPSHOT</version>
+        <version>16.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>vertx-vaadin-test-root-context</artifactId>
@@ -33,12 +33,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>${vaadin.flow.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
             <version>${vaadin.flow.version}</version>
         </dependency>
 
@@ -107,6 +101,7 @@
         </dependency>
 
 
+        <!--
         <dependency>
             <groupId>org.webjars.bowergithub.polymerelements</groupId>
             <artifactId>paper-input</artifactId>
@@ -141,6 +136,7 @@
             <artifactId>webcomponentsjs</artifactId>
             <version>1.2.6</version>
         </dependency>
+        -->
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -152,6 +148,20 @@
 
     <build>
         <plugins>
+             <!-- Auto run clean to remove previous mode compilation -->
+             <plugin>
+                 <artifactId>maven-clean-plugin</artifactId>
+                 <!-- This is because we run multiple modes on the same module -->
+                 <executions>
+                     <execution>
+                         <id>auto-clean</id>
+                         <phase>initialize</phase>
+                         <goals>
+                             <goal>clean</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-maven-plugin</artifactId>

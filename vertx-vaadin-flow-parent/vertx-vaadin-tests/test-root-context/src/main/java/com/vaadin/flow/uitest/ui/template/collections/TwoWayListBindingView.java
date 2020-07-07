@@ -20,7 +20,6 @@ import java.util.List;
 
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
@@ -28,16 +27,15 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.TwoWayListBindingView", layout = ViewTestLayout.class)
 @Tag("two-way-list-binding")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/TwoWayListBinding.html")
 @JsModule("TwoWayListBinding.js")
 public class TwoWayListBindingView
-        extends PolymerTemplate<TwoWayListBindingView.TwoWayBindingModel>
-        implements HasComponents {
+    extends PolymerTemplate<TwoWayListBindingView.TwoWayBindingModel>
+    implements HasComponents {
 
     public interface TwoWayBindingModel extends TemplateModel {
 
@@ -51,10 +49,10 @@ public class TwoWayListBindingView
 
     public TwoWayListBindingView() {
         getModel().setMessages(
-                Arrays.asList(new Message("foo"), new Message("bar")));
+            Arrays.asList(new Message("foo"), new Message("bar")));
 
         add(AbstractDivView.createButton("Show listing", "enable",
-                event -> getModel().setEnable(true)));
+            event -> getModel().setEnable(true)));
     }
 
     @EventHandler

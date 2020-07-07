@@ -32,7 +32,7 @@ public abstract class AbstractPushUpdateDivView extends Div {
     private final ScheduledExecutorService service = Executors
         .newScheduledThreadPool(1);
 
-    private static final int DELAY = 120;
+    private static final int DELAY = 100;
 
     public static final int MAX_UPDATE = 50;
 

@@ -1,5 +1,16 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.DOM_CHANGE_TEXT;
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.PRELOADED_DIV_ID;
 import static org.hamcrest.CoreMatchers.both;
@@ -13,19 +24,6 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
  * {@link DependenciesLoadingAnnotationsView}, which uses annotations to add
@@ -37,15 +35,15 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * dependencies.
  *
  * @author Vaadin Ltd
- * @since 1.0.
  * @see DependenciesLoadingBaseView
  * @see DependenciesLoadingAnnotationsView
  * @see DependenciesLoadingPageApiView
  * @see DependenciesLoadingPageApiIT
+ * @since 1.0.
  */
-@Category(IgnoreNPM.class)
+@Ignore("Doesn't work in NPM mode, see https://github.com/vaadin/flow/issues/7328")
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
-    private static final String EAGER_PREFIX = "eager.";
+    private static final String EAGER_PREFIX = "eager";
     private static final String INLINE_PREFIX = "inline.";
     private static final String LAZY_PREFIX = "lazy.";
 
@@ -53,69 +51,72 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     public void dependenciesLoadedAsExpectedWithAnnotationApi() {
         open();
 
-        waitUntil(input -> !input.findElements(By.className("dependenciesTest"))
-                .isEmpty());
+        waitUntil(input -> !input
+            .findElements(By.className("dependenciesTest" + getCssSuffix()))
+            .isEmpty());
 
         flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes();
         checkInlinedCss();
 
-        WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
+        WebElement preloadedDiv = findElement(
+            By.id(PRELOADED_DIV_ID + getCssSuffix()));
         Assert.assertEquals(
-                "Lazy css should be loaded last: color should be blue",
-                "rgba(0, 0, 255, 1)", preloadedDiv.getCssValue("color"));
+            "Lazy css should be loaded last: color should be blue",
+            "rgba(0, 0, 255, 1)", preloadedDiv.getCssValue("color"));
 
         List<String> testMessages = findElements(
-                By.className("dependenciesTest")).stream()
-                        .map(WebElement::getText).collect(Collectors.toList());
+            By.className("dependenciesTest" + getCssSuffix())).stream()
+            .map(WebElement::getText).collect(Collectors.toList());
 
         assertThat(
-                "7 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
-                testMessages, hasSize(7));
+            "5 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
+            testMessages, hasSize(5));
 
         List<String> inlineAndEagerMessages = testMessages.subList(0, 4);
 
         List<String> eagerMessages = inlineAndEagerMessages.stream()
-                .filter(message -> message.startsWith(EAGER_PREFIX))
-                .collect(Collectors.toList());
+            .filter(message -> message.startsWith(EAGER_PREFIX))
+            .collect(Collectors.toList());
         assertThat("2 eager messages should be posted before lazy messages",
-                eagerMessages, hasSize(2));
+            eagerMessages, hasSize(2));
 
         List<String> inlineMessages = inlineAndEagerMessages.stream()
-                .filter(message -> message.startsWith(INLINE_PREFIX))
-                .collect(Collectors.toList());
-        assertThat("2 inline messages should be posted before lazy messages",
-                inlineMessages, hasSize(2));
+            .filter(message -> message.startsWith(INLINE_PREFIX))
+            .collect(Collectors.toList());
+        assertThat("1 inline message should be posted before lazy messages",
+            inlineMessages, hasSize(1));
 
         Assert.assertTrue(
-                "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
-                        + testMessages.get(4),
-                testMessages.get(4).equals(DOM_CHANGE_TEXT));
+            "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
+                + testMessages.get(4),
+            testMessages.get(3).equals(DOM_CHANGE_TEXT));
 
-        List<String> lazyMessages = testMessages.subList(5, 7);
+        String lazyMessage = testMessages.get(testMessages.size() - 1);
         Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager and inline, but got "
-                        + lazyMessages.get(0),
-                lazyMessages.get(0).startsWith(LAZY_PREFIX));
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager and inline, but got "
-                        + lazyMessages.get(1),
-                lazyMessages.get(1).startsWith(LAZY_PREFIX));
+            "Lazy dependencies should be loaded after eager and inline, but got "
+                + lazyMessage,
+            lazyMessage.startsWith(LAZY_PREFIX));
+    }
+
+    protected String getCssSuffix() {
+        return "";
     }
 
     private void checkInlinedCss() {
         Optional<String> inlinedCss = findElements(By.tagName("style")).stream()
-                .map(webElement -> webElement.getAttribute("innerHTML"))
-                .filter(cssContents -> cssContents.contains("inline.css"))
-                .findAny();
+            .map(webElement -> webElement.getAttribute("innerHTML"))
+            .filter(cssContents -> cssContents.contains("inline.css"))
+            .findAny();
         assertThat(
-                "One of the inlined css should be our dependency containing `inline.css` string inside",
-                inlinedCss.isPresent(), is(true));
+            "One of the inlined css should be our dependency containing `inline.css` string inside",
+            inlinedCss.isPresent(), is(true));
 
         WebElement inlineCssTestDiv = findElement(
-                By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID));
+            By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID
+                + getCssSuffix()));
         Assert.assertEquals(
-                "Incorrect color for the div that should be styled with inline.css",
-                "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
+            "Incorrect color for the div that should be styled with inline.css",
+            "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
     }
 
     private void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
@@ -132,33 +133,34 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                     userDependencyMinIndex = i;
                 }
                 assertThat(
-                        "Expected to have here dependencies added with Flow public api",
-                        jsUrl,
-                        either(containsString("eager"))
-                                .or(containsString("lazy"))
-                                // inline elements do not have the url
-                                .or(isEmptyString())
-                                .or(containsString("dndConnector.js")));
+                    "Expected to have here dependencies added with Flow public api",
+                    jsUrl,
+                    either(containsString("eager"))
+                        .or(containsString("lazy"))
+                        // inline elements do not have the url
+                        .or(isEmptyString())
+                        .or(containsString("dndConnector.js")));
             } else {
                 flowDependencyMaxIndex = i;
                 assertThat(
-                        "Flow dependencies should not contain user dependencies",
-                        jsUrl, both(not(containsString("eager")))
-                                .and(not(containsString("lazy"))));
+                    "Flow dependencies should not contain user dependencies",
+                    jsUrl, both(not(containsString("eager")))
+                        .and(not(containsString("lazy"))));
 
-                if (jsUrl.endsWith(".cache.js")) {
+                if (jsUrl.endsWith(".cache.js")
+                    && jsUrl.contains("static/client/client-")) {
                     foundClientEngine = true;
                 }
             }
 
             assertThat(String.format(
-                    "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
-                    jsImport.getAttribute("src")),
-                    jsImport.getAttribute("async"), is(nullValue()));
+                "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                jsImport.getAttribute("src")),
+                jsImport.getAttribute("async"), is(nullValue()));
         }
 
         assertThat(
-                "Flow dependencies should be imported before user dependencies",
-                flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
+            "Flow dependencies should be imported before user dependencies",
+            flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
     }
 }

@@ -18,18 +18,14 @@ package com.vaadin.flow.uitest.ui;
 import java.util.List;
 import java.util.Locale;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.LabelElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.component.html.testbench.LabelElement;
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-@Category(IgnoreOSGi.class)
 public class AttachExistingElementIT extends ChromeBrowserTest {
 
     @Test
@@ -42,11 +38,11 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
         Assert.assertTrue(isElementPresent(By.id("label")));
         WebElement label = findElement(By.id("label"));
         Assert.assertEquals("label",
-                label.getTagName().toLowerCase(Locale.ENGLISH));
+            label.getTagName().toLowerCase(Locale.ENGLISH));
 
         WebElement parentDiv = findElement(By.id("root-div"));
         List<WebElement> children = parentDiv
-                .findElements(By.xpath("./child::*"));
+            .findElements(By.xpath("./child::*"));
         boolean labelIsFoundAsChild = false;
         WebElement removeButton = null;
         for (int i = 0; i < children.size(); i++) {
@@ -56,19 +52,19 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
                 WebElement attachButton = children.get(i + 1);
                 Assert.assertEquals("The first inserted component after "
                         + "attached label has wrong index on the client side",
-                        "attach-populated-label",
-                        attachButton.getAttribute("id"));
+                    "attach-populated-label",
+                    attachButton.getAttribute("id"));
                 removeButton = children.get(i + 2);
                 Assert.assertEquals("The second inserted component after "
                         + "attached label has wrong index on the client side",
-                        "remove-self", removeButton.getAttribute("id"));
+                    "remove-self", removeButton.getAttribute("id"));
                 break;
             }
         }
 
         Assert.assertTrue(
-                "The attached label is not found as a child of its parent",
-                labelIsFoundAsChild);
+            "The attached label is not found as a child of its parent",
+            labelIsFoundAsChild);
 
         removeButton.click();
         Assert.assertFalse(isElementPresent(By.id("remove-self")));
@@ -82,16 +78,16 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
 
         Assert.assertTrue(isElementPresent(By.id("h1-header")));
         Assert.assertEquals("h1", findElement(By.id("h1-header")).getTagName()
-                .toLowerCase(Locale.ENGLISH));
+            .toLowerCase(Locale.ENGLISH));
 
         // attach a child in the shadow root of the div
 
         findElement(By.id("attach-label-inshadow")).click();
         LabelElement labelInShadow = $(DivElement.class)
-                .id("element-with-shadow").$(LabelElement.class)
-                .id("label-in-shadow");
+            .id("element-with-shadow").$(LabelElement.class)
+            .id("label-in-shadow");
         Assert.assertEquals("label",
-                labelInShadow.getTagName().toLowerCase(Locale.ENGLISH));
+            labelInShadow.getTagName().toLowerCase(Locale.ENGLISH));
 
         // Try to attach non-existing element
         findElement(By.id("non-existing-element")).click();

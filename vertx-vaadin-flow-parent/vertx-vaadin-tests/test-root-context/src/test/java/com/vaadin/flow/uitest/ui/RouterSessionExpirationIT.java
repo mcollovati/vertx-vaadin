@@ -36,6 +36,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         String sessionId = getSessionId();
         navigateToFirstView();
         Assert.assertEquals(sessionId, getSessionId());
+
         navigateToSesssionExpireView();
         // expired session causes page reload, after the page reload there will
         // be a new session
@@ -83,8 +84,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
-        Assert.assertNotNull(
-                findElement(By.xpath("//strong[text()='" + linkText + "']")));
+        waitForElementPresent(By.xpath("//strong[text()='" + linkText + "']"));
 
     }
 }

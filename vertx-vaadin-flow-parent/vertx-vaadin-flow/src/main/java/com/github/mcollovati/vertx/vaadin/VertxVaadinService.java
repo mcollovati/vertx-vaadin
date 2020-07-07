@@ -36,6 +36,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -113,6 +114,12 @@ public class VertxVaadinService extends VaadinService {
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
         handlers.replaceAll(RequestHandlerReplacements::replace);
+        if (getDeploymentConfiguration().enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            if (handler != null) {
+                handlers.add(0, handler);
+            }
+        }
         addBootstrapHandler(handlers);
         return handlers;
     }

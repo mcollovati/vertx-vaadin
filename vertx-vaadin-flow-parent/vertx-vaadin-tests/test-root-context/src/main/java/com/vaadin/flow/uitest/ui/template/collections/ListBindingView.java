@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
@@ -32,12 +31,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListBindingView", layout = ViewTestLayout.class)
 @Tag("list-binding")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
 @JsModule("ListBinding.js")
 public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
@@ -55,13 +53,13 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     public ListBindingView() {
         setId("template");
         getModel().setMessages(
-                Collections.singletonList(new Message(INITIAL_STATE)));
+            Collections.singletonList(new Message(INITIAL_STATE)));
     }
 
     @EventHandler
     private void reset() {
         getModel().setMessages(RESET_STATE.stream().map(Message::new)
-                .collect(Collectors.toList()));
+            .collect(Collectors.toList()));
     }
 
     @EventHandler
@@ -82,14 +80,14 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     @EventHandler
     private void addNumerousElements() {
         List<Message> newMessages = Arrays.asList(new Message("4"),
-                new Message("5"));
+            new Message("5"));
         getModel().getMessages().addAll(newMessages);
     }
 
     @EventHandler
     private void addNumerousElementsByIndex() {
         List<Message> newMessages = Arrays.asList(new Message("4"),
-                new Message("5"));
+            new Message("5"));
         getModel().getMessages().addAll(0, newMessages);
     }
 
@@ -128,12 +126,12 @@ public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     @EventHandler
     private void sortDescending() {
         getModel().getMessages()
-                .sort(Comparator.comparing(Message::getText).reversed());
+            .sort(Comparator.comparing(Message::getText).reversed());
     }
 
     @EventHandler
     private void setInitialStateToEachMessage() {
         getModel().getMessages()
-                .forEach(message -> message.setText(INITIAL_STATE));
+            .forEach(message -> message.setText(INITIAL_STATE));
     }
 }

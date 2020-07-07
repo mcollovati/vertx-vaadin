@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>1.0.v8v15</version>
+    <version>1.0.v8v16</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin root Pom</description>
@@ -85,10 +85,10 @@
         <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
         <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
 
-        <vertx.version>3.8.5</vertx.version>
+        <vertx.version>3.9.1</vertx.version>
         <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>15.0.5</vaadin.platform.version>
-        <vaadin.flow.version>3.0.6</vaadin.flow.version>
+        <vaadin.platform.version>16.0.0</vaadin.platform.version>
+        <vaadin.flow.version>3.1.2</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>

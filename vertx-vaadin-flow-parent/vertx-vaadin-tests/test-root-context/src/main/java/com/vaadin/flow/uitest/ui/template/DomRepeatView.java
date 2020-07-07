@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -33,10 +32,9 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.DomRepeatView", layout = ViewTestLayout.class)
 @Tag("employees-list")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/DomRepeatPolymerTemplate.html")
 @JsModule("DomRepeatPolymerTemplate.js")
 public class DomRepeatView
-        extends PolymerTemplate<DomRepeatView.EmployeesModel> {
+    extends PolymerTemplate<DomRepeatView.EmployeesModel> {
     static final int NUMBER_OF_EMPLOYEES = 3;
     static final String EVENT_INDEX_ID = "eventIndex";
     static final String REPEAT_INDEX_ID = "repeatIndex";
@@ -45,9 +43,9 @@ public class DomRepeatView
     public DomRepeatView() {
         setId("template");
         setEmployees(IntStream.range(0, NUMBER_OF_EMPLOYEES)
-                .mapToObj(i -> new DomRepeatView.Employee("name" + i,
-                        "title" + i, "email" + i))
-                .collect(Collectors.toList()));
+            .mapToObj(i -> new DomRepeatView.Employee("name" + i,
+                "title" + i, "email" + i))
+            .collect(Collectors.toList()));
     }
 
     public static class Employee {
@@ -96,7 +94,7 @@ public class DomRepeatView
 
     @EventHandler
     public void handleClick(@EventData("event.model.index") int eventIndex,
-            @RepeatIndex int repeatIndex) {
+                            @RepeatIndex int repeatIndex) {
         getModel().setEventIndex(eventIndex);
         getModel().setRepeatIndex(repeatIndex);
     }

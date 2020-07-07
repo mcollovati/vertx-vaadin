@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -26,15 +25,14 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingView", layout = ViewTestLayout.class)
 @Tag("my-template")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TwoWayPolymerBinding.html")
 @JsModule("TwoWayPolymerBinding.js")
 public class TwoWayPolymerBindingView
-        extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> {
+    extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> {
     public TwoWayPolymerBindingView() {
         setId("template");
 
         getElement().addPropertyChangeListener("value",
-                event -> valueUpdated());
+            event -> valueUpdated());
     }
 
     public interface TwoWayModel extends TemplateModel {

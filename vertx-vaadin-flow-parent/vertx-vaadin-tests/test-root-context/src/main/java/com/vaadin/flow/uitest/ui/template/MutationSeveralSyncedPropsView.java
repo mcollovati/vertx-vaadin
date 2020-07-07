@@ -16,25 +16,23 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Tag("multiple-props-mutation")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/MultiplePropsMutation.html")
 @JsModule("MultiplePropsMutation.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.MutationSeveralSyncedPropsView", layout = ViewTestLayout.class)
 public class MutationSeveralSyncedPropsView
-        extends PolymerTemplate<TemplateModel> {
+    extends PolymerTemplate<TemplateModel> {
 
     public MutationSeveralSyncedPropsView() {
-        getElement().synchronizeProperty("name", "name-changed");
-        getElement().synchronizeProperty("message", "message-changed");
+        getElement().addPropertyChangeListener("name", "name-changed", event -> {});
+        getElement().addPropertyChangeListener("message", "message-changed", event -> {});
 
         getElement().setProperty("name", "foo");
         getElement().setProperty("message", "msg");
@@ -42,11 +40,11 @@ public class MutationSeveralSyncedPropsView
         setId("template");
 
         NativeButton button = AbstractDivView.createButton(
-                "Update two synchronized properties simultaneously", "update",
-                event -> {
-                    getElement().setProperty("name", "bar");
-                    getElement().setProperty("message", "baz");
-                });
+            "Update two synchronized properties simultaneously", "update",
+            event -> {
+                getElement().setProperty("name", "bar");
+                getElement().setProperty("message", "baz");
+            });
         getElement().appendChild(button.getElement());
     }
 }

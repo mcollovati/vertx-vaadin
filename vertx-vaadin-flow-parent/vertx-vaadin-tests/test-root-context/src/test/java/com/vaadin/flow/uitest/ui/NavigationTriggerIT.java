@@ -27,51 +27,36 @@ import org.openqa.selenium.WebElement;
 public class NavigationTriggerIT extends ChromeBrowserTest {
     @Test
     public void testNavigationTriggers() {
-        String url = getTestURL() + "/abc/";
-        getDriver().get(url);
-
+        open();
         assertMessageCount(1);
-        assertLastMessage("/abc", NavigationTrigger.PAGE_LOAD, "abc");
-        Assert.assertEquals("The trailing '/' from the URL should be removed.",
-            url.substring(0, url.length() - 1),
-            getDriver().getCurrentUrl());
+        assertLastMessage("/", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.PAGE_LOAD);
 
         findElement(By.id("routerlink")).click();
         assertMessageCount(2);
-        assertLastMessage("/routerlink", NavigationTrigger.ROUTER_LINK,
-            "routerlink");
+        assertLastMessage("/routerlink", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.ROUTER_LINK);
 
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
-        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
-            "navigate");
+        assertLastMessage("/navigate", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.PROGRAMMATIC);
+
+        if (hasClientIssue("7572")) {
+            return;
+        }
 
         getDriver().navigate().back();
         assertMessageCount(4);
-        assertLastMessage("/routerlink", NavigationTrigger.HISTORY,
-            "routerlink");
+        assertLastMessage("/routerlink", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.HISTORY);
 
         getDriver().navigate().forward();
         assertMessageCount(5);
-        assertLastMessage("/navigate", NavigationTrigger.HISTORY, "navigate");
-
-        findElement(By.id("forwardButton")).click();
-        assertMessageCount(6);
-        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC,
-            "forwarded");
-
-        findElement(By.id("rerouteButton")).click();
-        assertMessageCount(7);
-        assertLastMessage("/", NavigationTrigger.PROGRAMMATIC, "rerouted");
+        assertLastMessage("/navigate", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.HISTORY);
     }
 
-    private void assertLastMessage(String path, NavigationTrigger trigger,
-                                   String parameter) {
+    private void assertLastMessage(String path, NavigationTrigger trigger) {
         List<WebElement> messages = getMessages();
         String lastMessageText = messages.get(messages.size() - 1).getText();
 
-        Assert.assertEquals(
-            NavigationTriggerView.buildMessage(path, trigger, parameter),
+        Assert.assertEquals(NavigationTriggerView.buildMessage(path, trigger),
             lastMessageText);
     }
 

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
@@ -35,10 +34,9 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListInsideListBindingView", layout = ViewTestLayout.class)
 @Tag("list-inside-list-binding")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
 @JsModule("ListInsideListBinding.js")
 public class ListInsideListBindingView extends
-        PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> {
+    PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> {
     static final String UPDATED_TEXT = "test";
 
     public static class Message {
@@ -77,23 +75,23 @@ public class ListInsideListBindingView extends
 
     private void setInitialState() {
         getModel().setNestedMessages(Arrays.asList(
-                Arrays.asList(new Message("a"), new Message("b"),
-                        new Message("c")),
-                Collections.singletonList(new Message("d"))));
+            Arrays.asList(new Message("a"), new Message("b"),
+                new Message("c")),
+            Collections.singletonList(new Message("d"))));
     }
 
     @EventHandler
     private void removeItem(@ModelItem Message clickedMessage,
-            @RepeatIndex int itemIndex) {
+                            @RepeatIndex int itemIndex) {
         getModel().getNestedMessages()
-                .forEach(list -> removeMessageIfContainedInList(clickedMessage,
-                        itemIndex, list));
+            .forEach(list -> removeMessageIfContainedInList(clickedMessage,
+                itemIndex, list));
     }
 
     private void removeMessageIfContainedInList(Message clickedMessage,
-            int itemIndex, List<Message> list) {
+                                                int itemIndex, List<Message> list) {
         if (list.size() > itemIndex && Objects.equals(
-                list.get(itemIndex).getText(), clickedMessage.getText())) {
+            list.get(itemIndex).getText(), clickedMessage.getText())) {
             Message removedMessage = list.remove(itemIndex);
             getModel().setRemovedMessage(removedMessage);
         }
@@ -107,6 +105,6 @@ public class ListInsideListBindingView extends
     @EventHandler
     private void updateAllElements() {
         getModel().getNestedMessages().forEach(
-                list -> list.forEach(message -> message.setText(UPDATED_TEXT)));
+            list -> list.forEach(message -> message.setText(UPDATED_TEXT)));
     }
 }

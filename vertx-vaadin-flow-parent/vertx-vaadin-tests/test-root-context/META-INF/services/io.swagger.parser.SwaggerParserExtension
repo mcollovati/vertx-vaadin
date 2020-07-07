@@ -1,0 +1,2 @@
+io.swagger.parser.Swagger20Parser
+io.swagger.parser.SwaggerCompatConverter

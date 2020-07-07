@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -27,10 +26,9 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class PolymerPropertyMutationInObserverView extends AbstractDivView {
 
     @Tag("property-mutation-in-observer")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerPropertyMutationInObserver.html")
     @JsModule("PolymerPropertyMutationInObserver.js")
     public static class PolymerPropertyMutationInObserver
-            extends PolymerTemplate<Message> {
+        extends PolymerTemplate<Message> {
 
         public void setText(String text) {
             getModel().setText(text);
@@ -39,8 +37,8 @@ public class PolymerPropertyMutationInObserverView extends AbstractDivView {
         private Div getValueDiv(String eventOldValue, String eventValue) {
             Div div = new Div();
             div.setText(String.format(
-                    "Event old value: %s, event value: %s, current model value: %s",
-                    eventOldValue, eventValue, getModel().getText()));
+                "Event old value: %s, event value: %s, current model value: %s",
+                eventOldValue, eventValue, getModel().getText()));
             div.addClassName("model-value");
             return div;
         }
@@ -50,8 +48,8 @@ public class PolymerPropertyMutationInObserverView extends AbstractDivView {
         PolymerPropertyMutationInObserver template = new PolymerPropertyMutationInObserver();
         template.setId("template");
         template.getElement().addPropertyChangeListener("text",
-                event -> add(template.getValueDiv((String) event.getOldValue(),
-                        (String) event.getValue())));
+            event -> add(template.getValueDiv((String) event.getOldValue(),
+                (String) event.getValue())));
         template.setText("initially set value");
         add(template);
     }

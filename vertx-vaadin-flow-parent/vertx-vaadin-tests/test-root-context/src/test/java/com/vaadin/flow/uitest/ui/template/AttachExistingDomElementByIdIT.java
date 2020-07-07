@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
 
@@ -33,7 +32,7 @@ public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
     }
 
     protected void assertTemplate(String id, String initialLabelText,
-            String placeholder) {
+                                  String placeholder) {
         WebElement input = getInput(id);
 
         Assert.assertEquals(initialLabelText, getLabel(id).getText());
@@ -47,18 +46,18 @@ public class AttachExistingDomElementByIdIT extends ChromeBrowserTest {
 
         // Reset values to defaults
         $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button")
-                .click();
+            .click();
 
         Assert.assertEquals("default", getLabel(id).getText());
     }
 
     private WebElement getInput(String id) {
         return $(TestBenchElement.class).id(id).$(TestBenchElement.class)
-                .id("input");
+            .id("input");
     }
 
     private WebElement getLabel(String id) {
         return $(TestBenchElement.class).id(id).$(TestBenchElement.class)
-                .id("label");
+            .id("label");
     }
 }

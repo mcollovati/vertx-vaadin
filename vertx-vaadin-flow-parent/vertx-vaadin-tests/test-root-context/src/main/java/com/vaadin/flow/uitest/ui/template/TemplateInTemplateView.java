@@ -16,21 +16,19 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateInTemplateView", layout = ViewTestLayout.class)
 public class TemplateInTemplateView extends AbstractDivView {
 
     @Tag("parent-template")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ParentTemplate.html")
     @Uses(ChildTemplate.class)
     @JsModule("ParentTemplate.js")
     public static class ParentTemplate extends PolymerTemplate<Message> {
@@ -38,7 +36,6 @@ public class TemplateInTemplateView extends AbstractDivView {
     }
 
     @Tag("child-template")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ChildTemplate.html")
     @JsModule("ChildTemplate.js")
     public static class ChildTemplate extends PolymerTemplate<Message> {
 

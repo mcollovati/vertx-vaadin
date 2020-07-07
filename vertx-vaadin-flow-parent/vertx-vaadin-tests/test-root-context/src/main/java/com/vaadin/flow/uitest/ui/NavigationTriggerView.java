@@ -18,8 +18,6 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.BeforeLeaveEvent;
-import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.OptionalParameter;
@@ -28,7 +26,7 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
 public class NavigationTriggerView extends AbstractDivView
-    implements HasUrlParameter<String>, BeforeLeaveObserver {
+    implements HasUrlParameter<String> {
     private static final String CLASS_NAME = NavigationTriggerView.class
         .getName();
 
@@ -44,23 +42,11 @@ public class NavigationTriggerView extends AbstractDivView
             e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
         navigateButton.setAttribute("id", "navigate");
 
-        Element forwardButton = ElementFactory.createButton("forward");
-        forwardButton.addEventListener("click", e -> getUI().get()
-            .navigate(NavigationTriggerView.class, "forward"));
-        forwardButton.setAttribute("id", "forwardButton");
-
-        Element rerouteButton = ElementFactory.createButton("reroute");
-        rerouteButton.addEventListener("click", e -> getUI().get()
-            .navigate(NavigationTriggerView.class, "reroute"));
-        rerouteButton.setAttribute("id", "rerouteButton");
-
-        getElement().appendChild(routerLink, navigateButton, forwardButton, rerouteButton);
+        getElement().appendChild(routerLink, navigateButton);
     }
 
-    public static String buildMessage(String path, NavigationTrigger trigger,
-                                      String parameter) {
-        return "Navigated to " + path + " with trigger " + trigger.name()
-            + " and parameter " + parameter;
+    public static String buildMessage(String path, NavigationTrigger trigger) {
+        return "Navigated to " + path + " with trigger " + trigger.name();
     }
 
     private void addMessage(String message) {
@@ -71,7 +57,7 @@ public class NavigationTriggerView extends AbstractDivView
 
     @Override
     public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
+                             @OptionalParameter String parameter) {
         String location = event.getLocation().getPathWithQueryParameters();
         assert location.startsWith(CLASS_NAME);
 
@@ -81,16 +67,6 @@ public class NavigationTriggerView extends AbstractDivView
             location = "/";
         }
 
-        addMessage(buildMessage(location, event.getTrigger(), parameter));
+        addMessage(buildMessage(location, event.getTrigger()));
     }
-
-    @Override
-    public void beforeLeave(BeforeLeaveEvent event) {
-        if (event.getLocation().getPath().endsWith("forward")) {
-            event.forwardTo(CLASS_NAME, "forwarded");
-        } else if (event.getLocation().getPath().endsWith("reroute")) {
-            event.rerouteTo(CLASS_NAME, "rerouted");
-        }
-    }
-
 }

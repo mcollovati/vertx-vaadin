@@ -19,7 +19,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
@@ -29,15 +28,14 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerModelPropertiesView", layout = ViewTestLayout.class)
 @Tag("model-properties")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerModelProperties.html")
 @JsModule("PolymerModelProperties.js")
 public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
 
     @DomEvent("text-changed")
     public static class ValueChangeEvent
-            extends ComponentEvent<PolymerModelPropertiesView> {
+        extends ComponentEvent<PolymerModelPropertiesView> {
         public ValueChangeEvent(PolymerModelPropertiesView source,
-                boolean fromClient) {
+                                boolean fromClient) {
             super(source, fromClient);
         }
     }
@@ -46,7 +44,7 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
         setId("template");
         getModel().setText("foo");
 
-        getElement().synchronizeProperty("text", "text-changed");
+        getElement().addPropertyChangeListener("text", "text-changed", event -> {});
 
         addListener(ValueChangeEvent.class, event -> {
             getUI().get().add(addUpdateElement("property-update-event"));
@@ -66,7 +64,7 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
     private Div addUpdateElement(String id) {
         Div div = new Div();
         div.setText("Property value:" + getElement().getProperty("text")
-                + ", model value: " + getModel().getText());
+            + ", model value: " + getModel().getText());
         div.setId(id);
         return div;
     }

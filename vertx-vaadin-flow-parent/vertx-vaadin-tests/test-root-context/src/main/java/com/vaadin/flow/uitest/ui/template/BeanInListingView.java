@@ -19,18 +19,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
+import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.BeanInListingView", layout = ViewTestLayout.class)
 @Tag("listing-bean-view")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/BeanInListing.html")
 @JsModule("BeanInListing.js")
 public class BeanInListingView extends PolymerTemplate<ListModel> {
 
@@ -71,15 +69,15 @@ public class BeanInListingView extends PolymerTemplate<ListModel> {
     public BeanInListingView() {
         setId("template");
         getModel()
-                .setUsers(Arrays.asList(createUser("foo"), createUser("bar")));
+            .setUsers(Arrays.asList(createUser("foo"), createUser("bar")));
 
         getModel().setMessages(Arrays.asList("baz", "msg"));
 
         getElement().addPropertyChangeListener("activeUser",
-                event -> patientSelected());
+            event -> patientSelected());
 
         getElement().addPropertyChangeListener("activeMessage",
-                event -> messageSelected());
+            event -> messageSelected());
 
         getModel().setActiveUser(getModel().getUsers().get(0));
     }

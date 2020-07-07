@@ -42,6 +42,7 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServletConfiguration;
@@ -195,11 +196,6 @@ public class VaadinVerticle extends AbstractVerticle {
             log.error("Error during Vaadin service destroy", ex);
         }
 
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        if (handler != null && !handler.reuseDevServer()) {
-            handler.stop();
-        }
-
         httpServer.close(stopFuture);
         log.info("Stopped vaadin verticle " + getClass().getName());
     }
@@ -302,6 +298,8 @@ public class VaadinVerticle extends AbstractVerticle {
             }
         };
 
+        DeploymentConfiguration deploymentConfiguration = DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions());
+
         CompositeFuture.join(asList(
             runInitializer(initializerFactory.apply(new ConnectEndpointsValidator())),
             runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
@@ -309,8 +307,9 @@ public class VaadinVerticle extends AbstractVerticle {
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
             runInitializer(initializerFactory.apply(new AnnotationValidator())),
             runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-            runInitializer(event2 -> initializeDevModeHandler(getClass(), event2, startupContext, classes.get(DevModeInitializer.class)))
-        )).setHandler(event2 -> {
+            runInitializer(event2 -> initializeAppShell(event2, startupContext, deploymentConfiguration, classes.get(VaadinAppShellInitializer.class))),
+            runInitializer(event2 -> initializeDevModeHandler(event2, startupContext, deploymentConfiguration, classes.get(DevModeInitializer.class)))
+        )).onComplete(event2 -> {
             if (event2.succeeded()) {
                 promise.complete();
             } else {
@@ -319,14 +318,24 @@ public class VaadinVerticle extends AbstractVerticle {
         });
     }
 
-    private static synchronized void initializeDevModeHandler(Class<?> verticleClass, Promise<Object> promise,
-                                                              StartupContext startupContext, Set<Class<?>> classes) {
+    private static void initializeAppShell(Promise<Object> promise, StartupContext startupContext,
+                                           DeploymentConfiguration deploymentConfiguration, Set<Class<?>> classes) {
+        try {
+            VaadinAppShellInitializer.init(classes, startupContext.servletContext(), deploymentConfiguration);
+            promise.complete();
+        } catch (Exception ex) {
+            promise.fail(ex);
+        }
+    }
+
+    private static synchronized void initializeDevModeHandler(Promise<Object> promise, StartupContext startupContext,
+                                                              DeploymentConfiguration deploymentConfiguration, Set<Class<?>> classes) {
         DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
         if (devModeHandler == null) {
             try {
-                DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(),
-                    DeploymentConfigurationFactory.createDeploymentConfiguration(verticleClass, startupContext.vaadinOptions())
-                );
+                DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(), deploymentConfiguration);
+                // DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE
+                startupContext.servletContext().setAttribute("dev-mode-handler-already-started-attribute", true);
                 promise.complete(DevModeHandler.getDevModeHandler());
             } catch (ServletException e) {
                 promise.fail(e);
@@ -342,7 +351,8 @@ public class VaadinVerticle extends AbstractVerticle {
         Stream.of(
             RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
             WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
-            DevModeInitializer.class, VaadinAppShellInitializer.class, ConnectEndpointsValidator.class
+            DevModeInitializer.class, VaadinAppShellInitializer.class, ConnectEndpointsValidator.class,
+            VaadinAppShellInitializer.class
         ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }

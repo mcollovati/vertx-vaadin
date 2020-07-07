@@ -15,15 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 public class TemplatesVisibilityIT extends ChromeBrowserTest {
 
@@ -37,16 +34,16 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // Check child and grand child property values. They shouldn't be set
         // since the elements are not bound
         TestBenchElement subTemplateProp = subTemplate.$(TestBenchElement.class)
-                .id("prop");
+            .id("prop");
 
         TestBenchElement grandChild = subTemplate.$(TestBenchElement.class)
-                .id("js-grand-child");
+            .id("js-grand-child");
 
         WebElement grandChildFooProp = grandChild.$(TestBenchElement.class)
-                .id("foo-prop");
+            .id("foo-prop");
 
         WebElement grandChildProp = assertInitialPropertyValues(subTemplateProp,
-                grandChild, grandChildFooProp);
+            grandChild, grandChildFooProp);
 
         // make parent visible
         findElement(By.id("grand-parent-visibility")).click();
@@ -70,13 +67,13 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // nothing has changed: parent is not bound -> descendants are still not
         // bound
         TestBenchElement subTemplateProp = subTemplate.$(TestBenchElement.class)
-                .id("prop");
+            .id("prop");
         TestBenchElement grandChild = subTemplate.$(TestBenchElement.class)
-                .id("js-grand-child");
+            .id("js-grand-child");
         WebElement grandChildFooProp = grandChild.$(TestBenchElement.class)
-                .id("foo-prop");
+            .id("foo-prop");
         assertInitialPropertyValues(subTemplateProp, grandChild,
-                grandChildFooProp);
+            grandChildFooProp);
 
         // make parent visible
         findElement(By.id("grand-parent-visibility")).click();
@@ -84,7 +81,7 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // sub template is invisible now, again: all properties have no values
 
         WebElement grandChildProp = assertInitialPropertyValues(subTemplateProp,
-                grandChild, grandChildFooProp);
+            grandChild, grandChildFooProp);
 
         // make sub template visible
         findElement(By.id("sub-template-visibility")).click();
@@ -106,13 +103,13 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // nothing has changed: parent is not bound -> descendants are still not
         // bound
         TestBenchElement subTemplateProp = subTemplate.$(TestBenchElement.class)
-                .id("prop");
+            .id("prop");
         TestBenchElement grandChild = subTemplate.$(TestBenchElement.class)
-                .id("js-grand-child");
+            .id("js-grand-child");
         WebElement grandChildFooProp = grandChild.$(TestBenchElement.class)
-                .id("foo-prop");
+            .id("foo-prop");
         assertInitialPropertyValues(subTemplateProp, grandChild,
-                grandChildFooProp);
+            grandChildFooProp);
 
         // make grand parent visible
         findElement(By.id("grand-parent-visibility")).click();
@@ -121,7 +118,7 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         // no values
 
         WebElement grandChildProp = grandChild.$(TestBenchElement.class)
-                .id("prop");
+            .id("prop");
         Assert.assertNotEquals("bar", grandChildFooProp.getText());
         Assert.assertNotEquals("foo", grandChildProp.getText());
 
@@ -143,7 +140,7 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
         TestBenchElement subTemplate = grandParent.$("js-sub-template").first();
 
         WebElement subTemplateProp = subTemplate.$(TestBenchElement.class)
-                .id("prop");
+            .id("prop");
 
         Assert.assertEquals("bar", subTemplateProp.getText());
 
@@ -171,10 +168,10 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
     }
 
     private WebElement assertInitialPropertyValues(
-            TestBenchElement subTemplateProp, TestBenchElement grandChild,
-            WebElement grandChildFooProp) {
+        TestBenchElement subTemplateProp, TestBenchElement grandChild,
+        WebElement grandChildFooProp) {
         WebElement grandChildProp = grandChild.$(TestBenchElement.class)
-                .id("prop");
+            .id("prop");
 
         Assert.assertNotEquals("bar", subTemplateProp.getText());
 
@@ -185,7 +182,7 @@ public class TemplatesVisibilityIT extends ChromeBrowserTest {
     }
 
     private void assertBound(WebElement subTemplateProp,
-            WebElement grandChildFooProp, WebElement grandChildProp) {
+                             WebElement grandChildFooProp, WebElement grandChildProp) {
         waitUntil(driver -> "bar".equals(subTemplateProp.getText()));
         // This is the result of JS execution
         waitUntil(driver -> "bar".equals(grandChildFooProp.getText()));

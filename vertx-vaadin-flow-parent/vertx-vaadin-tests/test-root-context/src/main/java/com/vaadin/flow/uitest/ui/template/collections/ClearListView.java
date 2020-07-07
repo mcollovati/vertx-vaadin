@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -16,14 +15,13 @@ import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ClearListView", layout = ViewTestLayout.class)
 @Tag("clear-list")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ClearList.html")
 @JsModule("ClearList.js")
 public class ClearListView
-        extends PolymerTemplate<ClearListView.ClearListModel> {
+    extends PolymerTemplate<ClearListView.ClearListModel> {
     public ClearListView() {
         setId("template");
         getModel()
-                .setMessages(Arrays.asList(new Message("1"), new Message("2")));
+            .setMessages(Arrays.asList(new Message("1"), new Message("2")));
     }
 
     @EventHandler

@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -28,7 +27,6 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class PolymerPropertyChangeEventView extends AbstractDivView {
 
     @Tag("property-change")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerPropertyChange.html")
     @JsModule("PolymerPropertyChange.js")
     public static class PolymerPropertyChange extends PolymerTemplate<Message> {
 
@@ -38,14 +36,14 @@ public class PolymerPropertyChangeEventView extends AbstractDivView {
         PolymerPropertyChange template = new PolymerPropertyChange();
         template.setId("template");
         template.getElement().addPropertyChangeListener("text",
-                this::propertyChanged);
+            this::propertyChanged);
         add(template);
     }
 
     private void propertyChanged(PropertyChangeEvent event) {
         Div div = new Div();
         div.setText("New property value: '" + event.getValue()
-                + "', old property value: '" + event.getOldValue() + "'");
+            + "', old property value: '" + event.getOldValue() + "'");
         div.addClassName("change-event");
         add(div);
     }
