@@ -152,6 +152,8 @@ workflows:
             branches:
               only:
                 - master
+                - development
+                - vaadin-14.2
     jobs:
       - ui-tests
   build-deploy:
