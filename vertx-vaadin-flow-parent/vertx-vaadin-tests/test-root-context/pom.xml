@@ -155,6 +155,9 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-maven-plugin</artifactId>
+                <configuration>
+                     <frontendResourcesDirectory>${project.build.outputDirectory}/META-INF/resources/frontend</frontendResourcesDirectory>
+                 </configuration>
             </plugin>
             <plugin>
                 <groupId>io.reactiverse</groupId>
