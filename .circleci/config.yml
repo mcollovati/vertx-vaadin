@@ -20,7 +20,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s ~/.circleci/.circleci.settings.xml"
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B"
 
     steps:
       - checkout
@@ -59,7 +59,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B"
     steps:
       - checkout
       - restore_cache:
@@ -74,7 +74,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml"
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B"
     steps:
       - checkout
       - restore_cache:
@@ -101,13 +101,15 @@ jobs:
           name: "Setup custom environment variables"
           command: |
             echo "export WKDIR=$(pwd)" >> $BASH_ENV
-            echo "export MAVEN_CONFIG='-s $(pwd)/.circleci/.circleci.settings.xml'" >> $BASH_ENV
+            echo "export MAVEN_CONFIG='-B -ntp -s $(pwd)/.circleci/.circleci.settings.xml'" >> $BASH_ENV
 
       - run:
           name: "Install artifacts"
-          command: ./mvnw -N install && ./mvnw -Prelease-flow,flow-ui-tests install -DskipTests -DskipVertxRun=true
+          command: ./mvnw -N install && ./mvnw -Pcircleci -Prelease-flow,flow-ui-tests install -DskipTests -DskipVertxRun=true
       - run: >
           cd vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context &&
+          rm -rf node node_modules package-lock.json &&
+          $WKDIR/mvnw -Pcircleci -Dvaadin.productionMode clean package &&
           $WKDIR/mvnw -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver
           -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Xmx512M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
           verify
