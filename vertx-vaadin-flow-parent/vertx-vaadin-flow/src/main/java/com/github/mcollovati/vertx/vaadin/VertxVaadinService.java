@@ -186,8 +186,10 @@ public class VertxVaadinService extends VaadinService {
 
     // From VaadinServletService
     private boolean isOtherRequest(VaadinRequest request) {
-        return request.getParameter(
-            ApplicationConstants.REQUEST_TYPE_PARAMETER) == null;
+        String type = request
+            .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return type == null
+            || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
     }
 
     @Override
