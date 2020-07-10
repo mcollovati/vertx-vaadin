@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -122,6 +123,11 @@ public final class VaadinOptions {
             return adaptJson(((JsonObject) object).getMap());
         } else if (object instanceof JsonArray) {
             return adaptJson(((JsonArray) object).getList());
+        } else if (object instanceof String) {
+            return object;
+        }
+        else if (object != null) {
+            return Json.encode(object);
         }
         return object;
     }
