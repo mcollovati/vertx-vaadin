@@ -85,7 +85,7 @@ public class VertxUI {
 
 
     private <T> Future<T> schedule(UITask<T> task) {
-        return schedule(task, 0, TimeUnit.MILLISECONDS);
+        return schedule(task, 1, TimeUnit.MILLISECONDS);
     }
 
     private <T> Handler<Promise<T>> executeTask(VertxUI.UITask<T> task) {
