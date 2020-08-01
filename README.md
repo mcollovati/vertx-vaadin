@@ -3,9 +3,9 @@
 ## Status
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
+[![Gitter](https://badges.gitter.im/vertx-vaadin/community.svg)](https://gitter.im/vertx-vaadin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin8.svg?label=vertx-vaadin8)
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow.svg?label=vertx-vaadin-flow)
-
 
 ## Description
 
