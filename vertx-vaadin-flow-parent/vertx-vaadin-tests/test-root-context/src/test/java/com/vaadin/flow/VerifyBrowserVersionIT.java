@@ -25,10 +25,10 @@ public class VerifyBrowserVersionIT extends ChromeBrowserTest {
             // Chrome version does not necessarily match the desired version
             // because of auto updates...
             browserIdentifier = getExpectedUserAgentString(
-                    getDesiredCapabilities()) + "84";
+                    getDesiredCapabilities()) + System.getProperty("uitest.chrome-version", "84");
         } else if (BrowserUtil.isFirefox(getDesiredCapabilities())) {
             browserIdentifier = getExpectedUserAgentString(
-                    getDesiredCapabilities()) + "58";
+                    getDesiredCapabilities()) + System.getProperty("uitest.firefox-version", "58");
         } else {
             browserIdentifier = getExpectedUserAgentString(desiredCapabilities)
                     + desiredCapabilities.getVersion();

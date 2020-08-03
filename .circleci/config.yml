@@ -102,6 +102,8 @@ jobs:
           command: |
             echo "export WKDIR=$(pwd)" >> $BASH_ENV
             echo "export MAVEN_CONFIG='-B -ntp -s $(pwd)/.circleci/.circleci.settings.xml'" >> $BASH_ENV
+            echo "export CHROME_VERSION=$(google-chrome --version | sed 's/^Google Chrome //' | cut -d. -f1)" >> $BASH_ENV
+            echo "export FIREFOX_VERSION=$(firefox --version | sed 's/Mozilla Firefox //' |  cut -d. -f1)" >> $BASH_ENV
 
       - run:
           name: "Install artifacts"
@@ -111,6 +113,7 @@ jobs:
           rm -rf node node_modules package-lock.json &&
           $WKDIR/mvnw -Pcircleci -Dvaadin.productionMode clean package &&
           $WKDIR/mvnw -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver
+          -Duitest.chrome-version=${CHROME_VERSION} -Duitest.firefox-version=${FIREFOX_VERSION}
           -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Xmx512M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
           verify
       - save_cache:
