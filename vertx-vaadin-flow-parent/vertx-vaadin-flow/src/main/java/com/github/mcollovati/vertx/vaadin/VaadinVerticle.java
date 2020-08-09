@@ -104,6 +104,9 @@ public class VaadinVerticle extends AbstractVerticle {
                 serviceInitialized(vaadinService, router);
                 return null;
             }).setHandler(startFuture);
+
+        // Perform potential synchronous startup tasks
+        start();
     }
 
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
@@ -192,7 +195,12 @@ public class VaadinVerticle extends AbstractVerticle {
         } catch (Exception ex) {
             log.error("Error during Vaadin service destroy", ex);
         }
-
+        try {
+            // Perform potential synchronous clean-up tasks
+            stop();
+        } catch (Exception ex) {
+            log.error("Error during Verticle synchronous stop", ex);
+        }
         httpServer.close(stopFuture);
         log.info("Stopped vaadin verticle " + getClass().getName());
     }
