@@ -77,6 +77,7 @@ repositories {
 |14.1|3.8.3|vertx-vaadin-flow:14.1.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
 |14.2|3.8.3|vertx-vaadin-flow:14.2.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14.2.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14.2)|
 |15|3.8.5|vertx-vaadin-flow:15.0.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-15.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-15)|
+|16|3.8.5|vertx-vaadin-flow:16.0.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
 
 ## Documentation
 
