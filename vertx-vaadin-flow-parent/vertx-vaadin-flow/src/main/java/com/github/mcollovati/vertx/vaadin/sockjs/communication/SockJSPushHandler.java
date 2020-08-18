@@ -38,6 +38,7 @@ import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.HandlerHelper;
@@ -315,12 +316,29 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     }
 
     void connectionLost(PushEvent event) {
+        VaadinSession session = null;
+        try {
+            session = handleConnectionLost(event);
+        } finally {
+            if (session != null) {
+                session.access(new Command() {
+                    @Override
+                    public void execute() {
+                        CurrentInstance.clearAll();
+                    }
+                });
+            }
+        }
+    }
+
+
+    private VaadinSession handleConnectionLost(PushEvent event) {
         // We don't want to use callWithUi here, as it assumes there's a client
         // request active and does requestStart and requestEnd among other
         // things.
 
         VaadinRequest vaadinRequest = new VertxVaadinRequest(service, event.routingContext);
-        VaadinSession session;
+        VaadinSession session = null;
 
         try {
             session = service.findVaadinSession(vaadinRequest);
@@ -330,7 +348,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             // a session expired notification and then closes the connection and
             // ends up here
             logger.trace("Session expired before push disconnect event was received", e);
-            return;
+            return null;
         }
 
         UI ui;
@@ -356,7 +374,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                         "Could not get UI. This should never happen,"
                             + " except when reloading in Firefox and Chrome -"
                             + " see http://dev.vaadin.com/ticket/14251.");
-                    return;
+                    return session;
                 } else {
                     logger.info(
                         "No UI was found based on data in the request,"
@@ -400,7 +418,9 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 // can't call ErrorHandler, we (hopefully) don't have a lock
             }
         }
+        return session;
     }
+
 
     private static LocalMap<String, SockJSSocket> socketsMap(Vertx vertx) {
         return vertx.sharedData().getLocalMap(SockJSPushHandler.class.getName() + ".push-sockets");
