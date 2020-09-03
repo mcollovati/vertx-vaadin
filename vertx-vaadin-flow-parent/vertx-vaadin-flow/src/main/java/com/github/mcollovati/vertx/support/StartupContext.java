@@ -32,9 +32,10 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.EventListener;
@@ -47,6 +48,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import io.github.classgraph.ClassGraph;
@@ -57,9 +59,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.impl.FileResolver;
 import io.vertx.core.http.impl.MimeMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,6 +138,14 @@ public final class StartupContext {
             this.startupContext = startupContext;
         }
 
+        private String toRelativePath(String path) {
+            if (path.startsWith("/")) {
+                return path.substring(1);
+            }
+            return path;
+        }
+
+
         @Override
         public String getContextPath() {
             return startupContext.vaadinOptions.mountPoint().replaceFirst("/$", "");
@@ -174,10 +183,7 @@ public final class StartupContext {
 
         @Override
         public Set<String> getResourcePaths(String path) {
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
-            String relativePath = path;
+            String relativePath = toRelativePath(path);
 
             Pattern pattern;
             if (path.isEmpty()) {
@@ -199,23 +205,33 @@ public final class StartupContext {
 
         @Override
         public URL getResource(String path) throws MalformedURLException {
+            FileSystem fileSystem = startupContext.vertx.fileSystem();
+            FileResolver fileResolver = new FileResolver();
+            String relativePath = toRelativePath(path);
+            URI resourceURI = Stream.of(relativePath, "META-INF/resources/" + relativePath)
+                .filter(fileSystem::existsBlocking)
+                .findFirst()
+                .map(fileResolver::resolveFile)
+                .map(File::toURI)
+                .orElse(null);
+
+            if (resourceURI != null) {
+                return resourceURI.toURL();
+            }
             return null;
         }
 
         @Override
         public InputStream getResourceAsStream(String path) {
-            String relativePath = path;
-            if (relativePath.startsWith("/")) {
-                relativePath = relativePath.substring(1);
-            }
+            String relativePath = toRelativePath(path);
             FileSystem fileSystem = startupContext.vertx.fileSystem();
-            FileProps props = fileSystem.propsBlocking(relativePath);
-            if (props != null && !props.isDirectory()) {
-                Buffer buffer = fileSystem.readFileBlocking(relativePath);
-                return new ByteArrayInputStream(buffer.getBytes());
-            }
-            return null;
-
+            return Stream.of(relativePath, "META-INF/resources/" + relativePath)
+                .filter(fileSystem::existsBlocking)
+                .filter(p -> !fileSystem.propsBlocking(p).isDirectory())
+                .findFirst()
+                .map(fileSystem::readFileBlocking)
+                .map(BufferInputStreamAdapter::new)
+                .orElse(null);
         }
 
         @Override
@@ -434,7 +450,7 @@ public final class StartupContext {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             StartupContext.FakeServletContext that = (StartupContext.FakeServletContext) o;
-            return this.startupContext.vertx.equals( that.startupContext.vertx) &&
+            return this.startupContext.vertx.equals(that.startupContext.vertx) &&
                 startupContext.vaadinOptions.equals(that.startupContext.vaadinOptions);
         }
 
