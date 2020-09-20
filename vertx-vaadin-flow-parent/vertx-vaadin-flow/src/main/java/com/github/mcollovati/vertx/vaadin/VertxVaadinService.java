@@ -34,7 +34,6 @@ import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacemen
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
@@ -86,14 +85,11 @@ public class VertxVaadinService extends VaadinService {
         return vertxVaadin.servletContext();
     }
 
-    /*
-     * Wrap command so they are execute in vert.x context
-     */
     @Override
-    public java.util.concurrent.Future<Void> accessSession(VaadinSession session, Command command) {
-        Context context = vertxVaadin.vertx().getOrCreateContext();
-        Command runCommandOnContext = VertxCommand.wrap(context, command);
-        return super.accessSession(session, runCommandOnContext);
+    public void ensureAccessQueuePurged(VaadinSession session) {
+        Context context = getVertx().getOrCreateContext();
+        // Ensure commands are executed in vertx context
+        context.runOnContext(ev -> super.ensureAccessQueuePurged(session));
     }
 
     @Override
