@@ -33,12 +33,12 @@ import java.util.Optional;
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceContextUriResolver;
 import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -92,7 +92,7 @@ public class VertxVaadinService extends VaadinService {
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(vertxVaadin.servletContext());
+        return ApplicationRouteRegistry.getInstance(getContext());
     }
 
     @Override
@@ -315,6 +315,6 @@ public class VertxVaadinService extends VaadinService {
     // Just to avoid direct calls to VaadinServletService
     // from outside VertxVaadinService
     public static String getCancelingRelativePath(String servletPath) {
-        return ServletHelper.getCancelingRelativePath(servletPath);
+        return HandlerHelper.getCancelingRelativePath(servletPath);
     }
 }
