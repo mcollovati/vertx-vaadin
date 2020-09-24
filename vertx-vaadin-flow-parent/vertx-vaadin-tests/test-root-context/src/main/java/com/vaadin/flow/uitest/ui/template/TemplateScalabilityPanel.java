@@ -25,7 +25,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("template-scalability-panel")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-scalability-panel.html")
-@JsModule("./template-scalability-panel.js")
+@JsModule("template-scalability-panel.js")
 public class TemplateScalabilityPanel extends PolymerTemplate<TemplateModel> {
 
     @Id("ack-btn")

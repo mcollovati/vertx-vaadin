@@ -32,7 +32,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  */
 @Tag("template-scalability-view")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-scalability-view.html")
-@JsModule("./template-scalability-view.js")
+@JsModule("template-scalability-view.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateScalabilityView")
 @PageTitle("Template scalability")
 public class TemplateScalabilityView extends PolymerTemplate<TemplateModel> implements
