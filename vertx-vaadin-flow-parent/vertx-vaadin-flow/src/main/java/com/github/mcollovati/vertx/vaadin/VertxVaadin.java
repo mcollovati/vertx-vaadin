@@ -207,9 +207,13 @@ public class VertxVaadin {
 
         // Serve push javascript
         StaticHandler metaInfVaadinStatic = StaticHandler.create("META-INF/resources/VAADIN/static");
+
+        String pushJavascript = String.format(
+            "META-INF/resources/VAADIN/static/push/vaadinPush%s",
+            config.supportsSockJS() ? "SockJS" : ""
+        );
         vaadinRouter.routeWithRegex("/VAADIN/static/push/vaadinPush(SockJS)?(?<suffix>.*)")
-            .handler(ctx -> ctx.response().sendFile("META-INF/resources/VAADIN/static/push/vaadinPushSockJS"
-                + ctx.request().getParam("suffix")));
+            .handler(ctx -> ctx.response().sendFile(pushJavascript + ctx.request().getParam("suffix")));
 
         DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
         if (devModeHandler != null) {

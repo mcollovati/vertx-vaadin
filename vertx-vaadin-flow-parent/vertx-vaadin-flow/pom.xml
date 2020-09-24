@@ -62,6 +62,7 @@
             <groupId>com.github.mcollovati.vertx</groupId>
             <artifactId>vaadin-flow-sockjs</artifactId>
             <version>${vaadin-flow-sockjs.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <!--
