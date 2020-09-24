@@ -90,6 +90,13 @@
                     <include>**/client/**</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>${flow-client-generated-sources}</directory>
+                <includes>
+                    <include>META-INF/resources/frontend/**</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
         </resources>
         <plugins>
 
@@ -196,7 +203,7 @@
                                     <classifier>sources</classifier>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${flow-client-generated-sources}</outputDirectory>
-                                    <includes>com/vaadin/flow/linker/**,com/vaadin/client/**</includes>
+                                    <includes>com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -395,6 +402,56 @@
                                     </file>
                                     <url>${bintray.url}</url>
                                     <repositoryId>bintray-mcollovati-maven-repo</repositoryId>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <packaging>${project.packaging}</packaging>
+                                    <classifier>vaadin-${vaadin.platform.version}</classifier>
+                                    <generatePom>false</generatePom>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>do-release-snapshots</id>
+            <activation>
+                <property>
+                    <name>vertx-vaadin.snapshots</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-maven-plugin</artifactId>
+                        <configuration>
+                            <draftCompile>false</draftCompile>
+                            <compileReport>false</compileReport>
+                            <style>OBF</style>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>deploy-widgetset</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <file>
+                                        ${build.directory}/${build.finalName}.${project.packaging}
+                                    </file>
+                                    <url>${jfrog.url}</url>
+                                    <repositoryId>bintray-oss-snapshots</repositoryId>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>

@@ -49,7 +49,7 @@
         <snapshotRepository>
             <id>bintray-oss-snapshots</id>
             <name>oss-jfrog-artifactory-snapshots</name>
-            <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+            <url>${jfrog.url}</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -70,6 +70,7 @@
         <checkstyle.skip>true</checkstyle.skip>
         <bintray.package>vertx-vaadin</bintray.package>
         <bintray.url>https://api.bintray.com/maven/mcollovati/maven-repo/${bintray.package}/;publish=1</bintray.url>
+        <jfrog.url>https://oss.jfrog.org/artifactory/oss-snapshot-local</jfrog.url>
 
 
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
