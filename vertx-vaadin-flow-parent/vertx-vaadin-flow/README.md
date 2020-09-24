@@ -18,51 +18,60 @@ All [Vaadin Servlet configuration parameters](https://vaadin.com/docs/v14/flow/a
 }
 ``` 
 
-Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and Servlet APIs (because Vaadin relies on them but they are not provided by Vert.x).
+Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and Servlet APIs (because Vaadin relies on them, but they are not provided by Vert.x).
 
 ```xml
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin-flow</artifactId>
-  <version>13.0.2</version>
+  <version>${vertx-vaadin-flow.version}</version>
 </dependency>
 
 <dependency>
     <groupId>jakarta.servlet</groupId>
     <artifactId>jakarta.servlet-api</artifactId>
-    <version>4.0.2</version>
+    <version>${jakarta.servlet-api.version}</version>
     <scope>runtime</scope>
 </dependency>
 ```
 
 ## PUSH support
 
-Vertx-Vaadin supports PUSH using a custom implementation based on SockJS that replaces the [Atmosphere stack](https://github.com/Atmosphere/atmosphere) on the client and server side. For this reason, Vaadin `flow-push` and `flow-client` dependencies must be excluded:
+Vertx-Vaadin supports PUSH using a custom implementation based on SockJS that replaces the [Atmosphere stack](https://github.com/Atmosphere/atmosphere) on the client and server side.
+For this reason, in addition to adding `vaadin-flow-sockjs`, Vaadin `flow-push` and `flow-client` dependencies must be excluded:
 
 ```xml
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-core</artifactId>
-    <exclusions>
-        <exclusion>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-push</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-client</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
+<dependnecies>
+    <dependency>
+        <groupId>com.github.mcollovati.vertx</groupId>
+        <artifactId>vaadin-flow-sockjs</artifactId>
+        <version>${vertx-vaadin-flow.version}</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-core</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-push</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-client</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+</dependnecies>
 ```
 
-For better compatibility, add a dependency on the specific version of `vaadin-flow-sockjs` by specifying the classifier for the Vaadin version in use. For example:
+For better compatibility, use a specific version of `vaadin-flow-sockjs` targeted to  the Vaadin version in use by specifying the classifier.
 
 ```xml
 <dependency>
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vaadin-flow-sockjs</artifactId>
-    <version>13.0.2</version>
+    <version>${vertx-vaadin-flow.version}</version>
     <classifier>vaadin-${vaadin.version}</classifier>
 </dependency>
 ```
@@ -103,7 +112,7 @@ Change the scope of the Servlet API dependency from 'provided' to `runtime` (or 
 <dependency>
     <groupId>jakarta.servlet</groupId>
     <artifactId>jakarta.servlet-api</artifactId>
-    <version>4.0.2</version>
+    <version>${jakarta.servlet-api.version}</version>
     <scope>runtime</scope>
 </dependency>
 ```
