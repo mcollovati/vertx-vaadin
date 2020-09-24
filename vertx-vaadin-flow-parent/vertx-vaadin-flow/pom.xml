@@ -39,6 +39,7 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-core</artifactId>
             <version>${vaadin.platform.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -54,6 +55,7 @@
                     <artifactId>flow-client</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
