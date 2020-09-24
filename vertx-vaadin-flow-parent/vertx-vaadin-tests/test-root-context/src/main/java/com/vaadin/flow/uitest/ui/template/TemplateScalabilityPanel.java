@@ -23,7 +23,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("template-scalability-panel")
-@JsModule("./template-scalability-panel.js")
+@JsModule("template-scalability-panel.js")
 public class TemplateScalabilityPanel extends PolymerTemplate<TemplateModel> {
 
     @Id("ack-btn")

@@ -28,9 +28,23 @@
         <dependencies>
             <dependency>
                 <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-server</artifactId>
+                <version>${vaadin.flow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
                 <artifactId>flow-server-production-mode</artifactId>
                 <version>${vaadin.flow.version}</version>
             </dependency>
+            -->
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-testbench-core</artifactId>
@@ -63,6 +77,16 @@
             <groupId>com.github.mcollovati.vertx</groupId>
             <artifactId>vaadin-flow-sockjs</artifactId>
             <version>${vertx-vaadin-flow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-push</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>

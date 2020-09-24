@@ -30,7 +30,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  * Tests a scalability bug #5806 with adding many buttons to a view.
  */
 @Tag("template-scalability-view")
-@JsModule("./template-scalability-view.js")
+@JsModule("template-scalability-view.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateScalabilityView")
 @PageTitle("Template scalability")
 public class TemplateScalabilityView extends PolymerTemplate<TemplateModel> implements
