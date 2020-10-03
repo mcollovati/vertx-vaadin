@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.routing;
 
+import com.vaadin.flow.TestPush;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -22,7 +23,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 
-@Push
+@TestPush
 @Route("com.vaadin.flow.uitest.ui.PushLayout")
 public class PushLayout extends Div
     implements RouterLayout, BeforeEnterObserver {

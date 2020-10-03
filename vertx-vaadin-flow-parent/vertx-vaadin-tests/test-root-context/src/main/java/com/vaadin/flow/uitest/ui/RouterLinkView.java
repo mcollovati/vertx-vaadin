@@ -27,6 +27,9 @@ public class RouterLinkView extends AbstractDivView {
         getPage().getHistory().setHistoryStateChangeHandler(e -> {
             location.setText(e.getLocation().getPath());
             queryParams.setText(e.getLocation().getQueryParameters().getQueryString());
+            if (e.getState().isPresent())
+                UI.getCurrent().getPage().getHistory().pushState(null,
+                    ((JsonObject) e.getState().get()).getString("href"));
         });
 
         addImageLink();

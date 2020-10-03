@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.vaadin.flow.TestPush;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -38,7 +39,7 @@ import com.vaadin.flow.shared.ui.Transport;
  * @since 1.4
  */
 @Route("com.vaadin.flow.uitest.ui.LongPollingMultipleThreadsView")
-@Push(transport = Transport.LONG_POLLING)
+@TestPush(transport = Transport.LONG_POLLING)
 public class LongPollingMultipleThreadsView extends AbstractDivView {
 
     private final ScheduledExecutorService executor = Executors

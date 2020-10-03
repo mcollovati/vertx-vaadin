@@ -29,7 +29,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void navigationAfterSessionExpired() {
+    public void should_HaveANewSessionId_when_NavigationAfterSessionExpired() {
         openUrl("/new-router-session/NormalView");
 
         navigateToAnotherView();
@@ -42,9 +42,22 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         // be a new session
         Assert.assertNotEquals(sessionId, getSessionId());
         sessionId = getSessionId();
-        navigateToFirstView();
+        navigateToAnotherView();
         // session is preserved
         Assert.assertEquals(sessionId, getSessionId());
+    }
+
+    @Test
+    public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired(){
+        openUrl("/new-router-session/NormalView");
+
+        if (hasClientIssue("7581")) {
+            return;
+        }
+
+        navigateToSesssionExpireView();
+
+        assertTextAvailableInView("ViewWhichInvalidatesSession");
     }
 
     @Test
@@ -74,7 +87,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     private void navigateToSesssionExpireView() {
-        navigateTo("ViewWhichInvalidatesSession");
+        findElement(By.linkText("ViewWhichInvalidatesSession")).click();
     }
 
     private void navigateToInternalErrorView() {
@@ -84,7 +97,12 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
-        waitForElementPresent(By.xpath("//strong[text()='" + linkText + "']"));
+        assertTextAvailableInView(linkText);
 
+    }
+
+    private void assertTextAvailableInView(String linkText) {
+        Assert.assertNotNull(
+            findElement(By.xpath("//strong[text()='" + linkText + "']")));
     }
 }

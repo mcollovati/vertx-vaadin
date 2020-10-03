@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>vertx-vaadin-test</artifactId>
-        <version>16.0.0-SNAPSHOT</version>
+        <version>17.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>vertx-vaadin-test-root-context</artifactId>
@@ -159,6 +159,24 @@
                          <goals>
                              <goal>clean</goal>
                          </goals>
+                         <configuration>
+                             <filesets>
+                                 <fileset>
+                                     <directory>${project.build.directory}</directory>
+                                     <followSymlinks>false</followSymlinks>
+                                 </fileset>
+                                 <fileset>
+                                     <directory>${project.basedir}</directory>
+                                     <includes>
+                                         <include>node_modules/**</include>
+                                         <include>package*.json</include>
+                                         <include>webpack*.js</include>
+                                         <include>pnpm*</include>
+                                     </includes>
+                                     <followSymlinks>false</followSymlinks>
+                                 </fileset>
+                             </filesets>
+                         </configuration>
                      </execution>
                  </executions>
              </plugin>
@@ -211,7 +229,7 @@
                                     available via servlet context and via HTTP -->
                                 <resource>
                                     <directory>src/main/webapp</directory>
-                                    <targetPath></targetPath>
+                                    <targetPath>META-INF/resources/</targetPath>
                                 </resource>
                                 <resource>
                                     <directory>frontend</directory>
@@ -309,8 +327,9 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <compatibilityMode>false</compatibilityMode>
-                            <productionMode>false</productionMode>
+                            <!-- <compatibilityMode>false</compatibilityMode> -->
+                            <productionMode>true</productionMode>
+                            <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
                         </configuration>
                     </plugin>
                     <plugin>

@@ -82,11 +82,11 @@ public class ViewTestLayout extends Div
             optionGroup.appendChild(option);
         }
 
-        viewSelect.addPropertyChangeListener("value", "change", event -> {});
+        //viewSelect.addPropertyChangeListener("value", "change", event -> {});
         viewSelect.addEventListener("change", e -> {
             UI ui = UI.getCurrent();
             ui.navigate(viewSelect.getProperty("value"));
-        });
+        }).synchronizeProperty("value");
 
         element.appendChild(viewSelect, ElementFactory.createHr(),
             viewContainer);

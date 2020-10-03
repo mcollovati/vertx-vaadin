@@ -34,7 +34,7 @@ public class LoadingIndicatorView extends AbstractDivView {
         disableButton.addClickListener(
                 clickEvent -> {
                     clickEvent.getSource().getUI().get().getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
-                    clickEvent.getSource().getUI().get().getPage().addStyleSheet("/loading-indicator.css");
+                    clickEvent.getSource().getUI().get().getPage().addStyleSheet("/view/loading-indicator.css");
                 }
         );
         add(disableButton);

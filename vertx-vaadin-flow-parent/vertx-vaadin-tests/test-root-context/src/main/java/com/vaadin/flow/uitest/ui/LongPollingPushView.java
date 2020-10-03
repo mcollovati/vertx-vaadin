@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.TestPush;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.Push;
@@ -27,7 +28,7 @@ import com.vaadin.flow.shared.ui.Transport;
  * @since 1.0
  */
 @Route("com.vaadin.flow.uitest.ui.LongPollingPushView")
-@Push(transport = Transport.LONG_POLLING)
+@TestPush(transport = Transport.LONG_POLLING)
 public class LongPollingPushView extends AbstractDivView {
 
     public LongPollingPushView() {

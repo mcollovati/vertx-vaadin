@@ -18,12 +18,14 @@ package com.vaadin.flow.uitest.ui.routing;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 public class PushRouteNotFoundIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore("Push is no more configurable per view")
     public void renderRouteNotFoundErrorPage_pushIsSpecifiedViaParentLayout() {
         open();
 

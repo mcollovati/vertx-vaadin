@@ -17,6 +17,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.TestPush;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Push;
@@ -24,7 +25,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 
 @Route(value = "com.vaadin.flow.uitest.ui.SessionCloseLogoutView")
-@Push(transport = Transport.LONG_POLLING)
+@TestPush(transport = Transport.LONG_POLLING)
 public class SessionCloseLogoutView extends Div {
 
     public SessionCloseLogoutView() {

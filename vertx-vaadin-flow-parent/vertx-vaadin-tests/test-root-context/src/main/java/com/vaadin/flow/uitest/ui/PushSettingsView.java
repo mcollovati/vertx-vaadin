@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.TestPush;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 
-@Push
+@TestPush
 @Route("com.vaadin.flow.uitest.ui.PushSettingsView")
 public class PushSettingsView extends AbstractDivView {
     @Override
