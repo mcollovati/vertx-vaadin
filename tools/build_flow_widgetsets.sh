@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 _base_dir="$(dirname $(realpath $0))/.."
-_action=${1:package}
-_kind=${2:release}
+_action=${1:-package}
+_kind=${2:-release}
 _mvn="$_base_dir/mvnw -f $_base_dir/pom.xml"
 
 
