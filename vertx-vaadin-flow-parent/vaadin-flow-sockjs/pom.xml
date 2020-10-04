@@ -11,7 +11,7 @@
     <artifactId>vaadin-flow-sockjs</artifactId>
     <packaging>jar</packaging>
     <name>vaadin-flow-sockjs</name>
-    <version>17.0.0-SNAPSHOT</version>
+    <version>17.0.0</version>
     <description>Sockjs push connection implementation for Vaadin Flow</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
