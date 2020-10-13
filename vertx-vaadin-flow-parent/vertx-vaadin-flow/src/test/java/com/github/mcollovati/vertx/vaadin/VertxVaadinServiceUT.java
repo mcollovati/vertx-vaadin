@@ -73,6 +73,7 @@ public class VertxVaadinServiceUT {
 
     @Test
     public void resolveResource_production() {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
         mocks.setProductionMode(true);
 
         Assert.assertEquals("",
@@ -143,6 +144,8 @@ public class VertxVaadinServiceUT {
 
     @Test
     public void getResourceNoTheme_production() throws IOException {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         mocks.getVertxVaadin().addResource("/frontend-es6/foo.txt");
         mocks.getVertxVaadin().addResource("/frontend-es5/foo.txt");
 
@@ -226,6 +229,7 @@ public class VertxVaadinServiceUT {
 
     @Test
     public void getResourceTheme_production() throws IOException, URISyntaxException {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
         mocks.setProductionMode(true);
         WebBrowser browser = mocks.getBrowser();
         TestTheme theme = new TestTheme();
