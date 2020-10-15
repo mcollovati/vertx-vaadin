@@ -28,6 +28,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -133,7 +135,13 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     @Override
     public String getPathInfo() {
-        return request.path().substring(getContextPath().length());
+        String path = request.path().substring(getContextPath().length());
+        try {
+            return URLDecoder.decode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // fallback to path
+            return path;
+        }
     }
 
     @Override

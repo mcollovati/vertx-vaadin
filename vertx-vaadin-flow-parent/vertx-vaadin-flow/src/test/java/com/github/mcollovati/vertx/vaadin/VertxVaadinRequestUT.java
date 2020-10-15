@@ -192,6 +192,11 @@ public class VertxVaadinRequestUT {
         assertPathInfo("/ui", "/ui/", "/");
         assertPathInfo("/ui", "/ui/path", "/path");
         assertPathInfo("/ui", "/ui/path/other", "/path/other");
+
+        assertPathInfo("", "product-w%20p%282%29.jpg", "product-w p(2).jpg");
+        assertPathInfo("", "product-w%20p%282%29.jpg", "product-w p(2).jpg");
+        assertPathInfo("", "product-w%20p%282%29.jpg", "product-w p(2).jpg");
+
     }
 
     @Test
