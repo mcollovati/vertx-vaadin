@@ -22,12 +22,15 @@
  */
 package com.github.mcollovati.vertx.http;
 
+import java.util.function.IntSupplier;
+
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -42,30 +45,41 @@ public class HttpReverseProxy {
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
     private final WebClient client;
+    private final IntSupplier devServerPort;
 
-    public HttpReverseProxy(WebClient client) {
+    public HttpReverseProxy(WebClient client, IntSupplier devServerPort) {
         this.client = client;
+        this.devServerPort = devServerPort;
     }
 
 
-    public static HttpReverseProxy create(Vertx vertx, int devServerPort) {
+    public static HttpReverseProxy create(Vertx vertx, IntSupplier devServerPort) {
         WebClientOptions options = new WebClientOptions()
             .setLogActivity(true)
             .setConnectTimeout(DEFAULT_TIMEOUT)
             .setIdleTimeout(DEFAULT_TIMEOUT)
             .setDefaultHost("localhost")
-            .setDefaultPort(devServerPort);
+            .setDefaultPort(devServerPort.getAsInt());
 
-        return new HttpReverseProxy(WebClient.create(vertx, options));
+
+        return new HttpReverseProxy(WebClient.create(vertx, options), devServerPort);
     }
 
     public void forward(RoutingContext routingContext) {
+        int port = devServerPort.getAsInt();
+        if (port == 0) {
+            routingContext.fail(500, new RuntimeException("DevMode server not yet initialized"));
+            return;
+        }
         HttpServerRequest serverRequest = routingContext.request();
         String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
         logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
 
-
-        HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), requestURI);
+        RequestOptions opts = new RequestOptions()
+            .setHost("localhost")
+            .setPort(port)
+            .setURI(requestURI);
+        HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), opts);
 
         serverRequest.headers().forEach(entry -> {
             String valueOk = "Connection".equals(entry.getKey()) ? "close" : entry.getValue();

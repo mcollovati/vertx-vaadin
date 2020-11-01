@@ -217,7 +217,7 @@ public class VertxVaadin {
 
         if (DevModeHandler.getDevModeHandler() != null) {
             logger.info("Starting DevModeHandler proxy");
-            HttpReverseProxy proxy = HttpReverseProxy.create(vertx, DevModeHandler.getDevModeHandler().getPort());
+            HttpReverseProxy proxy = HttpReverseProxy.create(vertx, () -> DevModeHandler.getDevModeHandler().getPort());
             vaadinRouter.routeWithRegex(".+\\.js$").blockingHandler(proxy::forward);
         }
 
