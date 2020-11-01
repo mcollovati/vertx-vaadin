@@ -31,11 +31,12 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
-        WebElement child = template.$(TestBenchElement.class).id("child");
+        WebElement child = template.$(TestBenchElement.class)
+            .id("hidden-child");
         Assert.assertNotNull(child.getAttribute("hidden"));
 
         WebElement visibility = template.$(TestBenchElement.class)
-                .id("visibility");
+            .id("visibility");
         visibility.click();
         Assert.assertNotNull(child.getAttribute("hidden"));
 
@@ -49,14 +50,11 @@ public class HiddenTemplateIT extends ChromeBrowserTest {
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
 
-        WebElement hidden = template.$(TestBenchElement.class).id("hidden");
-        hidden.click();
-
         WebElement child = template.$(TestBenchElement.class).id("child");
         Assert.assertNull(child.getAttribute("hidden"));
 
         WebElement visibility = template.$(TestBenchElement.class)
-                .id("visibility");
+            .id("visibility");
         visibility.click();
         Assert.assertNotNull(child.getAttribute("hidden"));
 
