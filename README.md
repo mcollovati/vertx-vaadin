@@ -91,7 +91,7 @@ A public demo based on Vaadin 8 archetype application example is published on he
 Bookstore demo on Vaadin Flow is published on heroku and is available at the following urls:
 
 * [vertx-vaadin-flow:14](https://vertx-vaadin14-example.herokuapp.com/)
-* [vertx-vaadin-flow:15](https://vertx-vaadin15-example.herokuapp.com/)
+* [vertx-vaadin-flow:develop](https://vertx-vaadin-dev-example.herokuapp.com/)
 
 Source code and other samples can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
 
