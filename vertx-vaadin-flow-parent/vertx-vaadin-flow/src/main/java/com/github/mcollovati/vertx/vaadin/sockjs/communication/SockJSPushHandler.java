@@ -27,8 +27,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -58,6 +61,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
@@ -74,7 +78,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Source code adapted from Vaadin {@link com.vaadin.flow.server.communication.PushHandler}
  */
-public class SockJSPushHandler implements Handler<RoutingContext> {
+public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveReload {
 
     private static final Logger logger = LoggerFactory.getLogger(SockJSPushHandler.class);
 
@@ -130,6 +134,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     private final Router router;
     private final SessionHandler sessionHandler;
     private final LocalMap<String, SockJSSocket> connectedSocketsLocalMap;
+    private final Set<String> liveReload = new HashSet<>();
 
     /**
      * Callback used when we receive a request to establish a push channel for a
@@ -170,17 +175,40 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         RoutingContext routingContext = CurrentInstance.get(RoutingContext.class);
 
         String uuid = sockJSSocket.writeHandlerID();
-        // Send an ACK
-        sockJSSocket.write("ACK-CONN|" + uuid);
+        connectedSocketsLocalMap.put(uuid, asSharable(sockJSSocket));
 
-        connectedSocketsLocalMap.put(uuid, sockJSSocket);
-        PushSocket socket = new PushSocketImpl(sockJSSocket);
+        if (isLiveReloadConnection(routingContext)) {
+            liveReload.add(uuid);
+            sockJSSocket.write("{\"command\": \"hello\"}");
+        } else {
+            // Send an ACK
+            sockJSSocket.write("ACK-CONN|" + uuid);
 
-        initSocket(sockJSSocket, routingContext, socket);
 
-        sessionHandler.handle(new SockJSRoutingContext(routingContext, rc ->
-            callWithUi(new PushEvent(socket, routingContext, null), establishCallback)
-        ));
+            PushSocket socket = new PushSocketImpl(sockJSSocket);
+
+            initSocket(sockJSSocket, routingContext, socket);
+
+            sessionHandler.handle(new SockJSRoutingContext(routingContext, rc ->
+                callWithUi(new PushEvent(socket, routingContext, null), establishCallback)
+            ));
+        }
+    }
+
+    private SockJSSocket asSharable(SockJSSocket socket) {
+        if (socket instanceof Shareable) {
+            return socket;
+        }
+        return new ShareableSockJsSocket(socket);
+    }
+    private boolean isLiveReloadConnection(RoutingContext routingContext) {
+        //String refreshConnection = routingContext.request().getParam(ApplicationConstants.LIVE_RELOAD_CONNECTION);
+
+        return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
+            && Boolean.TRUE.equals(routingContext.get(ApplicationConstants.LIVE_RELOAD_CONNECTION))
+            //&& refreshConnection != null
+            ////&& AtmosphereResource.TRANSPORT.WEBSOCKET.equals(resource.transport())
+            ;
     }
 
     private void initSocket(SockJSSocket sockJSSocket, RoutingContext routingContext, PushSocket socket) {
@@ -198,8 +226,13 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
     private void onDisconnect(PushEvent ev) {
         connectedSocketsLocalMap.remove(ev.socket.getUUID());
+        boolean isLiveReload = liveReload.remove(ev.socket.getUUID());
         if (!ev.socket.isClosed()) {
-            connectionLost(ev);
+            if (isLiveReload) {
+                logger.debug("Live reload connection disconnected");
+            } else {
+                connectionLost(ev);
+            }
         }
     }
 
@@ -220,6 +253,20 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         } finally {
             CurrentInstance.set(RoutingContext.class, null);
         }
+    }
+
+    @Override
+    public void reload() {
+        liveReload.stream()
+            .map(connectedSocketsLocalMap::get)
+            .filter(Objects::nonNull)
+            .forEach(socket -> {
+                try {
+                    socket.write("{\"command\": \"reload\"}");
+                } catch (Exception ex) {
+                    // ignore
+                }
+            });
     }
 
     private void callWithUi(final PushEvent event, final PushEventCallback callback) {
