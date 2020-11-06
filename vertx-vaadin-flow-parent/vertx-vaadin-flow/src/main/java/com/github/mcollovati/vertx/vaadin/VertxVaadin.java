@@ -32,14 +32,15 @@ import java.util.regex.Pattern;
 import com.github.mcollovati.vertx.Sync;
 import com.github.mcollovati.vertx.http.HttpReverseProxy;
 import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSLiveReload;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -246,7 +247,7 @@ public class VertxVaadin {
 
         logger.trace("Setup fronted routes");
         if (shouldFixIncorrectWebjarPaths()) {
-            vaadinRouter.routeWithRegex(INCORRECT_WEBJAR_PATH_REGEX.pattern()+".*").handler(ctx -> {
+            vaadinRouter.routeWithRegex(INCORRECT_WEBJAR_PATH_REGEX.pattern() + ".*").handler(ctx -> {
                 ctx.reroute(fixIncorrectWebjarPath(ctx.request().path()));
             });
         }
@@ -283,6 +284,7 @@ public class VertxVaadin {
 
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {
         if (config.supportsSockJS()) {
+
             SockJSHandlerOptions options = new SockJSHandlerOptions()
                 .setSessionTimeout(config().sessionTimeout())
                 .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
@@ -293,8 +295,22 @@ public class VertxVaadin {
             String pushPath = config.pushURL().replaceFirst("/$", "") + "/*";
             logger.debug("Setup PUSH communication on {}", pushPath);
 
+            service.getContext().setAttribute(SockJSLiveReload.class, pushHandler);
+
             vaadinRouter.route(pushPath).handler(rc -> {
                 if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
+                    rc.put(ApplicationConstants.REQUEST_TYPE_PUSH, true);
+                    if (rc.request().params().contains(ApplicationConstants.LIVE_RELOAD_CONNECTION)) {
+                        rc.put(ApplicationConstants.LIVE_RELOAD_CONNECTION, true);
+                        rc.reroute(rc.request().method(), rc.request().path() + "/websocket");
+                        return;
+                    }
+                }
+                rc.next();
+            });
+            vaadinRouter.route(pushPath).handler(rc -> {
+                //if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
+                if (Boolean.TRUE.equals(rc.get(ApplicationConstants.REQUEST_TYPE_PUSH))) {
                     pushHandler.handle(rc);
                 } else {
                     rc.next();

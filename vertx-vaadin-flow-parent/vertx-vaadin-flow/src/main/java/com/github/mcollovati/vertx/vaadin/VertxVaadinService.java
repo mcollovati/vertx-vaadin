@@ -31,6 +31,7 @@ import java.util.Objects;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -102,6 +103,11 @@ public class VertxVaadinService extends VaadinService {
         return PwaRegistry.getInstance(vertxVaadin.servletContext());
     }
 
+
+    @Override
+    protected Instantiator createInstantiator() throws ServiceException {
+        return new VertxVaadinInstantiator(super.createInstantiator());
+    }
 
     @Override
     protected List<RequestHandler> createRequestHandlers()
