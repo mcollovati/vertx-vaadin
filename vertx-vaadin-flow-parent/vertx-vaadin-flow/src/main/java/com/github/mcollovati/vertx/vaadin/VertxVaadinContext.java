@@ -24,7 +24,6 @@ package com.github.mcollovati.vertx.vaadin;
 
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.server.VaadinContext;
@@ -51,8 +50,11 @@ public class VertxVaadinContext implements VaadinContext {
 
     @Override
     public <T> void setAttribute(Class<T> clazz, T value) {
-        assert value != null;
-        context.put(value.getClass().getName(), value);
+        if (value == null) {
+            removeAttribute(clazz);
+        } else {
+            context.put(clazz.getName(), value);
+        }
     }
 
     @Override
