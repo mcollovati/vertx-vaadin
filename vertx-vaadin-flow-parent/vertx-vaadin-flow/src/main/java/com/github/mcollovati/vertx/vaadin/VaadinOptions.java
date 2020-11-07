@@ -105,6 +105,10 @@ public final class VaadinOptions {
         config.put("sockJSSupport", enabled);
     }
 
+    long sockJSHeartbeatInterval() {
+        return config.getLong("sockJS.heartbeatInterval", 25L * 1000);
+    }
+
     public boolean supportsSockJS() {
         return config.getBoolean("sockJSSupport", true);
     }

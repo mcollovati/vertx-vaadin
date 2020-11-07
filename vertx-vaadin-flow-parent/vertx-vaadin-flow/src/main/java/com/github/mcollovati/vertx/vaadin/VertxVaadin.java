@@ -276,8 +276,8 @@ public class VertxVaadin {
     private void initSockJS(Router vaadinRouter, SessionHandler sessionHandler) {
         if (config.supportsSockJS()) {
             SockJSHandlerOptions options = new SockJSHandlerOptions()
-                .setSessionTimeout(config().sessionTimeout())
-                .setHeartbeatInterval(service.getDeploymentConfiguration().getHeartbeatInterval() * 1000);
+                .setSessionTimeout(config.sessionTimeout())
+                .setHeartbeatInterval(config.sockJSHeartbeatInterval());
             SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
 
             SockJSPushHandler pushHandler = new SockJSPushHandler(service, sessionHandler, sockJSHandler);
