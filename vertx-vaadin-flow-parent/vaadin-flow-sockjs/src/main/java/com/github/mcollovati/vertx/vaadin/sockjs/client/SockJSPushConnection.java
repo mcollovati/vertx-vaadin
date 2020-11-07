@@ -241,7 +241,8 @@ public class SockJSPushConnection implements PushConnection {
             fallbackTransport: 'xhr-polling',
             transports: ['websocket', 'xhr-polling', 'xhr-streaming'],
             reconnectInterval: 5000,
-            maxReconnectAttempts: 10
+            maxReconnectAttempts: 10,
+            timeout: 5000
         };
     }-*/;
 
@@ -395,7 +396,6 @@ public class SockJSPushConnection implements PushConnection {
 
     private static native boolean isSockJSLoaded()
     /*-{
-        console.log("================== isSockJSLoaded", $wnd.vaadinPush);
         return $wnd.vaadinPush && $wnd.vaadinPush.SockJS;
     }-*/;
 
