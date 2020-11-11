@@ -102,12 +102,6 @@ class VertxVaadinInstantiator implements Instantiator {
     public I18NProvider getI18NProvider() {
         return delegate.getI18NProvider();
     }
-
-    @Override
-    public TemplateParser getTemplateParser() {
-        return delegate.getTemplateParser();
-    }
-
-
+    
 }
 
