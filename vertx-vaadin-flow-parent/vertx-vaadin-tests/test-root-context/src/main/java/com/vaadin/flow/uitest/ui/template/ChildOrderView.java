@@ -19,12 +19,13 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
+
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.ChildOrderView", layout = ViewTestLayout.class)
 @Tag("child-order-template")
@@ -96,13 +97,13 @@ public class ChildOrderView extends PolymerTemplate<TemplateModel> {
 
         addChildToContainer2.addClickListener(event -> {
             Element text = Element.createText("\nServer text "
-                + (containerWithText.getElement().getChildCount() + 1));
+                + (containerWithText.getElement().getChildCount()));
             containerWithText.getElement().appendChild(text);
         });
 
         prependChildToContainer2.addClickListener(event -> {
             Element text = Element.createText("\nServer text "
-                + (containerWithText.getElement().getChildCount() + 1));
+                + (containerWithText.getElement().getChildCount()));
             containerWithText.getElement().insertChild(0, text);
         });
 
