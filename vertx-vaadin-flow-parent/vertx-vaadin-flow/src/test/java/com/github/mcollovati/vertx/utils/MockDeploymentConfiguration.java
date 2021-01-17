@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.utils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -51,6 +52,10 @@ public class MockDeploymentConfiguration
     private boolean brotli = false;
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
+
+    public MockDeploymentConfiguration() {
+        super(Collections.emptyMap());
+    }
 
     @Override
     public boolean isProductionMode() {
@@ -191,7 +196,8 @@ public class MockDeploymentConfiguration
         return useDeprecatedV14Bootstrapping;
     }
 
-    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
+    public void useDeprecatedV14Bootstrapping(
+        boolean useDeprecatedV14Bootstrapping) {
         this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
     }
 
@@ -200,17 +206,16 @@ public class MockDeploymentConfiguration
         return this.eagerServerLoad;
     }
 
-    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
-        this.eagerServerLoad = includeBootsrapInitialUidl;
-    }
-
     @Override
     public boolean isDevModeLiveReloadEnabled() {
         return devModeLiveReloadEnabled;
     }
 
+    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
+        this.eagerServerLoad = includeBootsrapInitialUidl;
+    }
+
     public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
         this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
     }
-
 }

@@ -39,9 +39,12 @@ import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
@@ -94,27 +97,33 @@ public class VertxVaadin {
         this.startupContext = Objects.requireNonNull(startupContext);
         config = startupContext.vaadinOptions();
 
-        service = createVaadinService();
-
-        if (config.supportsSockJS()) {
-            logger.trace("Configuring SockJS Push connection");
-            service.addUIInitListener(event ->
-                event.getUI().getInternals().setPushConnection(new SockJSPushConnection(event.getUI()))
-            );
-        }
-
-        logger.trace("Setup WebJar server");
+        CurrentInstance.clearAll();
         try {
-            service.init();
-        } catch (Exception ex) {
-            throw new VertxException("Cannot initialize Vaadin service", ex);
-        }
+            initializeVaadinContext(vertx);
+            service = createVaadinService();
 
-        this.sessionStore = withSessionExpirationHandler(
-            service, sessionStore.orElseGet(this::createSessionStore)
-        );
-        configureSessionStore();
-        router = initRouter();
+            if (config.supportsSockJS()) {
+                logger.trace("Configuring SockJS Push connection");
+                service.addUIInitListener(event ->
+                    event.getUI().getInternals().setPushConnection(new SockJSPushConnection(event.getUI()))
+                );
+            }
+
+            logger.trace("Setup WebJar server");
+            try {
+                service.init();
+            } catch (Exception ex) {
+                throw new VertxException("Cannot initialize Vaadin service", ex);
+            }
+
+            this.sessionStore = withSessionExpirationHandler(
+                service, sessionStore.orElseGet(this::createSessionStore)
+            );
+            configureSessionStore();
+            router = initRouter();
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 
     protected VertxVaadin(Vertx vertx, ExtendedSessionStore sessionStore, StartupContext startupContext) {
@@ -123,6 +132,18 @@ public class VertxVaadin {
 
     protected VertxVaadin(Vertx vertx, StartupContext startupContext) {
         this(vertx, Optional.empty(), startupContext);
+    }
+
+    private VaadinContext initializeVaadinContext(Vertx vertx) {
+        VertxVaadinContext context = new VertxVaadinContext(vertx);
+        ApplicationClassLoaderAccess access = () -> context.getClass().getClassLoader();
+        context.getAttribute(ApplicationClassLoaderAccess.class, () -> access);
+
+        VaadinContextInitializer initializer = context.getAttribute(VaadinContextInitializer.class);
+        if (initializer != null) {
+            initializer.initialize(context);
+        }
+        return context;
     }
 
     private void configureSessionStore() {
@@ -327,7 +348,7 @@ public class VertxVaadin {
     }
 
     private DeploymentConfiguration createDeploymentConfiguration() {
-        return DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), config());
+        return DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext);
     }
 
 

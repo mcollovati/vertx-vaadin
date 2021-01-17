@@ -23,12 +23,10 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.util.HashMap;
@@ -42,20 +40,18 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.AnnotationValidator;
-import com.vaadin.flow.server.startup.ConnectEndpointsValidator;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
+import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
+import com.vaadin.flow.server.startup.fusion.ConnectEndpointsValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
 import elemental.json.impl.JsonUtil;
 import io.github.classgraph.ClassGraph;
@@ -66,7 +62,6 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
@@ -76,7 +71,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
@@ -178,14 +172,13 @@ public class VaadinVerticle extends AbstractVerticle {
             .map(pkgs -> new JsonArray(asList(pkgs)))
             .ifPresent(pkgs -> vaadinConfig.put("flowBasePackages", pkgs));
         readUiFromEnclosingClass(vaadinConfig);
-        readConfigurationAnnotation(vaadinConfig);
         readBuildInfo(vaadinConfig);
         vaadinConfig.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
 
         String mountPoint = vaadinConfig.getString("mountPoint");
         vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
-        vaadinConfig.put(Constants.SERVLET_PARAMETER_PUSH_URL, mountPoint);
-        vaadinConfig.put(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
+        vaadinConfig.put(InitParameters.SERVLET_PARAMETER_PUSH_URL, mountPoint);
+        vaadinConfig.put(InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
 
         return Future.succeededFuture(new VaadinOptions(vaadinConfig));
     }
@@ -219,41 +212,7 @@ public class VaadinVerticle extends AbstractVerticle {
         Class<?> enclosingClass = getClass().getEnclosingClass();
 
         if (enclosingClass != null && UI.class.isAssignableFrom(enclosingClass)) {
-            vaadinConfig.put(VaadinSession.UI_PARAMETER, enclosingClass.getName());
-        }
-    }
-
-    // From VaadinServlet
-    private void readConfigurationAnnotation(JsonObject vaadinConfig) {
-
-        VaadinServletConfiguration configAnnotation = getClass().getAnnotation(VaadinServletConfiguration.class);
-        if (configAnnotation != null) {
-            Method[] methods = VaadinServletConfiguration.class
-                .getDeclaredMethods();
-            for (Method method : methods) {
-                VaadinServletConfiguration.InitParameterName name =
-                    method.getAnnotation(VaadinServletConfiguration.InitParameterName.class);
-                assert name !=
-                    null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
-
-                try {
-                    Object value = method.invoke(configAnnotation);
-
-                    String stringValue;
-                    if (value instanceof Class<?>) {
-                        stringValue = ((Class<?>) value).getName();
-                    } else {
-                        stringValue = value.toString();
-                    }
-
-                    vaadinConfig.put(name.value(), stringValue);
-                } catch (Exception e) {
-                    // This should never happen
-                    throw new VertxException(
-                        "Could not read @VaadinServletConfiguration value "
-                            + method.getName(), e);
-                }
-            }
+            vaadinConfig.put(InitParameters.UI_PARAMETER, enclosingClass.getName());
         }
     }
 
@@ -312,18 +271,17 @@ public class VaadinVerticle extends AbstractVerticle {
             }
         };
 
-        DeploymentConfiguration deploymentConfiguration = DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions());
-
-        CompositeFuture.join(asList(
-            runInitializer(initializerFactory.apply(new ConnectEndpointsValidator())),
-            runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
-            runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
-            runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
-            runInitializer(initializerFactory.apply(new AnnotationValidator())),
-            runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-            runInitializer(event2 -> initializeAppShell(event2, startupContext, deploymentConfiguration, classes.get(VaadinAppShellInitializer.class))),
-            runInitializer(event2 -> initializeDevModeHandler(event2, startupContext, deploymentConfiguration, classes.get(DevModeInitializer.class)))
-        )).onComplete(event2 -> {
+        runInitializer(initializerFactory.apply(new LookupServletContainerInitializer()))
+            .compose(unused -> CompositeFuture.join(asList(
+                runInitializer(initializerFactory.apply(new ConnectEndpointsValidator())),
+                runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
+                runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
+                runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
+                runInitializer(initializerFactory.apply(new AnnotationValidator())),
+                runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
+                runInitializer(initializerFactory.apply(new VaadinAppShellInitializer())),
+                runInitializer(initializerFactory.apply(new DevModeInitializer()))
+            ))).onComplete(event2 -> {
             if (event2.succeeded()) {
                 promise.complete();
             } else {
@@ -332,41 +290,13 @@ public class VaadinVerticle extends AbstractVerticle {
         });
     }
 
-    private static void initializeAppShell(Promise<Object> promise, StartupContext startupContext,
-                                           DeploymentConfiguration deploymentConfiguration, Set<Class<?>> classes) {
-        try {
-            VaadinAppShellInitializer.init(classes, startupContext.servletContext(), deploymentConfiguration);
-            promise.complete();
-        } catch (Exception ex) {
-            promise.fail(ex);
-        }
-    }
-
-    private static synchronized void initializeDevModeHandler(Promise<Object> promise, StartupContext startupContext,
-                                                              DeploymentConfiguration deploymentConfiguration, Set<Class<?>> classes) {
-        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
-        if (devModeHandler == null) {
-            try {
-                DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(), deploymentConfiguration);
-                // DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE
-                startupContext.servletContext().setAttribute("dev-mode-handler-already-started-attribute", true);
-                promise.complete(DevModeHandler.getDevModeHandler());
-            } catch (ServletException e) {
-                promise.fail(e);
-            }
-        } else {
-            log.info("DevModeHandler already running on port {}", devModeHandler.getPort());
-            promise.complete(devModeHandler);
-        }
-    }
-
     private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult) {
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
         Stream.of(
             RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
             WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
             DevModeInitializer.class, VaadinAppShellInitializer.class, ConnectEndpointsValidator.class,
-            VaadinAppShellInitializer.class
+            LookupServletContainerInitializer.class
         ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }
@@ -428,16 +358,16 @@ public class VaadinVerticle extends AbstractVerticle {
             // already set.
             if (json != null) {
                 elemental.json.JsonObject buildInfo = JsonUtil.parse(json);
-                if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                if (buildInfo.hasKey(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
                     config.put(
-                        SERVLET_PARAMETER_PRODUCTION_MODE,
+                        InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
-                            SERVLET_PARAMETER_PRODUCTION_MODE)));
+                            InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)));
                     // Need to be sure that we remove the system property,
                     // because
                     // it has priority in the configuration getter
                     System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+                        VAADIN_PREFIX + InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE);
                 }
                 if (System.getProperty(PROJECT_BASEDIR) == null
                     && buildInfo.hasKey("npmFolder")) {

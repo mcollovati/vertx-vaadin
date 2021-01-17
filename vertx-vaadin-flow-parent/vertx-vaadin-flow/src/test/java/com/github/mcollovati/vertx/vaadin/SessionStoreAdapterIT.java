@@ -27,7 +27,6 @@ import java.util.List;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletConfiguration;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -75,7 +74,6 @@ public class SessionStoreAdapterIT {
         );
     }
 
-    @VaadinServletConfiguration(productionMode = false, ui = MyUi.class)
     public static class SessionTestVerticle extends VaadinVerticle {
 
         List<String> sessionEvents = new ArrayList<>();

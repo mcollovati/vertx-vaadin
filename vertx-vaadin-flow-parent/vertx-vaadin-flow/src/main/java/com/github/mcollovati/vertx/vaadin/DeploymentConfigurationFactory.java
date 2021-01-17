@@ -22,12 +22,16 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import com.github.mcollovati.vertx.support.StartupContext;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class DeploymentConfigurationFactory {
 
-    public static DeploymentConfiguration createDeploymentConfiguration(Class<?> systemPropertyBaseClass, VaadinOptions vaadinOptions) {
-        return new DefaultDeploymentConfiguration(systemPropertyBaseClass, vaadinOptions.asProperties());
+    public static DeploymentConfiguration createDeploymentConfiguration(Class<?> systemPropertyBaseClass, StartupContext startupContext) {
+        return new DefaultDeploymentConfiguration(
+            ApplicationConfiguration.get(startupContext.getVaadinContext()),
+            systemPropertyBaseClass, startupContext.vaadinOptions().asProperties());
     }
 }

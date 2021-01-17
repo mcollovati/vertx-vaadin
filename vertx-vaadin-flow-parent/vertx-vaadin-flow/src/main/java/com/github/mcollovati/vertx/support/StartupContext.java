@@ -51,6 +51,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
+import com.vaadin.flow.server.VaadinConfig;
+import com.vaadin.flow.server.VaadinContext;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
@@ -65,7 +68,7 @@ import io.vertx.core.http.impl.MimeMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class StartupContext {
+public final class StartupContext implements VaadinConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(StartupContext.class);
     private final Set<String> resources;
@@ -85,6 +88,22 @@ public final class StartupContext {
         return resources.stream()
             .filter(r -> normalized.equals(r) || r.replaceFirst("^META-INF/resources/", "").equals(normalized))
             .findFirst();
+    }
+
+    @Override
+    public VaadinContext getVaadinContext() {
+        return new VertxVaadinContext(vertx);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Enumeration<String> getConfigParameterNames() {
+        return (Enumeration<String>)vaadinOptions.asProperties().propertyNames();
+    }
+
+    @Override
+    public String getConfigParameter(String name) {
+        return vaadinOptions.asProperties().getProperty(name);
     }
 
     public static Future<StartupContext> of(Vertx vertx, VaadinOptions vaadinOptions) {
@@ -286,12 +305,12 @@ public final class StartupContext {
 
         @Override
         public String getInitParameter(String name) {
-            return null;
+            return startupContext.getConfigParameter(name);
         }
 
         @Override
         public Enumeration<String> getInitParameterNames() {
-            return null;
+            return startupContext.getConfigParameterNames();
         }
 
         @Override
