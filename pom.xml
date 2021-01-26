@@ -88,7 +88,7 @@
 
         <vertx.version>3.9.1</vertx.version>
         <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>18.0.2</vaadin.platform.version>
+        <vaadin.platform.version>18.0.5</vaadin.platform.version>
         <vaadin.flow.version>5.0.2</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
