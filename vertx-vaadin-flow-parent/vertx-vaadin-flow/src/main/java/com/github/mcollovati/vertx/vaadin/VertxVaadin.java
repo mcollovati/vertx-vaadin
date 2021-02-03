@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import com.github.mcollovati.vertx.Sync;
 import com.github.mcollovati.vertx.http.HttpReverseProxy;
 import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.vaadin.connect.VaadinConnectHandler;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSLiveReload;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
@@ -42,6 +43,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
@@ -56,6 +58,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -72,7 +75,8 @@ public class VertxVaadin {
     private final StartupContext startupContext;
     private final VaadinOptions config;
     private final Vertx vertx;
-    private final Router router;
+    private final Router vaadinRouter;
+    private final Router connectRouter;
     private final ExtendedSessionStore sessionStore;
 
 
@@ -114,7 +118,9 @@ public class VertxVaadin {
             service, sessionStore.orElseGet(this::createSessionStore)
         );
         configureSessionStore();
-        router = initRouter();
+        vaadinRouter = Router.router(vertx);
+        connectRouter = Router.router(vertx);
+        initRouters();
     }
 
     protected VertxVaadin(Vertx vertx, ExtendedSessionStore sessionStore, StartupContext startupContext) {
@@ -144,7 +150,11 @@ public class VertxVaadin {
     }
 
     public Router router() {
-        return router;
+        return vaadinRouter;
+    }
+
+    public Router connectRouter() {
+        return connectRouter;
     }
 
     public final Vertx vertx() {
@@ -184,7 +194,8 @@ public class VertxVaadin {
         return ExtendedLocalSessionStore.create(vertx);
     }
 
-    private Router initRouter() {
+
+    private void initRouters() {
         logger.debug("Initializing router");
         String sessionCookieName = sessionCookieName();
         SessionHandler sessionHandler = SessionHandler.create(sessionStore)
@@ -193,7 +204,11 @@ public class VertxVaadin {
             .setNagHttps(false)
             .setCookieHttpOnlyFlag(true);
 
-        Router vaadinRouter = Router.router(vertx);
+
+        connectRouter.route().handler(sessionHandler);
+        connectRouter.route().handler(BodyHandler.create());
+        VaadinConnectHandler.register(connectRouter, service);
+
         // Redirect mountPoint to mountPoint/
         vaadinRouter.routeWithRegex("^$").handler(ctx -> ctx.response()
             .putHeader(HttpHeaders.LOCATION, ctx.request().uri() + "/")
@@ -264,7 +279,6 @@ public class VertxVaadin {
         vaadinRouter.route("/*").blockingHandler(this::handleVaadinRequest);
 
         serviceInitialized(vaadinRouter);
-        return vaadinRouter;
     }
 
     private void handleVaadinRequest(RoutingContext routingContext) {

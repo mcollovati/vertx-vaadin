@@ -22,27 +22,16 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 
 import com.github.mcollovati.vertx.utils.MockServiceSessionSetup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.theme.AbstractTheme;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.ext.web.RoutingContext;
-import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +50,7 @@ public class VertxVaadinServiceUT {
     public void setUp() throws Exception {
         mocks = new MockServiceSessionSetup();
         service = mocks.getService();
+        service.init();
     }
 
     @Test
@@ -114,16 +104,12 @@ public class VertxVaadinServiceUT {
     /**
      * Creates a HttpServletRequest mock using the supplied parameters.
      *
-     * @param base
-     *            The base url, e.g. http://localhost:8080
-     * @param contextPath
-     *            The context path where the application is deployed, e.g.
-     *            /mycontext
-     * @param servletPath
-     *            The servlet path to the servlet we are testing, e.g. /myapp
-     * @param pathInfo
-     *            Any text following the servlet path in the request, not
-     *            including query parameters, e.g. /UIDL/
+     * @param base        The base url, e.g. http://localhost:8080
+     * @param contextPath The context path where the application is deployed, e.g.
+     *                    /mycontext
+     * @param servletPath The servlet path to the servlet we are testing, e.g. /myapp
+     * @param pathInfo    Any text following the servlet path in the request, not
+     *                    including query parameters, e.g. /UIDL/
      * @return A mock HttpServletRequest object useful for testing
      * @throws MalformedURLException
      */
@@ -131,7 +117,7 @@ public class VertxVaadinServiceUT {
         URL url = new URL(base + contextPath + pathInfo);
         RoutingContext routingContext = mock(RoutingContext.class);
         HttpServerRequest request = mock(HttpServerRequest.class);
-        SocketAddress address = new SocketAddressImpl(url.getPort() >=0 ? url.getPort() : 80, url.getHost());
+        SocketAddress address = new SocketAddressImpl(url.getPort() >= 0 ? url.getPort() : 80, url.getHost());
         when(routingContext.request()).thenReturn(request);
         when(request.isSSL()).thenReturn(url.getProtocol().equalsIgnoreCase("https"));
         when(request.remoteAddress()).thenReturn(address);

@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.vaadin.connect.VertxConnectEndpointsInitializer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
@@ -66,6 +67,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -114,8 +116,13 @@ public class VaadinVerticle extends AbstractVerticle {
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
         String mountPoint = vertxVaadin.config().mountPoint();
         Router router = Router.router(vertx);
+
+        String connectEndpoint = vertxVaadin.config().connectEndpoint();
+        router.mountSubRouter(connectEndpoint, vertxVaadin.connectRouter());
+
         router.mountSubRouter(mountPoint, vertxVaadin.router());
         log.debug("Mounted Vaadin router on {}", mountPoint);
+
 
         HttpServerOptions serverOptions = new HttpServerOptions(
             config().getJsonObject("server", new JsonObject())
@@ -315,7 +322,8 @@ public class VaadinVerticle extends AbstractVerticle {
         DeploymentConfiguration deploymentConfiguration = DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext.vaadinOptions());
 
         CompositeFuture.join(asList(
-            runInitializer(initializerFactory.apply(new ConnectEndpointsValidator())),
+            //runInitializer(initializerFactory.apply(new ConnectEndpointsValidator())),
+            runInitializer(initializerFactory.apply(new VertxConnectEndpointsInitializer())),
             runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
             runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
@@ -366,7 +374,8 @@ public class VaadinVerticle extends AbstractVerticle {
             RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
             WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
             DevModeInitializer.class, VaadinAppShellInitializer.class, ConnectEndpointsValidator.class,
-            VaadinAppShellInitializer.class
+            VaadinAppShellInitializer.class,
+            VertxConnectEndpointsInitializer.class
         ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }
