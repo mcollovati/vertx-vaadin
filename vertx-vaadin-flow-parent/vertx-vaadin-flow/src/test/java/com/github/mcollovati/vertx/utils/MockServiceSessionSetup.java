@@ -25,6 +25,7 @@ package com.github.mcollovati.vertx.utils;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -34,13 +35,16 @@ import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import com.github.mcollovati.vertx.vaadin.VertxVaadin;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.DependencyFilter;
+import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -194,6 +198,7 @@ public class MockServiceSessionSetup {
         private List<DependencyFilter> dependencyFilterOverride;
         private TestRouteRegistry routeRegistry = new TestRouteRegistry();
         private Router router;
+        private Instantiator instantiator;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
 
         public TestVertxVaadinService(VertxVaadin vertxVaadin, DeploymentConfiguration deploymentConfiguration) {
@@ -247,6 +252,29 @@ public class MockServiceSessionSetup {
                 listener -> listener.modifyBootstrapPage(response));
 
             super.modifyBootstrapPage(response);
+        }
+
+        public void init(Instantiator instantiator) {
+            this.instantiator = instantiator;
+
+            init();
+        }
+
+        @Override
+        protected Instantiator createInstantiator() throws ServiceException {
+            if (instantiator != null) {
+                return instantiator;
+            }
+            return super.createInstantiator();
+        }
+
+        @Override
+        public void init() {
+            try {
+                super.init();
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
+            }
         }
 
     }

@@ -63,6 +63,10 @@ public final class VaadinOptions {
         return config.getString("mountPoint", "");
     }
 
+    public String connectEndpoint() {
+        return config.getString("endpoint.prefix", "/connect");
+    }
+
     public String pushURL() {
         String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
         if (pushURL.startsWith(mountPoint())) {
@@ -97,7 +101,7 @@ public final class VaadinOptions {
     }
 
     String getParameter(String name) {
-        return  config.getString(name);
+        return config.getString(name);
     }
 
     void sockJSSupport(boolean enabled) {
@@ -128,8 +132,7 @@ public final class VaadinOptions {
             return adaptJson(((JsonArray) object).getList());
         } else if (object instanceof String) {
             return object;
-        }
-        else if (object != null) {
+        } else if (object != null) {
             return Json.encode(object);
         }
         return object;
