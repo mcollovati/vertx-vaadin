@@ -11,5 +11,19 @@
             <username>mcollovati</username>
             <password>${env.BINTRAY_TOKEN}</password>
         </server>
+        <server>
+            <id>jfrog-vertx-vaadin-releases</id>
+            <username>${env.JFROG_USER}</username>
+            <password>${env.JFROG_TOKEN}</password>
+        </server>
+        <server>
+            <id>jfrog-vertx-vaadin-snapshots</id>
+            <username>${env.JFROG_USER}</username>
+            <password>${env.JFROG_TOKEN}</password>
+        </server>
+        <server>
+            <id>gpg.passphrase</id>
+            <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+        </server>
     </servers>
 </settings>
