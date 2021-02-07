@@ -239,8 +239,8 @@
                                     <file>
                                         ${build.directory}/${build.finalName}-vaadin-${vaadin.version}.${project.packaging}
                                     </file>
-                                    <url>${bintray.url}</url>
-                                    <repositoryId>bintray-mcollovati-maven-repo</repositoryId>
+                                    <url>${distribution.releases.url}</url>
+                                    <repositoryId>${distribution.releases.id}</repositoryId>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>

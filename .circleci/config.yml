@@ -2,7 +2,14 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
-version: 2
+version: 2.1
+commands:
+  configure-gpg:
+    steps:
+      - run:
+          name: Configure GPG private key for signing project artifacts in OSS Sonatype
+          command: |
+            echo $MAVEN_GPG_PRIVATE_KEY | sed 's/\\n/\n/g' | gpg --batch --no-tty --import --yes
 jobs:
   build:
     docker:
@@ -59,8 +66,9 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B"
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B -Dvertx-vaadin.release.gpg"
     steps:
+      - configure-gpg
       - checkout
       - restore_cache:
           keys:
@@ -74,8 +82,9 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B"
+      MAVEN_CONFIG: "-s .circleci/.circleci.settings.xml -ntp -B -Dvertx-vaadin.release.gpg"
     steps:
+      - configure-gpg
       - checkout
       - restore_cache:
           keys:
