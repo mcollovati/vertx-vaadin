@@ -34,6 +34,14 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Basic implementation of {@link VaadinConnectAccessChecker}.
+ * <p>
+ * Subclasses will provide technology specific ways to access
+ * session and user information.
+ * <p>
+ * Source adapted from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements VaadinConnectAccessChecker<REQUEST> {
 
     protected boolean xsrfProtectionEnabled = true;
@@ -54,14 +62,48 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
         }
     }
 
+    /**
+     * Checks if current request is not bound to an authenticated user.
+     *
+     * @param request current request.
+     * @return {@literal true} if current request in not bound to an authenticated user,
+     * otherwise {@literal false}.
+     */
     protected abstract boolean isAnonymous(REQUEST request);
 
+    /**
+     * Checks if current request has an active session associated.
+     *
+     * @param request current request.
+     * @return {@literal true} if current request has an active session, otherwise {@literal false}.
+     */
     protected abstract boolean hasSession(REQUEST request);
 
+    /**
+     * Checks if the user bound to current request has the given role.
+     *
+     * @param request current request-
+     * @param role    role to check.
+     * @return {@literal true} if the user has given role, otherwise {@literal false}.
+     */
     protected abstract boolean isUserInRole(REQUEST request, String role);
 
+    /**
+     * Returns the value of the request header with the given {@code headerName}.
+     *
+     * @param request    current request.
+     * @param headerName header name.
+     * @return value of the given header name, or {@literal null} if header is not present.
+     */
     protected abstract String getHeader(REQUEST request, String headerName);
 
+    /**
+     * Returns the value of the session attribute identified by {@code attributeName}.
+     *
+     * @param request       current request.
+     * @param attributeName session attribute name.
+     * @return value of the session attribute, or {@literal null} if attribute is not present.
+     */
     protected abstract Object getSessionAttribute(REQUEST request, String attributeName);
 
     /**

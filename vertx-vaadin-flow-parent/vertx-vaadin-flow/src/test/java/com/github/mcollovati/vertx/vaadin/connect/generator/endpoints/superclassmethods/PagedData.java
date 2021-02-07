@@ -27,6 +27,9 @@ import java.util.List;
 
 import com.vaadin.flow.server.connect.EndpointExposed;
 
+/**
+ * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 @EndpointExposed
 public interface PagedData<T> {
     default int size() {

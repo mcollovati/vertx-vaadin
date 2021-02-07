@@ -24,6 +24,14 @@ package com.github.mcollovati.vertx.vaadin.connect;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+/**
+ * A support class to create technology specific {@link EndpointServiceContext}s.
+ * <p>
+ * Base class only provides accessors for {@code REQUEST} and request body.
+ *
+ * @param <REQUEST>  type of the request.
+ * @param <RESPONSE> type of the response.
+ */
 public abstract class EndpointServiceContextSupport<REQUEST, RESPONSE>
     implements EndpointServiceContext<REQUEST, RESPONSE> {
     private final REQUEST request;

@@ -24,6 +24,9 @@ package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclas
 
 import com.vaadin.flow.server.connect.Endpoint;
 
+/**
+ * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 @Endpoint
 public class PersonEndpoint extends CrudEndpoint<PersonEndpoint.Person, Integer>
         implements PagedData<PersonEndpoint.Person> {
