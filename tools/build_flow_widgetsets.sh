@@ -47,7 +47,7 @@ function get_vaadin_versions() {
             _mvn_target="clean $_action"
         fi
 
-        $_mvn -B --fail-never -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target
+        $_mvn -B --fail-never -ntp -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
         _last_built=${flow_client_version}
     done
 #done

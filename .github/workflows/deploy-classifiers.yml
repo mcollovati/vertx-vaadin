@@ -1,0 +1,47 @@
+name: Deploy vaadin-flow-sockjs classifiers
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [ "spikes/github-actions" ]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.branch }}
+          fetch-depth: 0
+      - name: Checkout latest tag
+        run: git checkout $(git describe --abbrev=0 --tags --match="flow-*")
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with: # running setup-java again overwrites the settings.xml
+          java-version: 1.8
+          server-id: jfrog-vertx-vaadin # Value of the distributionManagement/repository/id field of the pom.xml
+          server-username: JFROG_USERNAME # env variable for username in deploy
+          server-password: JFROG_TOKEN # env variable for token in deploy
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Deploy classifiers
+        run: |
+          ./mvnw -N -ntp install
+          PRJ_VERSION=$(./mvnw -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout)
+          KIND=$( [[ "${PRJ_VERSION}" =~ "-SNAPSHOT"$ ]] && echo "snapshot" || echo "release" )
+          DEPLOY_OPTS="-Ddistribution.id=jfrog-vertx-vaadin -Dvertx-vaadin.release.gpg" ./tools/build_flow_widgetsets.sh deploy ${KIND}
+        env:
+          JFROG_USERNAME: mcollovati@gmail.com
+          JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}

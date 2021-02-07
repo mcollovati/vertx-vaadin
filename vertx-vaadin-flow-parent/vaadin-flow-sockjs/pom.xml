@@ -6,6 +6,7 @@
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
         <version>1.0-v18</version>
+        <relativePath/>
     </parent>
 
     <artifactId>vaadin-flow-sockjs</artifactId>
@@ -16,7 +17,6 @@
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
-        <bintray.package>vertx-vaadin-flow</bintray.package>
         <flow-client.version>${vaadin.flow.version}</flow-client.version>
         <skipBuild>false</skipBuild>
 
@@ -203,7 +203,9 @@
                                     <classifier>sources</classifier>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${flow-client-generated-sources}</outputDirectory>
-                                    <includes>com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**</includes>
+                                    <includes>
+                                        com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**
+                                    </includes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>com.vaadin</groupId>
@@ -211,7 +213,7 @@
                                     <version>${flow-client.version}</version>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${build.outputDirectory}</outputDirectory>
+                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                                     <includes>META-INF/resources/frontend/**</includes>
                                 </artifactItem>
                             </artifactItems>
@@ -344,16 +346,6 @@
     </pluginRepositories>
 
     <repositories>
-        <!--
-        <repository>
-            <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
-        </repository>
-        <repository>
-            <id>webjars</id>
-            <url>https://dl.bintray.com/webjars/maven</url>
-        </repository>
-        -->
         <repository>
             <id>vaadin-prereleases</id>
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
@@ -392,17 +384,19 @@
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>com.vaadin</groupId>
-                        <artifactId>vaadin-maven-plugin</artifactId>
-                        <configuration>
-                            <draftCompile>false</draftCompile>
-                            <compileReport>false</compileReport>
-                            <style>OBF</style>
-                        </configuration>
-                    </plugin>
+                    <!--
                     <plugin>
                         <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <url>${distribution.url}</url>
+                            <repositoryId>${distribution.id}</repositoryId>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <packaging>${project.packaging}</packaging>
+                            <classifier>vaadin-${vaadin.platform.version}</classifier>
+                            <generatePom>false</generatePom>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-deploy</id>
@@ -416,16 +410,51 @@
                                 </goals>
                                 <configuration>
                                     <file>
-                                        ${build.directory}/${build.finalName}.${project.packaging}
+                                        ${project.build.directory}/${project.build.finalName}.${project.packaging}
                                     </file>
-                                    <url>${bintray.url}</url>
-                                    <repositoryId>bintray-mcollovati-maven-repo</repositoryId>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>deploy-widgetset-signature</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <file>
+                                        ${project.build.directory}/${project.build.finalName}.${project.packaging}.asc
+                                    </file>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-widgetset</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sign-and-deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <file>
+                                        ${project.build.directory}/${project.build.finalName}.${project.packaging}
+                                    </file>
+                                    <url>${distribution.url}</url>
+                                    <repositoryId>${distribution.id}</repositoryId>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
                                     <packaging>${project.packaging}</packaging>
                                     <classifier>vaadin-${vaadin.platform.version}</classifier>
                                     <generatePom>false</generatePom>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
                                 </configuration>
                             </execution>
                         </executions>
@@ -434,54 +463,30 @@
             </build>
         </profile>
         <profile>
+            <id>do-release-release</id>
+            <activation>
+                <property>
+                    <name>vertx-vaadin.release</name>
+                    <value>release</value>
+                </property>
+            </activation>
+            <properties>
+                <distribution.url>${distribution.releases.url}</distribution.url>
+                <distribution.id>${distribution.releases.id}</distribution.id>
+            </properties>
+        </profile>
+        <profile>
             <id>do-release-snapshots</id>
             <activation>
                 <property>
-                    <name>vertx-vaadin.snapshots</name>
+                    <name>vertx-vaadin.release</name>
+                    <value>snapshot</value>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.vaadin</groupId>
-                        <artifactId>vaadin-maven-plugin</artifactId>
-                        <configuration>
-                            <draftCompile>false</draftCompile>
-                            <compileReport>false</compileReport>
-                            <style>OBF</style>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>deploy-widgetset</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <file>
-                                        ${build.directory}/${build.finalName}.${project.packaging}
-                                    </file>
-                                    <url>${jfrog.url}</url>
-                                    <repositoryId>bintray-oss-snapshots</repositoryId>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                    <packaging>${project.packaging}</packaging>
-                                    <classifier>vaadin-${vaadin.platform.version}</classifier>
-                                    <generatePom>false</generatePom>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <distribution.url>${distribution.snapshots.url}</distribution.url>
+                <distribution.id>${distribution.snapshots.id}</distribution.id>
+            </properties>
         </profile>
     </profiles>
 </project>
