@@ -16,7 +16,6 @@
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
-        <bintray.package>vertx-vaadin-flow</bintray.package>
         <flow-client.version>${vaadin.flow.version}</flow-client.version>
         <skipBuild>false</skipBuild>
 
@@ -344,16 +343,6 @@
     </pluginRepositories>
 
     <repositories>
-        <!--
-        <repository>
-            <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
-        </repository>
-        <repository>
-            <id>webjars</id>
-            <url>https://dl.bintray.com/webjars/maven</url>
-        </repository>
-        -->
         <repository>
             <id>vaadin-prereleases</id>
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
@@ -418,8 +407,8 @@
                                     <file>
                                         ${build.directory}/${build.finalName}.${project.packaging}
                                     </file>
-                                    <url>${bintray.url}</url>
-                                    <repositoryId>bintray-mcollovati-maven-repo</repositoryId>
+                                    <url>${distribution.releases.url}</url>
+                                    <repositoryId>${distribution.releases.id}</repositoryId>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
@@ -468,8 +457,8 @@
                                     <file>
                                         ${build.directory}/${build.finalName}.${project.packaging}
                                     </file>
-                                    <url>${jfrog.url}</url>
-                                    <repositoryId>bintray-oss-snapshots</repositoryId>
+                                    <url>${distribution.snapshots.url}</url>
+                                    <repositoryId>${distribution.snapshots.id}</repositoryId>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
