@@ -25,6 +25,9 @@ package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclas
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
+/**
+ * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 @EndpointExposed
 @AnonymousAllowed
 public abstract class CrudEndpoint<T, ID> extends ReadOnlyEndpoint<T, ID> {

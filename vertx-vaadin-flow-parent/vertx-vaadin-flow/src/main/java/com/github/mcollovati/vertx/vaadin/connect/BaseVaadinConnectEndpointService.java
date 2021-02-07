@@ -57,10 +57,19 @@ import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
-import io.vertx.core.json.jackson.DatabindCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Basic implementation if {@link VaadinConnectEndpointService}.
+ *
+ * Subclasses will provide support for technology specific information
+ * by providing a {@link EndpointServiceContext} implementation
+ * and by adapting incoming request to the corret {@link VaadinRequest} type.
+ *
+ *
+ * Source code adapted from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX extends EndpointServiceContext<REQUEST, RESPONSE>>
     implements VaadinConnectEndpointService<REQUEST, RESPONSE, CTX> {
 

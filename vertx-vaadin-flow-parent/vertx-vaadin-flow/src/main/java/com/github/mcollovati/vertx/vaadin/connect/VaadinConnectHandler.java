@@ -36,12 +36,18 @@ import io.vertx.ext.web.RoutingContext;
 public class VaadinConnectHandler {
 
     private final VertxVaadinConnectEndpointService endpointService;
+    private final VaadinService vaadinService;
 
-    VaadinConnectHandler(VaadinConnectEndpointRegistry endpointRegistry) {
-        endpointService = new VertxVaadinConnectEndpointService(
+    VaadinConnectHandler(VaadinConnectEndpointRegistry endpointRegistry, VaadinService vaadinService) {
+        this(new VertxVaadinConnectEndpointService(
             DatabindCodec.mapper(), endpointRegistry, new EndpointNameChecker(),
             new VertxVaadinConnectAccessChecker(), new ExplicitNullableTypeChecker()
-        );
+        ), vaadinService);
+    }
+
+    VaadinConnectHandler(VertxVaadinConnectEndpointService service, VaadinService vaadinService) {
+        this.endpointService = service;
+        this.vaadinService = vaadinService;
     }
 
     void handle(RoutingContext routingContext) {
@@ -59,22 +65,38 @@ public class VaadinConnectHandler {
         }
     }
 
-    public static void register(Router router, VertxVaadinService service) {
+    public static VaadinConnectHandler register(Router router, VertxVaadinService service) {
         VaadinConnectEndpointRegistry endpointRegistry = service.getContext().getAttribute(VaadinConnectEndpointRegistry.class);
         if (endpointRegistry == null) {
             endpointRegistry = VaadinConnectEndpointRegistry.empty();
         }
-        VaadinConnectHandler connectHandler = new VaadinConnectHandler(endpointRegistry);
+        VaadinConnectHandler connectHandler = new VaadinConnectHandler(endpointRegistry, service);
+        connectHandler.register(router);
+        return connectHandler;
+    }
+
+    public static VaadinConnectHandler register(Router router, VertxVaadinConnectEndpointService service) {
+        VaadinConnectHandler connectHandler = new VaadinConnectHandler(service, null);
+        connectHandler.register(router);
+        return connectHandler;
+    }
+
+    private void register(Router router) {
         router.post("/:endpoint/:method")
             .consumes("application/json")
             .produces("application/json")
             .handler(ctx -> {
-                VaadinService.setCurrent(service);
+                if (vaadinService != null) {
+                    VaadinService.setCurrent(vaadinService);
+                }
                 try {
-                    connectHandler.handle(ctx);
+                    handle(ctx);
                 } finally {
-                    CurrentInstance.clearAll();
+                    if (vaadinService != null) {
+                        CurrentInstance.clearAll();
+                    }
                 }
             });
     }
+
 }

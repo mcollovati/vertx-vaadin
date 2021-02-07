@@ -25,6 +25,8 @@ package com.github.mcollovati.vertx.vaadin.connect.testendpoint;
 import com.vaadin.flow.server.connect.Endpoint;
 
 /**
+ * Source code adapted from Vaadin Flow (https://github.com/vaadin/flow)
+ *
  * Test case for https://github.com/vaadin/vaadin-connect/issues/162
  */
 public class BridgeMethodTestEndpoint {

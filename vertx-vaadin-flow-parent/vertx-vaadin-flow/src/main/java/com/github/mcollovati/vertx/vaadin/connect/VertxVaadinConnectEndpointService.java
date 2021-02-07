@@ -22,6 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,6 +55,7 @@ public class VertxVaadinConnectEndpointService
         return DatabindCodec.mapper().copy()
             .registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule())
+            .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
             .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);

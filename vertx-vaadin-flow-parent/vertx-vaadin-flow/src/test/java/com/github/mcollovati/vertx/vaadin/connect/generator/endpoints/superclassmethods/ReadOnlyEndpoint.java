@@ -26,6 +26,9 @@ import java.util.Optional;
 
 import com.vaadin.flow.server.connect.EndpointExposed;
 
+/**
+ * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 @EndpointExposed
 public class ReadOnlyEndpoint<T, ID> extends NonEndpointImpl
         implements NonEndpoint {

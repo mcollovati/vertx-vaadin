@@ -49,6 +49,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unused")
+/**
+ * Source code adapted from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 public class VertxConnectAccessCheckerTest {
     private static final String ROLE_USER = "ROLE_USER";
 

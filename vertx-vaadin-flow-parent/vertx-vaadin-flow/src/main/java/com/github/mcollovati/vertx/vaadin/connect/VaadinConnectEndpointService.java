@@ -43,6 +43,8 @@ import com.vaadin.flow.server.connect.Endpoint;
  * @param <REQUEST>  type of the request which triggers the endpoint call
  * @param <RESPONSE> type of the response container
  * @param <CTX>      type of the processing context carrying request data
+ *
+ * Source code and javadocs adapted from Vaadin Flow (https://github.com/vaadin/flow)
  */
 public interface VaadinConnectEndpointService<REQUEST, RESPONSE, CTX extends EndpointServiceContext<REQUEST, RESPONSE>> {
 

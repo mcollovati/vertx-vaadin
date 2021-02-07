@@ -35,8 +35,6 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -92,6 +90,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Source code adapted from Vaadin Flow (https://github.com/vaadin/flow)
+ */
 @SuppressWarnings("unchecked")
 public class VertxVaadinConnectEndpointServiceTest {
     private static final TestClass TEST_ENDPOINT = new TestClass();
@@ -680,7 +681,7 @@ public class VertxVaadinConnectEndpointServiceTest {
         assertTrue(String.format("Invalid response body: '%s'", lastError),
             lastError.contains(
                 "Double check"));
-                //VaadinConnectController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER));
+        //VaadinConnectController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER));
 
         verify(mapperMock, times(1))
             .readerFor(SimpleType.constructUnsafe(int.class));
