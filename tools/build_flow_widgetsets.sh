@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 _base_dir="$(dirname $(realpath $0))/.."
-_action=${1:package}
+_action=${1:-package}
+_kind=${2:-release}
 _mvn="$_base_dir/mvnw -f $_base_dir/pom.xml"
 
 
@@ -22,7 +23,7 @@ function get_vaadin_versions() {
     echo "Found versions: ${__versions}"
     eval $__result="'${__versions}'"
 }
-vaadin_releases=$($_mvn -N help:evaluate -q -Dexpression='vaadin.platform.version' -DforceStdout=true | cut -d '.' -f 1)
+#vaadin_releases=$($_mvn -N help:evaluate -q -Dexpression='vaadin.platform.version' -DforceStdout=true | cut -d '.' -f 1)
 #for rel in  ${vaadin_releases[@]}; do
 
 #    echo "Fetch Vaadin versions for ${rel}..."
@@ -46,7 +47,7 @@ vaadin_releases=$($_mvn -N help:evaluate -q -Dexpression='vaadin.platform.versio
             _mvn_target="clean $_action"
         fi
 
-        $_mvn -B --fail-never -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target
+        $_mvn -B --fail-never -ntp -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
         _last_built=${flow_client_version}
     done
 #done
