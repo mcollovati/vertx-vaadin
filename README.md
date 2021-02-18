@@ -18,7 +18,7 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 
 ### Maven
 
-```
+```xml
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin8</artifactId>
@@ -26,7 +26,7 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 </dependency>
 ```
 
-```
+```xml
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
   <artifactId>vertx-vaadin-flow</artifactId>
@@ -36,10 +36,11 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 
 
 For snapshots:
-```
+
+```xml
 <repository>
-	<id>oss-jfrog-snapshots</id>
-	<url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+	<id>vertx-vaadin-snapshots</id>
+	<url>https://mcollovati.jfrog.io/artifactory/vertx-vaadin-snapshots</url>
     <releases>
         <enabled>false</enabled>
     </releases>
@@ -49,6 +50,20 @@ For snapshots:
 </repository>
 ```
 
+For additional vertx-vaadin artifacts not published on Maven Central (eg Vaadin client repackages):
+
+```xml
+<repository>
+	<id>vertx-vaadin-snapshots</id>
+	<url>https://mcollovati.jfrog.io/artifactory/vertx-vaadin-public</url>
+    <releases>
+        <enabled>true</enabled>
+    </releases>
+    <snapshots>
+        <enabled>false</enabled>
+    </snapshots>
+</repository>
+```
 
 ### Gradle
 
@@ -59,7 +74,7 @@ compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.4.0'
 For snapshots:
 ```
 repositories {
-	maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+	maven { url 'https://mcollovati.jfrog.io/artifactory/vertx-vaadin-snapshots' }
 }
 ```
 
