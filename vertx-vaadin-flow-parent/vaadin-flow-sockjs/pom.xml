@@ -356,51 +356,15 @@
             </activation>
             <build>
                 <plugins>
-                    <!--
                     <plugin>
                         <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <url>${distribution.url}</url>
-                            <repositoryId>${distribution.id}</repositoryId>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <version>${project.version}</version>
-                            <packaging>${project.packaging}</packaging>
-                            <classifier>vaadin-${vaadin.platform.version}</classifier>
-                            <generatePom>false</generatePom>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-deploy</id>
                                 <phase>none</phase>
                             </execution>
-                            <execution>
-                                <id>deploy-widgetset</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <file>
-                                        ${project.build.directory}/${project.build.finalName}.${project.packaging}
-                                    </file>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>deploy-widgetset-signature</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy-file</goal>
-                                </goals>
-                                <configuration>
-                                    <file>
-                                        ${project.build.directory}/${project.build.finalName}.${project.packaging}.asc
-                                    </file>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
-                    -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
