@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.github.mcollovati.vertx.tests</groupId>
     <artifactId>vertx-vaadin-test</artifactId>
-    <version>14.2.4</version>
+    <version>14.2.5-SNAPSHOT</version>
     <name>vertx-vaadin tests</name>
     <packaging>pom</packaging>
     <properties>
