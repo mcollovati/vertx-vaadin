@@ -5,7 +5,7 @@ _action=${1:-package}
 _kind=${2:-release}
 _mvn="$_base_dir/mvnw -f $_base_dir/pom.xml"
 
-_current_version=$($_mvn -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout=true)
+_current_version=$($_mvn -Prelease-flow -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout=true)
 
 function get_vaadin_versions() {
     local __result=$1
