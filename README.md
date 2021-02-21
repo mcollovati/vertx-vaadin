@@ -54,7 +54,7 @@ For additional vertx-vaadin artifacts not published on Maven Central (eg Vaadin 
 
 ```xml
 <repository>
-	<id>vertx-vaadin-snapshots</id>
+	<id>vertx-vaadin-public</id>
 	<url>https://mcollovati.jfrog.io/artifactory/vertx-vaadin-public</url>
     <releases>
         <enabled>true</enabled>
