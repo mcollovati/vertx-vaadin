@@ -30,13 +30,15 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.VaadinConfig;
+import com.vaadin.flow.server.VaadinContext;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PUSH_URL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PUSH_URL;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public final class VaadinOptions {
@@ -113,11 +115,19 @@ public final class VaadinOptions {
         return config.getBoolean("sockJSSupport", true);
     }
 
+    void update(Properties properties) {
+        properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
+    }
+
+    public VaadinConfig asVaadinConfig(VaadinContext vaadinContext) {
+        return new VertxVaadinConfig(config, vaadinContext);
+    }
+
     @SuppressWarnings("unchecked")
-    private Object adaptJson(Object object) {
+    private static Object adaptJson(Object object) {
         if (object instanceof Collection) {
             return ((Collection<?>) object).stream()
-                .map(this::adaptJson)
+                .map(VaadinOptions::adaptJson)
                 .collect(Collectors.toList());
         } else if (object instanceof Map) {
             LinkedHashMap<String, Object> map = new LinkedHashMap<>((Map<String, Object>) object);
@@ -129,11 +139,10 @@ public final class VaadinOptions {
             return adaptJson(((JsonArray) object).getList());
         } else if (object instanceof String) {
             return object;
-        }
-        else if (object != null) {
+        } else if (object != null) {
             return Json.encode(object);
         }
-        return object;
+        return null;
     }
 
 }

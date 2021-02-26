@@ -25,12 +25,7 @@ package com.github.mcollovati.vertx.vaadin;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.lang.reflect.Method;
 import java.net.ServerSocket;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +36,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinConfig;
+import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
@@ -54,7 +49,6 @@ import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
-import elemental.json.impl.JsonUtil;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
@@ -63,23 +57,14 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Arrays.asList;
 
 /**
@@ -163,29 +148,27 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     protected Future<VaadinOptions> prepareConfig() {
-        JsonObject vaadinConfig = new JsonObject();
+        JsonObject cfgBackend = new JsonObject();
         VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
 
         Optional.ofNullable(vaadinVerticleConfiguration)
             .map(VaadinVerticleConfiguration::serviceName)
-            .ifPresent(serviceName -> vaadinConfig.put("serviceName", serviceName));
-        vaadinConfig.put("mountPoint", Optional.ofNullable(vaadinVerticleConfiguration)
+            .ifPresent(serviceName -> cfgBackend.put("serviceName", serviceName));
+        cfgBackend.put("mountPoint", Optional.ofNullable(vaadinVerticleConfiguration)
             .map(VaadinVerticleConfiguration::mountPoint).orElse("/")
         );
         Optional.ofNullable(vaadinVerticleConfiguration).map(VaadinVerticleConfiguration::basePackages)
             .map(pkgs -> new JsonArray(asList(pkgs)))
-            .ifPresent(pkgs -> vaadinConfig.put("flowBasePackages", pkgs));
-        readUiFromEnclosingClass(vaadinConfig);
-        readConfigurationAnnotation(vaadinConfig);
-        readBuildInfo(vaadinConfig);
-        vaadinConfig.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
+            .ifPresent(pkgs -> cfgBackend.put("flowBasePackages", pkgs));
+        cfgBackend.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
+        VertxVaadinContext vaadinContext = new VertxVaadinContext(vertx, new VaadinOptions(cfgBackend));
 
-        String mountPoint = vaadinConfig.getString("mountPoint");
-        vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
-        vaadinConfig.put(Constants.SERVLET_PARAMETER_PUSH_URL, mountPoint);
-        vaadinConfig.put(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
+        String mountPoint = cfgBackend.getString("mountPoint");
+        cfgBackend.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
+        cfgBackend.put(InitParameters.SERVLET_PARAMETER_PUSH_URL, mountPoint);
+        cfgBackend.put(InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
 
-        return Future.succeededFuture(new VaadinOptions(vaadinConfig));
+        return Future.succeededFuture(new VaadinOptions(cfgBackend));
     }
 
     @Override
@@ -210,49 +193,6 @@ public class VaadinVerticle extends AbstractVerticle {
         }
         httpServer.close(stopFuture);
         log.info("Stopped vaadin verticle " + getClass().getName());
-    }
-
-    // From VaadinServlet
-    private void readUiFromEnclosingClass(JsonObject vaadinConfig) {
-        Class<?> enclosingClass = getClass().getEnclosingClass();
-
-        if (enclosingClass != null && UI.class.isAssignableFrom(enclosingClass)) {
-            vaadinConfig.put(VaadinSession.UI_PARAMETER, enclosingClass.getName());
-        }
-    }
-
-    // From VaadinServlet
-    private void readConfigurationAnnotation(JsonObject vaadinConfig) {
-
-        VaadinServletConfiguration configAnnotation = getClass().getAnnotation(VaadinServletConfiguration.class);
-        if (configAnnotation != null) {
-            Method[] methods = VaadinServletConfiguration.class
-                .getDeclaredMethods();
-            for (Method method : methods) {
-                VaadinServletConfiguration.InitParameterName name =
-                    method.getAnnotation(VaadinServletConfiguration.InitParameterName.class);
-                assert name !=
-                    null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
-
-                try {
-                    Object value = method.invoke(configAnnotation);
-
-                    String stringValue;
-                    if (value instanceof Class<?>) {
-                        stringValue = ((Class<?>) value).getName();
-                    } else {
-                        stringValue = value.toString();
-                    }
-
-                    vaadinConfig.put(name.value(), stringValue);
-                } catch (Exception e) {
-                    // This should never happen
-                    throw new VertxException(
-                        "Could not read @VaadinServletConfiguration value "
-                            + method.getName(), e);
-                }
-            }
-        }
     }
 
     private Future<VertxVaadin> initVertxVaadin(StartupContext startupContext) {
@@ -290,14 +230,27 @@ public class VaadinVerticle extends AbstractVerticle {
             }
 
             Promise<Void> initializerFuture = Promise.promise();
-            runInitializers(startupContext, initializerFuture, map);
-            initializerFuture.future().map(unused -> {
-                VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
-                vaadinService = vertxVaadin.vaadinService();
-                return vertxVaadin;
-            }).setHandler(event);
+            try {
+                finalizeVaadinConfig(vaadinConfig);
+                runInitializers(startupContext, initializerFuture, map);
+                initializerFuture.future().map(unused -> {
+                    VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
+                    vaadinService = vertxVaadin.vaadinService();
+                    return vertxVaadin;
+                }).setHandler(event);
+            } catch (VaadinConfigurationException ex) {
+                initializerFuture.fail(ex);
+            }
         }, promise);
         return promise.future();
+    }
+
+    private void finalizeVaadinConfig(VaadinOptions vaadinOpts) throws VaadinConfigurationException {
+        JsonObject jsonObject = new JsonObject();
+        VaadinOptions emptyOpts = new VaadinOptions(jsonObject);
+        VaadinConfig vaadinConfig = new VertxVaadinConfig(jsonObject, new VertxVaadinContext(vertx, emptyOpts));
+        DeploymentConfiguration deploymentConfiguration = DeploymentConfigurationFactory.createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
+        vaadinOpts.update(deploymentConfiguration.getInitParameters());
     }
 
     private void runInitializers(StartupContext startupContext, Promise<Void> promise, Map<Class<?>, Set<Class<?>>> classes) {
@@ -332,10 +285,10 @@ public class VaadinVerticle extends AbstractVerticle {
         if (devModeHandler == null) {
             try {
                 DevModeInitializer.initDevModeHandler(classes, startupContext.servletContext(),
-                    DeploymentConfigurationFactory.createDeploymentConfiguration(verticleClass, startupContext.vaadinOptions())
+                    DeploymentConfigurationFactory.createDeploymentConfiguration(verticleClass, startupContext.vaadinConfig())
                 );
                 promise.complete(DevModeHandler.getDevModeHandler());
-            } catch (ServletException e) {
+            } catch (VaadinConfigurationException | ServletException e) {
                 promise.fail(e);
             }
         } else {
@@ -383,64 +336,6 @@ public class VaadinVerticle extends AbstractVerticle {
         Promise<T> promise = Promise.promise();
         context.executeBlocking(op, promise);
         return promise.future();
-    }
-
-    private void readBuildInfo(JsonObject config) { // NOSONAR
-        try {
-            String json = null;
-            // token file location passed via init parameter property
-            String tokenLocation = config.getString(PARAM_TOKEN_FILE);
-            if (tokenLocation != null) {
-                File tokenFile = new File(tokenLocation);
-                if (tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
-                }
-            }
-
-            // token file is in the class-path of the application
-            if (json == null) {
-                URL resource = VaadinVerticle.class
-                    .getClassLoader()
-                    .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-                if (resource != null) {
-                    json = FrontendUtils.streamToString(resource.openStream());
-                }
-            }
-
-            // Read the json and set the appropriate system properties if not
-            // already set.
-            if (json != null) {
-                elemental.json.JsonObject buildInfo = JsonUtil.parse(json);
-                if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    config.put(
-                        SERVLET_PARAMETER_PRODUCTION_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                            SERVLET_PARAMETER_PRODUCTION_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because
-                    // it has priority in the configuration getter
-                    System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
-                }
-                if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
-                    config.put(
-                        SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                            SERVLET_PARAMETER_COMPATIBILITY_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because it has priority in the configuration getter
-                    System.clearProperty(VAADIN_PREFIX
-                        + SERVLET_PARAMETER_COMPATIBILITY_MODE);
-                }
-                if (System.getProperty(PROJECT_BASEDIR) == null
-                    && buildInfo.hasKey("npmFolder")) {
-                    System.setProperty(PROJECT_BASEDIR,
-                        buildInfo.getString("npmFolder"));
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
 }

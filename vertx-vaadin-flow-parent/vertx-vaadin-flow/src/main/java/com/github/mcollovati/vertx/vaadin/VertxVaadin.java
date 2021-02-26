@@ -41,6 +41,7 @@ import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -319,7 +320,7 @@ public class VertxVaadin {
     }
 
     private DeploymentConfiguration createDeploymentConfiguration() {
-        return DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), config());
+        return new DefaultDeploymentConfiguration(getClass(), config.asProperties());
     }
 
 

@@ -51,6 +51,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
+import com.vaadin.flow.server.VaadinConfig;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
@@ -85,6 +87,11 @@ public final class StartupContext {
         return resources.stream()
             .filter(r -> normalized.equals(r) || r.replaceFirst("^META-INF/resources/", "").equals(normalized))
             .findFirst();
+    }
+
+    public VaadinConfig vaadinConfig() {
+        VertxVaadinContext vaadinContext = new VertxVaadinContext(vertx, vaadinOptions);
+        return vaadinOptions.asVaadinConfig(vaadinContext);
     }
 
     public static Future<StartupContext> of(Vertx vertx, VaadinOptions vaadinOptions) {
