@@ -44,10 +44,11 @@ import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import io.vertx.core.Handler;
@@ -361,7 +362,7 @@ public class VertxVaadin {
     }
 
     private DeploymentConfiguration createDeploymentConfiguration() {
-        return DeploymentConfigurationFactory.createDeploymentConfiguration(getClass(), startupContext);
+        return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(startupContext.getVaadinContext()), getClass(), config.asProperties());
     }
 
 

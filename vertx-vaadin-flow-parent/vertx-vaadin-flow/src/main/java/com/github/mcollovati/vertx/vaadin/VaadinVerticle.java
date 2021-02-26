@@ -23,12 +23,9 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.ServerSocket;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +37,11 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.connect.VertxConnectEndpointsInitializer;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
@@ -54,7 +52,6 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.startup.fusion.ConnectEndpointsValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
-import elemental.json.impl.JsonUtil;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
@@ -63,22 +60,14 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Arrays.asList;
 
 /**
@@ -167,28 +156,26 @@ public class VaadinVerticle extends AbstractVerticle {
     }
 
     protected Future<VaadinOptions> prepareConfig() {
-        JsonObject vaadinConfig = new JsonObject();
+        JsonObject cfgBackend = new JsonObject();
         VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
 
         Optional.ofNullable(vaadinVerticleConfiguration)
             .map(VaadinVerticleConfiguration::serviceName)
-            .ifPresent(serviceName -> vaadinConfig.put("serviceName", serviceName));
-        vaadinConfig.put("mountPoint", Optional.ofNullable(vaadinVerticleConfiguration)
+            .ifPresent(serviceName -> cfgBackend.put("serviceName", serviceName));
+        cfgBackend.put("mountPoint", Optional.ofNullable(vaadinVerticleConfiguration)
             .map(VaadinVerticleConfiguration::mountPoint).orElse("/")
         );
         Optional.ofNullable(vaadinVerticleConfiguration).map(VaadinVerticleConfiguration::basePackages)
             .map(pkgs -> new JsonArray(asList(pkgs)))
-            .ifPresent(pkgs -> vaadinConfig.put("flowBasePackages", pkgs));
-        readUiFromEnclosingClass(vaadinConfig);
-        readBuildInfo(vaadinConfig);
-        vaadinConfig.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
+            .ifPresent(pkgs -> cfgBackend.put("flowBasePackages", pkgs));
+        cfgBackend.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
 
-        String mountPoint = vaadinConfig.getString("mountPoint");
-        vaadinConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
-        vaadinConfig.put(InitParameters.SERVLET_PARAMETER_PUSH_URL, mountPoint);
-        vaadinConfig.put(InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
+        String mountPoint = cfgBackend.getString("mountPoint");
+        cfgBackend.put(ApplicationConstants.CONTEXT_ROOT_URL, mountPoint);
+        cfgBackend.put(InitParameters.SERVLET_PARAMETER_PUSH_URL, mountPoint);
+        cfgBackend.put(InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, true);
 
-        return Future.succeededFuture(new VaadinOptions(vaadinConfig));
+        return Future.succeededFuture(new VaadinOptions(cfgBackend));
     }
 
     @Override
@@ -215,23 +202,14 @@ public class VaadinVerticle extends AbstractVerticle {
         log.info("Stopped vaadin verticle " + getClass().getName());
     }
 
-    // From VaadinServlet
-    private void readUiFromEnclosingClass(JsonObject vaadinConfig) {
-        Class<?> enclosingClass = getClass().getEnclosingClass();
-
-        if (enclosingClass != null && UI.class.isAssignableFrom(enclosingClass)) {
-            vaadinConfig.put(InitParameters.UI_PARAMETER, enclosingClass.getName());
-        }
-    }
-
     private Future<VertxVaadin> initVertxVaadin(StartupContext startupContext) {
-        VaadinOptions vaadinConfig = startupContext.vaadinOptions();
-        List<String> pkgs = vaadinConfig.flowBasePackages();
+        VaadinOptions vaadinOpts = startupContext.vaadinOptions();
+        List<String> pkgs = vaadinOpts.flowBasePackages();
         if (!pkgs.isEmpty()) {
             pkgs.add("com.vaadin");
             pkgs.add("com.github.mcollovati.vertx.vaadin");
         }
-        boolean isDebug = vaadinConfig.debug();
+        boolean isDebug = vaadinOpts.debug();
 
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
 
@@ -255,19 +233,35 @@ public class VaadinVerticle extends AbstractVerticle {
                 map.putAll(seekRequiredClasses(scanResult));
 
                 boolean haSockJS = scanResult.getClassInfo("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection") != null;
-                vaadinConfig.sockJSSupport(haSockJS);
+                vaadinOpts.sockJSSupport(haSockJS);
             }
 
-            Promise<Void> initializerFuture = Promise.promise();
-            runInitializers(startupContext, initializerFuture, map);
-            initializerFuture.future().map(unused -> {
-                VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
-                vaadinService = vertxVaadin.vaadinService();
-                return vertxVaadin;
-            }).setHandler(event);
+            try {
+                new LookupServletContainerInitializer()
+                    .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
+                finalizeVaadinConfig(vaadinOpts);
+
+                Promise<Void> initializerFuture = Promise.promise();
+                runInitializers(startupContext, initializerFuture, map);
+                initializerFuture.future().map(unused -> {
+                    VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
+                    vaadinService = vertxVaadin.vaadinService();
+                    return vertxVaadin;
+                }).setHandler(event);
+            } catch (ServletException ex) {
+                promise.fail(ex);
+            }
         }, promise);
         return promise.future();
     }
+
+    private void finalizeVaadinConfig(VaadinOptions vaadinOpts) {
+        VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), new VertxVaadinContext(vertx));
+        DeploymentConfiguration deploymentConfiguration = new DeploymentConfigurationFactory()
+            .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
+        vaadinOpts.update(deploymentConfiguration.getInitParameters());
+    }
+
 
     private void runInitializers(StartupContext startupContext, Promise<Void> promise, Map<Class<?>, Set<Class<?>>> classes) {
         Function<ServletContainerInitializer, Handler<Promise<Void>>> initializerFactory = initializer -> event2 -> {
@@ -279,17 +273,18 @@ public class VaadinVerticle extends AbstractVerticle {
             }
         };
 
-        runInitializer(initializerFactory.apply(new LookupServletContainerInitializer()))
-            .compose(unused -> CompositeFuture.join(asList(
-                runInitializer(initializerFactory.apply(new VertxConnectEndpointsInitializer())),
-                runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
-                runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
-                runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
-                runInitializer(initializerFactory.apply(new AnnotationValidator())),
-                runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-                runInitializer(initializerFactory.apply(new VaadinAppShellInitializer())),
-                runInitializer(initializerFactory.apply(new DevModeInitializer()))
-            ))).onComplete(event2 -> {
+        //runInitializer(initializerFactory.apply(new LookupServletContainerInitializer()))
+        //.compose(unused ->
+        CompositeFuture.join(asList(
+            runInitializer(initializerFactory.apply(new VertxConnectEndpointsInitializer())),
+            runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
+            runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
+            runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
+            runInitializer(initializerFactory.apply(new AnnotationValidator())),
+            runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
+            runInitializer(initializerFactory.apply(new VaadinAppShellInitializer())),
+            runInitializer(initializerFactory.apply(new DevModeInitializer()))
+        )).onComplete(event2 -> {
             if (event2.succeeded()) {
                 promise.complete();
             } else {
@@ -340,53 +335,4 @@ public class VaadinVerticle extends AbstractVerticle {
         context.executeBlocking(op, promise);
         return promise.future();
     }
-
-    private void readBuildInfo(JsonObject config) { // NOSONAR
-        try {
-            String json = null;
-            // token file location passed via init parameter property
-            String tokenLocation = config.getString(PARAM_TOKEN_FILE);
-            if (tokenLocation != null) {
-                File tokenFile = new File(tokenLocation);
-                if (tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
-                }
-            }
-
-            // token file is in the class-path of the application
-            if (json == null) {
-                URL resource = VaadinVerticle.class
-                    .getClassLoader()
-                    .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-                if (resource != null) {
-                    json = FrontendUtils.streamToString(resource.openStream());
-                }
-            }
-
-            // Read the json and set the appropriate system properties if not
-            // already set.
-            if (json != null) {
-                elemental.json.JsonObject buildInfo = JsonUtil.parse(json);
-                if (buildInfo.hasKey(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    config.put(
-                        InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                            InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because
-                    // it has priority in the configuration getter
-                    System.clearProperty(
-                        VAADIN_PREFIX + InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE);
-                }
-                if (System.getProperty(PROJECT_BASEDIR) == null
-                    && buildInfo.hasKey("npmFolder")) {
-                    System.setProperty(PROJECT_BASEDIR,
-                        buildInfo.getString("npmFolder"));
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
 }

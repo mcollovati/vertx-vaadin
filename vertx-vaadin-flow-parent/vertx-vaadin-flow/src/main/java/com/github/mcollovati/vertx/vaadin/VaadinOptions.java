@@ -30,12 +30,14 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.VaadinConfig;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PUSH_URL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PUSH_URL;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public final class VaadinOptions {
@@ -108,6 +110,14 @@ public final class VaadinOptions {
         config.put("sockJSSupport", enabled);
     }
 
+    void update(Properties properties) {
+        properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
+    }
+
+    VaadinConfig asVaadinConfig(Vertx vertx) {
+        return new VertxVaadinConfig(config, new VertxVaadinContext(vertx));
+    }
+
     long sockJSHeartbeatInterval() {
         return config.getLong("sockJS.heartbeatInterval", 25L * 1000);
     }
@@ -116,11 +126,12 @@ public final class VaadinOptions {
         return config.getBoolean("sockJSSupport", true);
     }
 
+
     @SuppressWarnings("unchecked")
-    private Object adaptJson(Object object) {
+    private static Object adaptJson(Object object) {
         if (object instanceof Collection) {
             return ((Collection<?>) object).stream()
-                .map(this::adaptJson)
+                .map(VaadinOptions::adaptJson)
                 .collect(Collectors.toList());
         } else if (object instanceof Map) {
             LinkedHashMap<String, Object> map = new LinkedHashMap<>((Map<String, Object>) object);
@@ -135,7 +146,7 @@ public final class VaadinOptions {
         } else if (object != null) {
             return Json.encode(object);
         }
-        return object;
+        return null;
     }
 
 }
