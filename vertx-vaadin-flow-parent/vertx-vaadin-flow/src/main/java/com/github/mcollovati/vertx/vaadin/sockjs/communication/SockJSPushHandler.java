@@ -25,6 +25,8 @@ package com.github.mcollovati.vertx.vaadin.sockjs.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -201,6 +203,7 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
         }
         return new ShareableSockJsSocket(socket);
     }
+
     private boolean isLiveReloadConnection(RoutingContext routingContext) {
         //String refreshConnection = routingContext.request().getParam(ApplicationConstants.LIVE_RELOAD_CONNECTION);
 
@@ -483,7 +486,9 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
     private static boolean isPushIdValid(VaadinSession session, String requestPushId) {
 
         String sessionPushId = session.getPushId();
-        return requestPushId != null && requestPushId.equals(sessionPushId);
+        return requestPushId != null && MessageDigest.isEqual(
+            requestPushId.getBytes(StandardCharsets.UTF_8), sessionPushId.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     /**
