@@ -22,21 +22,43 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import com.github.mcollovati.vertx.Sync;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import io.vertx.ext.auth.User;
-import io.vertx.ext.web.RoutingContext;
+/**
+ * Handles checking of a CSRF token in endpoint requests.
+ *
+ * @param <R> request type
+ */
+public interface CsrfChecker<R> {
 
-public class VertxVaadinConnectAccessChecker
-    extends VaadinConnectAccessCheckerSupport<RoutingContext> {
+    /**
+     * Validates the CSRF token that is included in the request.
+     * <p>
+     * Checks that the CSRF token in the request matches the expected one that
+     * is stored in the HTTP session.
+     * <p>
+     * Note! If there is no session, this method will always return
+     * {@code true}.
+     * <p>
+     * Note! If CSRF protection is disabled, this method will always return
+     * {@code true}.
+     *
+     * @param request the request to validate
+     * @return {@code true} if the CSRF token is ok or checking is disabled or
+     * there is no HTTP session, {@code false} otherwise
+     */
+    boolean validateCsrfTokenInRequest(R request);
 
-    public VertxVaadinConnectAccessChecker() {
-        super(new VertxAccessAnnotationChecker(), new VertxCsrfChecker());
-    }
-    public VertxVaadinConnectAccessChecker(VaadinContext vaadinContext) {
-        super(new VertxAccessAnnotationChecker(), new VertxCsrfChecker());
-        enableCsrf(ApplicationConfiguration.get(vaadinContext).isXsrfProtectionEnabled());
-    }
+    /**
+     * Enable or disable CSRF token checking in endpoints.
+     *
+     * @param csrfProtectionEnabled enable or disable protection
+     */
+    void setCsrfProtection(boolean csrfProtectionEnabled);
+
+    /**
+     * Checks if CSRF token checking in endpoints is enabled.
+     *
+     * @return {@code true} if protection is enabled, {@code false} otherwise
+     */
+    boolean isCsrfProtectionEnabled();
 
 }

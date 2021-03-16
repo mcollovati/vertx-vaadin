@@ -25,11 +25,10 @@ package com.github.mcollovati.vertx.vaadin.connect.auth;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Method;
 
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * Component used for checking role-based ACL in Vaadin Endpoints.
@@ -71,19 +70,17 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  * }
  * </pre>
  *
- * @param <R> request type
+ * @param <REQUEST> request type
  */
-public interface VaadinConnectAccessChecker<R> {
+public interface VaadinConnectAccessChecker<REQUEST> {
     /**
      * Check that the endpoint is accessible for the current user.
      *
-     * @param method
-     *            the Vaadin endpoint method to check ACL
+     * @param method  the Vaadin endpoint method to check ACL
+     * @param request the request that triggers the <code>method</code> invocation
      * @return an error String with an issue description, if any validation
-     *         issues occur, {@code null} otherwise
-     * @param request
-     *            the request that triggers the <code>method</code> invocation
+     * issues occur, {@code null} otherwise
      */
-    String check(Method method, R request);
+    String check(Method method, REQUEST request);
 
 }

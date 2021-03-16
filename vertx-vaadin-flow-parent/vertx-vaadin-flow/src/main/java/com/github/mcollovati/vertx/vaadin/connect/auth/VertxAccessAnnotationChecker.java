@@ -20,19 +20,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
+package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import com.vaadin.flow.server.connect.EndpointExposed;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
+import io.vertx.ext.web.RoutingContext;
 
-import java.util.Optional;
+import java.security.Principal;
 
-/**
- * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
- */
-@EndpointExposed
-public class ReadOnlyEndpoint<T, ID> extends NonEndpointImpl
-        implements NonEndpoint {
-    public Optional<T> get(ID id) {
-        return Optional.ofNullable(null);
+public class VertxAccessAnnotationChecker extends AccessAnnotationChecker<RoutingContext> {
+
+    @Override
+    protected UserAwareRequest adaptRequest(RoutingContext routingContext) {
+        VertxVaadinRequest vertxVaadinRequest = new VertxVaadinRequest(null, routingContext);
+        return new UserAwareRequest() {
+            @Override
+            public boolean isUserInRole(String role) {
+                return vertxVaadinRequest.isUserInRole(role);
+            }
+
+            @Override
+            public Principal getUserPrincipal() {
+                return vertxVaadinRequest.getUserPrincipal();
+            }
+
+            @Override
+            public String getRemoteUser() {
+                return vertxVaadinRequest.getRemoteUser();
+            }
+        };
     }
+
 }

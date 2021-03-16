@@ -20,19 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
+package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.vaadin.flow.server.connect.EndpointExposed;
+import com.vaadin.flow.server.connect.EndpointRegistry;
 
-import java.util.Optional;
+public interface VaadinEndpointRegistry {
 
-/**
- * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
- */
-@EndpointExposed
-public class ReadOnlyEndpoint<T, ID> extends NonEndpointImpl
-        implements NonEndpoint {
-    public Optional<T> get(ID id) {
-        return Optional.ofNullable(null);
-    }
+    void registerEndpoint(Object endpointBean);
+
+    EndpointRegistry.VaadinEndpointData get(String endpointName);
 }

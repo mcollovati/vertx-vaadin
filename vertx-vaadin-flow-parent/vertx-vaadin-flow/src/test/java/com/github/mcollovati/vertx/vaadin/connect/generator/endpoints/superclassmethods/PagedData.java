@@ -22,10 +22,10 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
+import com.vaadin.flow.server.connect.EndpointExposed;
+
 import java.util.Collections;
 import java.util.List;
-
-import com.vaadin.flow.server.connect.EndpointExposed;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)

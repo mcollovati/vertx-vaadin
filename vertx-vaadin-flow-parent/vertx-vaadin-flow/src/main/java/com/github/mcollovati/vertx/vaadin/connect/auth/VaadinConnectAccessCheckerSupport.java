@@ -22,17 +22,11 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * Basic implementation of {@link VaadinConnectAccessChecker}.
@@ -40,11 +34,35 @@ import org.slf4j.LoggerFactory;
  * Subclasses will provide technology specific ways to access
  * session and user information.
  * <p>
- * Source adapted from Vaadin Flow (https://github.com/vaadin/flow)
+ * Source adapted from Vaadin Flow (https://github.com/vaadin/flow) fusion-endpoints module,
+ * to get rid of servlet APIs.
+ *
+ * @param <REQUEST> request type
  */
 public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements VaadinConnectAccessChecker<REQUEST> {
 
-    protected boolean xsrfProtectionEnabled = true;
+    public static final String ACCESS_DENIED_MSG = "Access denied";
+
+    public static final String ACCESS_DENIED_MSG_DEV_MODE = "Unauthorized access to Vaadin endpoint; "
+            + "to enable endpoint access use one of the following annotations: @AnonymousAllowed, @PermitAll, @RolesAllowed";
+
+    private CsrfChecker<REQUEST> csrfChecker;
+
+    private AccessAnnotationChecker<REQUEST> accessAnnotationChecker;
+
+
+    /**
+     * Creates a new instance.
+     *
+     * @param csrfChecker             the csrf checker to use
+     * @param accessAnnotationChecker the access checker to use
+     */
+    protected VaadinConnectAccessCheckerSupport(
+            AccessAnnotationChecker<REQUEST> accessAnnotationChecker,
+            CsrfChecker<REQUEST> csrfChecker) {
+        this.accessAnnotationChecker = accessAnnotationChecker;
+        this.csrfChecker = csrfChecker;
+    }
 
     /**
      * Check that the endpoint is accessible for the current user.
@@ -55,152 +73,26 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
      * issues occur, {@code null} otherwise
      */
     public String check(Method method, REQUEST request) {
-        if (isAnonymous(request)) {
-            return verifyAnonymousUser(method, request);
+        if (!csrfChecker.validateCsrfTokenInRequest(request)) {
+            return ACCESS_DENIED_MSG;
+        }
+
+        if (accessAnnotationChecker.hasAccess(method, request)) {
+            return null;
+        }
+
+        if (isDevMode()) {
+            // suggest access control annotations in dev mode
+            return ACCESS_DENIED_MSG_DEV_MODE;
         } else {
-            return verifyAuthenticatedUser(method, request);
+            return ACCESS_DENIED_MSG;
         }
     }
 
-    /**
-     * Checks if current request is not bound to an authenticated user.
-     *
-     * @param request current request.
-     * @return {@literal true} if current request in not bound to an authenticated user,
-     * otherwise {@literal false}.
-     */
-    protected abstract boolean isAnonymous(REQUEST request);
-
-    /**
-     * Checks if current request has an active session associated.
-     *
-     * @param request current request.
-     * @return {@literal true} if current request has an active session, otherwise {@literal false}.
-     */
-    protected abstract boolean hasSession(REQUEST request);
-
-    /**
-     * Checks if the user bound to current request has the given role.
-     *
-     * @param request current request-
-     * @param role    role to check.
-     * @return {@literal true} if the user has given role, otherwise {@literal false}.
-     */
-    protected abstract boolean isUserInRole(REQUEST request, String role);
-
-    /**
-     * Returns the value of the request header with the given {@code headerName}.
-     *
-     * @param request    current request.
-     * @param headerName header name.
-     * @return value of the given header name, or {@literal null} if header is not present.
-     */
-    protected abstract String getHeader(REQUEST request, String headerName);
-
-    /**
-     * Returns the value of the session attribute identified by {@code attributeName}.
-     *
-     * @param request       current request.
-     * @param attributeName session attribute name.
-     * @return value of the session attribute, or {@literal null} if attribute is not present.
-     */
-    protected abstract Object getSessionAttribute(REQUEST request, String attributeName);
-
-    /**
-     * Gets the entity to check for Vaadin Connect security restrictions.
-     *
-     * @param method the method to analyze, not {@code null}
-     * @return the entity that is responsible for security settings for the
-     * method passed
-     * @throws IllegalArgumentException if the method is not public
-     */
-    public AnnotatedElement getSecurityTarget(Method method) {
-        if (!Modifier.isPublic(method.getModifiers())) {
-            throw new IllegalArgumentException(String.format(
-                "The method '%s' is not public hence cannot have a security target",
-                method));
-        }
-        return hasSecurityAnnotation(method) ? method
-            : method.getDeclaringClass();
-    }
-
-    private String verifyAnonymousUser(Method method, REQUEST request) {
-        if (!getSecurityTarget(method)
-            .isAnnotationPresent(AnonymousAllowed.class)
-            || cannotAccessMethod(method, request)) {
-            return "Anonymous access is not allowed";
-        }
-        return null;
-    }
-
-    private String verifyAuthenticatedUser(Method method, REQUEST request) {
-        if (cannotAccessMethod(method, request)) {
-            return "Unauthorized access to Vaadin endpoint";
-        }
-        return null;
-    }
-
-    private boolean cannotAccessMethod(Method method, REQUEST request) {
-        return requestForbidden(request) || entityForbidden(getSecurityTarget(method), request);
-    }
-
-    private boolean requestForbidden(REQUEST request) {
-        if (!xsrfProtectionEnabled) {
-            return false;
-        }
-
-        if (!hasSession(request)) {
-            return false;
-        }
-
-        String csrfTokenInSession = (String) getSessionAttribute(request, VaadinService.getCsrfTokenAttributeName());
-        if (csrfTokenInSession == null) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info(
-                    "Unable to verify CSRF token for endpoint request, got null token in session");
-            }
-
-            return true;
-        }
-
-        if (!csrfTokenInSession.equals(getHeader(request, "X-CSRF-Token"))) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("Invalid CSRF token in endpoint request");
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean entityForbidden(AnnotatedElement entity, REQUEST request) {
-        return entity.isAnnotationPresent(DenyAll.class) || (!entity
-            .isAnnotationPresent(AnonymousAllowed.class)
-            && !roleAllowed(entity.getAnnotation(RolesAllowed.class),
-            request));
-    }
-
-    private boolean roleAllowed(RolesAllowed rolesAllowed, REQUEST request) {
-        if (rolesAllowed == null) {
-            return true;
-        }
-
-        for (String role : rolesAllowed.value()) {
-            if (isUserInRole(request, role)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    private boolean hasSecurityAnnotation(Method method) {
-        return method.isAnnotationPresent(AnonymousAllowed.class)
-            || method.isAnnotationPresent(PermitAll.class)
-            || method.isAnnotationPresent(DenyAll.class)
-            || method.isAnnotationPresent(RolesAllowed.class);
+    private boolean isDevMode() {
+        VaadinService vaadinService = VaadinService.getCurrent();
+        return (vaadinService != null && !vaadinService
+                .getDeploymentConfiguration().isProductionMode());
     }
 
     /**
@@ -209,7 +101,16 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
      * @param xsrfProtectionEnabled enable or disable protection.
      */
     public void enableCsrf(boolean xsrfProtectionEnabled) {
-        this.xsrfProtectionEnabled = xsrfProtectionEnabled;
+        csrfChecker.setCsrfProtection(xsrfProtectionEnabled);
+    }
+
+    /**
+     * Returns the instance used for checking access based on annotations.
+     *
+     * @return the instance used for checking access based on annotations
+     */
+    public AccessAnnotationChecker<REQUEST> getAccessAnnotationChecker() {
+        return accessAnnotationChecker;
     }
 
     private static Logger getLogger() {

@@ -22,13 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import java.lang.reflect.Method;
-
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -40,11 +35,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.assertEquals;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import java.lang.reflect.Method;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -490,54 +488,7 @@ public class VertxConnectAccessCheckerTest {
         Method method = Test.class.getDeclaredMethod("test");
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(method.toString());
-        checker.getSecurityTarget(method);
+        checker.check(method, routingContextMock);
     }
 
-    @Test
-    public void should_ReturnEnclosingClassAsSecurityTarget_When_NoSecurityAnnotationsPresent()
-        throws Exception {
-        class Test {
-            public void test() {
-            }
-        }
-        assertEquals(Test.class,
-            checker.getSecurityTarget(Test.class.getMethod("test")));
-    }
-
-    @Test
-    public void should_ReturnEnclosingClassAsSecurityTarget_When_OnlyClassHasSecurityAnnotations()
-        throws Exception {
-        @AnonymousAllowed
-        class Test {
-            public void test() {
-            }
-        }
-        assertEquals(Test.class,
-            checker.getSecurityTarget(Test.class.getMethod("test")));
-    }
-
-    @Test
-    public void should_ReturnMethodAsSecurityTarget_When_OnlyMethodHasSecurityAnnotations()
-        throws Exception {
-        class Test {
-            @AnonymousAllowed
-            public void test() {
-            }
-        }
-        Method securityMethod = Test.class.getMethod("test");
-        assertEquals(securityMethod, checker.getSecurityTarget(securityMethod));
-    }
-
-    @Test
-    public void should_ReturnMethodAsSecurityTarget_When_BothClassAndMethodHaveSecurityAnnotations()
-        throws Exception {
-        @AnonymousAllowed
-        class Test {
-            @AnonymousAllowed
-            public void test() {
-            }
-        }
-        Method securityMethod = Test.class.getMethod("test");
-        assertEquals(securityMethod, checker.getSecurityTarget(securityMethod));
-    }
 }
