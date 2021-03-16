@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
-import com.github.mcollovati.vertx.vaadin.connect.VertxConnectEndpointsInitializer;
+import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistryInitializer;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
@@ -276,7 +276,7 @@ public class VaadinVerticle extends AbstractVerticle {
         //runInitializer(initializerFactory.apply(new LookupServletContainerInitializer()))
         //.compose(unused ->
         CompositeFuture.join(asList(
-            runInitializer(initializerFactory.apply(new VertxConnectEndpointsInitializer())),
+            runInitializer(initializerFactory.apply(new VertxEndpointRegistryInitializer())),
             runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
             runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
             runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
@@ -300,7 +300,7 @@ public class VaadinVerticle extends AbstractVerticle {
             WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
             DevModeInitializer.class, VaadinAppShellInitializer.class, ConnectEndpointsValidator.class,
             LookupServletContainerInitializer.class,
-            VertxConnectEndpointsInitializer.class
+            VertxEndpointRegistryInitializer.class
         ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }

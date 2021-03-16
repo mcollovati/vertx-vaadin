@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
 import com.vaadin.flow.server.connect.EndpointExposed;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)

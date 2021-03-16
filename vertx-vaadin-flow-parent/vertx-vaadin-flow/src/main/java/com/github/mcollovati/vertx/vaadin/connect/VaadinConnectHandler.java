@@ -22,12 +22,15 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.github.mcollovati.vertx.vaadin.connect.auth.VertxVaadinConnectAccessChecker;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
@@ -36,16 +39,16 @@ import io.vertx.ext.web.RoutingContext;
 public class VaadinConnectHandler {
 
     private final VertxVaadinConnectEndpointService endpointService;
-    private final VaadinService vaadinService;
+    private final VertxVaadinService vaadinService;
 
-    VaadinConnectHandler(VaadinConnectEndpointRegistry endpointRegistry, VaadinService vaadinService) {
+    VaadinConnectHandler(VaadinEndpointRegistry endpointRegistry, VertxVaadinService vaadinService) {
         this(new VertxVaadinConnectEndpointService(
-            DatabindCodec.mapper(), endpointRegistry, new EndpointNameChecker(),
-            new VertxVaadinConnectAccessChecker(), new ExplicitNullableTypeChecker()
+                DatabindCodec.mapper(), endpointRegistry, new VertxVaadinConnectAccessChecker(vaadinService.getContext()), new ExplicitNullableTypeChecker()
         ), vaadinService);
+
     }
 
-    VaadinConnectHandler(VertxVaadinConnectEndpointService service, VaadinService vaadinService) {
+    VaadinConnectHandler(VertxVaadinConnectEndpointService service, VertxVaadinService vaadinService) {
         this.endpointService = service;
         this.vaadinService = vaadinService;
     }
@@ -66,9 +69,9 @@ public class VaadinConnectHandler {
     }
 
     public static VaadinConnectHandler register(Router router, VertxVaadinService service) {
-        VaadinConnectEndpointRegistry endpointRegistry = service.getContext().getAttribute(VaadinConnectEndpointRegistry.class);
+        VaadinEndpointRegistry endpointRegistry = service.getContext().getAttribute(VaadinEndpointRegistry.class);
         if (endpointRegistry == null) {
-            endpointRegistry = VaadinConnectEndpointRegistry.empty();
+            endpointRegistry = new VertxEndpointRegistry(new EndpointNameChecker());
         }
         VaadinConnectHandler connectHandler = new VaadinConnectHandler(endpointRegistry, service);
         connectHandler.register(router);
@@ -83,20 +86,21 @@ public class VaadinConnectHandler {
 
     private void register(Router router) {
         router.post("/:endpoint/:method")
-            .consumes("application/json")
-            .produces("application/json")
-            .handler(ctx -> {
-                if (vaadinService != null) {
-                    VaadinService.setCurrent(vaadinService);
-                }
-                try {
-                    handle(ctx);
-                } finally {
+                .consumes("application/json")
+                .produces("application/json")
+                .handler(ctx -> {
                     if (vaadinService != null) {
-                        CurrentInstance.clearAll();
+                        VaadinService.setCurrent(vaadinService);
+                        CurrentInstance.set(VaadinRequest.class, new VertxVaadinRequest(vaadinService, ctx));
                     }
-                }
-            });
+                    try {
+                        handle(ctx);
+                    } finally {
+                        if (vaadinService != null) {
+                            CurrentInstance.clearAll();
+                        }
+                    }
+                });
     }
 
 }

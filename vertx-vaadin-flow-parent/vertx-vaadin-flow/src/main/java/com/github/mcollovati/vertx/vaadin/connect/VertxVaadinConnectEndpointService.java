@@ -41,24 +41,24 @@ import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 
 public class VertxVaadinConnectEndpointService
-    extends BaseVaadinConnectEndpointService<RoutingContext, DefaultVaadinConnectResponse, VertxConnectRequestContext> {
+        extends BaseVaadinConnectEndpointService<RoutingContext, DefaultVaadinConnectResponse, VertxConnectRequestContext> {
 
     public VertxVaadinConnectEndpointService(
-        ObjectMapper vaadinEndpointMapper, VaadinConnectEndpointRegistry endpointRegistry,
-        EndpointNameChecker endpointNameChecker, VaadinConnectAccessChecker<RoutingContext> accessChecker,
-        ExplicitNullableTypeChecker explicitNullableTypeChecker) {
-        super(vaadinEndpointMapper, endpointRegistry, endpointNameChecker, accessChecker, explicitNullableTypeChecker);
+            ObjectMapper vaadinEndpointMapper, VaadinEndpointRegistry endpointRegistry,
+            VaadinConnectAccessChecker<RoutingContext> accessChecker,
+            ExplicitNullableTypeChecker explicitNullableTypeChecker) {
+        super(vaadinEndpointMapper, endpointRegistry, accessChecker, explicitNullableTypeChecker);
     }
 
     @Override
     protected ObjectMapper createVaadinConnectObjectMapper() {
         return DatabindCodec.mapper().copy()
-            .registerModule(new Jdk8Module())
-            .registerModule(new JavaTimeModule())
-            .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
-            .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule())
+                .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
+                .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     @Override

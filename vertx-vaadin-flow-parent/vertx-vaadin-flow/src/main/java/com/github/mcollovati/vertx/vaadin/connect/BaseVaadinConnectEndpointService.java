@@ -50,10 +50,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.mcollovati.vertx.vaadin.connect.auth.VaadinConnectAccessChecker;
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
+import com.vaadin.flow.server.connect.EndpointRegistry;
 import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
@@ -62,16 +64,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Basic implementation if {@link VaadinConnectEndpointService}.
- *
+ * <p>
  * Subclasses will provide support for technology specific information
  * by providing a {@link EndpointServiceContext} implementation
  * and by adapting incoming request to the corret {@link VaadinRequest} type.
- *
- *
+ * <p>
+ * <p>
  * Source code adapted from Vaadin Flow (https://github.com/vaadin/flow)
  */
 public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX extends EndpointServiceContext<REQUEST, RESPONSE>>
-    implements VaadinConnectEndpointService<REQUEST, RESPONSE, CTX> {
+        implements VaadinConnectEndpointService<REQUEST, RESPONSE, CTX> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VertxVaadinConnectEndpointService.class);
 
@@ -79,26 +81,24 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
         return LOGGER;
     }
 
-    final Map<String, VaadinEndpointData> vaadinEndpoints = new HashMap<>();
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     private final ObjectMapper vaadinEndpointMapper;
     private final VaadinConnectAccessChecker<REQUEST> accessChecker;
     private final ExplicitNullableTypeChecker explicitNullableTypeChecker;
+    final VaadinEndpointRegistry endpointRegistry;
 
     protected BaseVaadinConnectEndpointService(
-        ObjectMapper vaadinEndpointMapper,
-        VaadinConnectEndpointRegistry endpointRegistry,
-        EndpointNameChecker endpointNameChecker,
-        VaadinConnectAccessChecker<REQUEST> accessChecker,
-        ExplicitNullableTypeChecker explicitNullableTypeChecker) {
-        Objects.requireNonNull(endpointRegistry).endpoints()
-            .forEach((name, endpoint) -> validateEndpointBean(endpointNameChecker, name, endpoint));
+            ObjectMapper vaadinEndpointMapper,
+            VaadinEndpointRegistry endpointRegistry,
+            VaadinConnectAccessChecker<REQUEST> accessChecker,
+            ExplicitNullableTypeChecker explicitNullableTypeChecker) {
 
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
-            ? vaadinEndpointMapper
-            : createVaadinConnectObjectMapper();
+                ? vaadinEndpointMapper
+                : createVaadinConnectObjectMapper();
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
+        this.endpointRegistry = endpointRegistry;
     }
 
 
@@ -108,17 +108,16 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
     public RESPONSE serveEndpoint(String endpointName, String methodName, CTX context) {
         getLogger().debug("Endpoint: {}, method: {}, request body: {}", endpointName, methodName, context.requestBody());
 
-        VaadinEndpointData vaadinEndpointData = vaadinEndpoints.get(endpointName.toLowerCase(Locale.ENGLISH));
+        EndpointRegistry.VaadinEndpointData vaadinEndpointData = endpointRegistry.get(endpointName);
         if (vaadinEndpointData == null) {
             getLogger().debug("Endpoint '{}' not found", endpointName);
             return context.failWithNotFound();
         }
 
-        Method methodToInvoke = vaadinEndpointData
-            .getMethod(methodName.toLowerCase(Locale.ENGLISH)).orElse(null);
+        Method methodToInvoke = vaadinEndpointData.getMethod(methodName).orElse(null);
         if (methodToInvoke == null) {
             getLogger().debug("Method '{}' not found in endpoint '{}'",
-                methodName, endpointName);
+                    methodName, endpointName);
             return context.failWithNotFound();
         }
 
@@ -127,12 +126,9 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
             // Put a VaadinRequest in the instances object so as the request is
             // available in the end-point method
             VaadinService service = VaadinService.getCurrent();
-            if (service != null) {
-                service.setCurrentInstances(createVaadinRequest(context.request(), service), null);
-            }
-
+            CurrentInstance.set(VaadinRequest.class, createVaadinRequest(context.request(), service));
             return invokeVaadinEndpointMethod(endpointName, methodName,
-                methodToInvoke, vaadinEndpointData, context);
+                    methodToInvoke, vaadinEndpointData, context);
         } catch (JsonProcessingException e) {
             /*
             String errorMessage = String.format(
@@ -141,93 +137,95 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
                 endpointName, methodName,
                 VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);*/
             String errorMessage = String.format(
-                "Failed to serialize endpoint '%s' method '%s' response. Double check method's return type",
-                endpointName, methodName);
+                    "Failed to serialize endpoint '%s' method '%s' response. Double check method's return type",
+                    endpointName, methodName);
             getLogger().error(errorMessage, e);
             try {
                 return context.failWith(createResponseErrorObject(errorMessage));
             } catch (JsonProcessingException unexpected) {
                 throw new IllegalStateException(String.format(
-                    "Unexpected: Failed to serialize a plain Java string '%s' into a JSON. "
-                        + "Double check the provided mapper's configuration.",
-                    errorMessage), unexpected);
+                        "Unexpected: Failed to serialize a plain Java string '%s' into a JSON. "
+                                + "Double check the provided mapper's configuration.",
+                        errorMessage), unexpected);
             }
+        } finally {
+            CurrentInstance.set(VaadinRequest.class, null);
         }
     }
 
     protected abstract VaadinRequest createVaadinRequest(REQUEST request, VaadinService service);
 
     private String createResponseErrorObject(String errorMessage)
-        throws JsonProcessingException {
+            throws JsonProcessingException {
         return vaadinEndpointMapper.writeValueAsString(Collections.singletonMap(
-            EndpointException.ERROR_MESSAGE_FIELD, errorMessage));
+                EndpointException.ERROR_MESSAGE_FIELD, errorMessage));
     }
 
     private RESPONSE invokeVaadinEndpointMethod(String endpointName,
                                                 String methodName, Method methodToInvoke,
-                                                VaadinEndpointData vaadinEndpointData,
+                                                EndpointRegistry.VaadinEndpointData vaadinEndpointData,
                                                 CTX requestContext)
-        throws JsonProcessingException {
+            throws JsonProcessingException {
         String checkError = accessChecker.check(methodToInvoke, requestContext.request());
         if (checkError != null) {
             return requestContext.failWithUnauthorized(createResponseErrorObject(String.format(
-                "Endpoint '%s' method '%s' request cannot be accessed, reason: '%s'",
-                endpointName, methodName, checkError)));
+                    "Endpoint '%s' method '%s' request cannot be accessed, reason: '%s'",
+                    endpointName, methodName, checkError)));
         }
 
         Map<String, JsonNode> requestParameters = getRequestParameters(requestContext.requestBody());
-        Type[] javaParameters = getJavaParameters(methodToInvoke, resolveUserClass(vaadinEndpointData.vaadinEndpointObject.getClass()));
+        Type[] javaParameters = getJavaParameters(methodToInvoke, resolveUserClass(vaadinEndpointData.getEndpointObject()));
         if (javaParameters.length != requestParameters.size()) {
             return requestContext.failWithBadRequest(createResponseErrorObject(String.format(
-                "Incorrect number of parameters for endpoint '%s' method '%s', "
-                    + "expected: %s, got: %s",
-                endpointName, methodName, javaParameters.length,
-                requestParameters.size())));
+                    "Incorrect number of parameters for endpoint '%s' method '%s', "
+                            + "expected: %s, got: %s",
+                    endpointName, methodName, javaParameters.length,
+                    requestParameters.size())));
         }
 
         Object[] vaadinEndpointParameters;
         try {
             vaadinEndpointParameters = getVaadinEndpointParameters(
-                requestParameters, javaParameters, methodName, endpointName);
+                    requestParameters, javaParameters, methodName, endpointName);
         } catch (EndpointValidationException e) {
             getLogger().debug(
-                "Endpoint '{}' method '{}' received invalid response",
-                endpointName, methodName, e);
+                    "Endpoint '{}' method '{}' received invalid response",
+                    endpointName, methodName, e);
             return requestContext.failWithBadRequest(vaadinEndpointMapper.writeValueAsString(e.getSerializationData()));
         }
 
         Set<ConstraintViolation<Object>> methodParameterConstraintViolations = validator
-            .forExecutables()
-            .validateParameters(vaadinEndpointData.getEndpointObject(),
-                methodToInvoke, vaadinEndpointParameters);
+                .forExecutables()
+                .validateParameters(vaadinEndpointData.getEndpointObject(),
+                        methodToInvoke, vaadinEndpointParameters);
         if (!methodParameterConstraintViolations.isEmpty()) {
             return requestContext.failWithBadRequest(vaadinEndpointMapper
-                .writeValueAsString(new EndpointValidationException(
-                    String.format(
-                        "Validation error in endpoint '%s' method '%s'",
-                        endpointName, methodName),
-                    createMethodValidationErrors(
-                        methodParameterConstraintViolations))
-                    .getSerializationData()));
+                    .writeValueAsString(new EndpointValidationException(
+                            String.format(
+                                    "Validation error in endpoint '%s' method '%s'",
+                                    endpointName, methodName),
+                            createMethodValidationErrors(
+                                    methodParameterConstraintViolations))
+                            .getSerializationData()));
         }
 
         Object returnValue;
         try {
             returnValue = methodToInvoke.invoke(
-                vaadinEndpointData.getEndpointObject(),
-                vaadinEndpointParameters);
+                    vaadinEndpointData.getEndpointObject(),
+                    vaadinEndpointParameters);
         } catch (IllegalArgumentException e) {
             String errorMessage = String.format(
-                "Received incorrect arguments for endpoint '%s' method '%s'. "
-                    + "Expected parameter types (and their order) are: '[%s]'",
-                endpointName, methodName,
-                listMethodParameterTypes(javaParameters));
+                    "Received incorrect arguments for endpoint '%s' method '%s'. "
+                            + "Expected parameter types (and their order) are: '[%s]'",
+                    endpointName, methodName,
+                    listMethodParameterTypes(javaParameters));
             getLogger().debug(errorMessage, e);
             return requestContext.failWithBadRequest(createResponseErrorObject(errorMessage));
         } catch (IllegalAccessException e) {
             String errorMessage = String.format(
-                "Endpoint '%s' method '%s' access failure", endpointName,
-                methodName);
+                    "Endpoint '%s' method '%s' access failure", endpointName,
+                    methodName);
             getLogger().error(errorMessage, e);
             return requestContext.failWith(createResponseErrorObject(errorMessage));
         } catch (InvocationTargetException e) {
@@ -235,50 +233,50 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
         }
 
         String implicitNullError = this.explicitNullableTypeChecker
-            .checkValueForAnnotatedElement(returnValue, methodToInvoke);
+                .checkValueForAnnotatedElement(returnValue, methodToInvoke);
         if (implicitNullError != null) {
             EndpointException returnValueException = new EndpointException(
-                String.format(
-                    "Unexpected return value in endpoint '%s' method '%s'. %s",
-                    endpointName, methodName, implicitNullError));
+                    String.format(
+                            "Unexpected return value in endpoint '%s' method '%s'. %s",
+                            endpointName, methodName, implicitNullError));
 
             getLogger().error(returnValueException.getMessage());
             return requestContext.failWith(vaadinEndpointMapper.writeValueAsString(
-                returnValueException.getSerializationData()));
+                    returnValueException.getSerializationData()));
         }
 
         Set<ConstraintViolation<Object>> returnValueConstraintViolations = validator
-            .forExecutables()
-            .validateReturnValue(vaadinEndpointData.getEndpointObject(),
-                methodToInvoke, returnValue);
+                .forExecutables()
+                .validateReturnValue(vaadinEndpointData.getEndpointObject(),
+                        methodToInvoke, returnValue);
         if (!returnValueConstraintViolations.isEmpty()) {
             getLogger().error(
-                "Endpoint '{}' method '{}' had returned a value that has validation errors: '{}', this might cause bugs on the client side. Fix the method implementation.",
-                endpointName, methodName, returnValueConstraintViolations);
+                    "Endpoint '{}' method '{}' had returned a value that has validation errors: '{}', this might cause bugs on the client side. Fix the method implementation.",
+                    endpointName, methodName, returnValueConstraintViolations);
         }
         return requestContext.respondWithOk(vaadinEndpointMapper.writeValueAsString(returnValue));
     }
 
     private String listMethodParameterTypes(Type[] javaParameters) {
         return Stream.of(javaParameters)
-            .map(Type::getTypeName).collect(Collectors.joining(", "));
+                .map(Type::getTypeName).collect(Collectors.joining(", "));
     }
 
     private RESPONSE handleMethodExecutionError(
-        String endpointName, String methodName, CTX requestContext, InvocationTargetException e)
-        throws JsonProcessingException {
+            String endpointName, String methodName, CTX requestContext, InvocationTargetException e)
+            throws JsonProcessingException {
         if (EndpointException.class
-            .isAssignableFrom(e.getCause().getClass())) {
+                .isAssignableFrom(e.getCause().getClass())) {
             EndpointException endpointException = ((EndpointException) e
-                .getCause());
+                    .getCause());
             getLogger().debug("Endpoint '{}' method '{}' aborted the execution",
-                endpointName, methodName, endpointException);
+                    endpointName, methodName, endpointException);
             return requestContext.failWithBadRequest(vaadinEndpointMapper.writeValueAsString(
-                endpointException.getSerializationData()));
+                    endpointException.getSerializationData()));
         } else {
             String errorMessage = String.format(
-                "Endpoint '%s' method '%s' execution failure", endpointName,
-                methodName);
+                    "Endpoint '%s' method '%s' execution failure", endpointName,
+                    methodName);
             getLogger().error(errorMessage, e);
             return requestContext.failWith(createResponseErrorObject(errorMessage));
         }
@@ -286,8 +284,8 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
 
 
     private Object[] getVaadinEndpointParameters(
-        Map<String, JsonNode> requestParameters, Type[] javaParameters,
-        String methodName, String endpointName) {
+            Map<String, JsonNode> requestParameters, Type[] javaParameters,
+            String methodName, String endpointName) {
         Object[] endpointParameters = new Object[javaParameters.length];
         String[] parameterNames = new String[requestParameters.size()];
         requestParameters.keySet().toArray(parameterNames);
@@ -298,9 +296,9 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
             Type expectedType = javaParameters[i];
             try {
                 Object parameter = vaadinEndpointMapper
-                    .readerFor(vaadinEndpointMapper.getTypeFactory()
-                        .constructType(expectedType))
-                    .readValue(requestParameters.get(parameterNames[i]));
+                        .readerFor(vaadinEndpointMapper.getTypeFactory()
+                                .constructType(expectedType))
+                        .readValue(requestParameters.get(parameterNames[i]));
 
                 endpointParameters[i] = parameter;
 
@@ -310,10 +308,10 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
             } catch (IOException e) {
                 String typeName = expectedType.getTypeName();
                 getLogger().error(
-                    "Unable to deserialize an endpoint '{}' method '{}' "
-                        + "parameter '{}' with type '{}'",
-                    endpointName, methodName, parameterNames[i], typeName,
-                    e);
+                        "Unable to deserialize an endpoint '{}' method '{}' "
+                                + "parameter '{}' with type '{}'",
+                        endpointName, methodName, parameterNames[i], typeName,
+                        e);
                 errorParams.put(parameterNames[i], typeName);
             }
         }
@@ -322,59 +320,59 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
             return endpointParameters;
         }
         throw getInvalidEndpointParametersException(methodName, endpointName,
-            errorParams, constraintViolations);
+                errorParams, constraintViolations);
     }
 
     private EndpointValidationException getInvalidEndpointParametersException(
-        String methodName, String endpointName,
-        Map<String, String> deserializationErrors,
-        Set<ConstraintViolation<Object>> constraintViolations) {
+            String methodName, String endpointName,
+            Map<String, String> deserializationErrors,
+            Set<ConstraintViolation<Object>> constraintViolations) {
         List<EndpointValidationException.ValidationErrorData> validationErrorData = new ArrayList<>(
-            deserializationErrors.size() + constraintViolations.size());
+                deserializationErrors.size() + constraintViolations.size());
 
         for (Map.Entry<String, String> deserializationError : deserializationErrors
-            .entrySet()) {
+                .entrySet()) {
             String message = String.format(
-                "Unable to deserialize an endpoint method parameter into type '%s'",
-                deserializationError.getValue());
+                    "Unable to deserialize an endpoint method parameter into type '%s'",
+                    deserializationError.getValue());
             validationErrorData.add(new EndpointValidationException.ValidationErrorData(message,
-                deserializationError.getKey()));
+                    deserializationError.getKey()));
         }
 
         validationErrorData
-            .addAll(createBeanValidationErrors(constraintViolations));
+                .addAll(createBeanValidationErrors(constraintViolations));
 
         String message = String.format(
-            "Validation error in endpoint '%s' method '%s'", endpointName,
-            methodName);
+                "Validation error in endpoint '%s' method '%s'", endpointName,
+                methodName);
         return new EndpointValidationException(message,
-            validationErrorData);
+                validationErrorData);
     }
 
     private List<EndpointValidationException.ValidationErrorData> createBeanValidationErrors(
-        Collection<ConstraintViolation<Object>> beanConstraintViolations) {
+            Collection<ConstraintViolation<Object>> beanConstraintViolations) {
         return beanConstraintViolations.stream().map(
-            constraintViolation -> new EndpointValidationException.ValidationErrorData(String.format(
-                "Object of type '%s' has invalid property '%s' with value '%s', validation error: '%s'",
-                constraintViolation.getRootBeanClass(),
-                constraintViolation.getPropertyPath().toString(),
-                constraintViolation.getInvalidValue(),
-                constraintViolation.getMessage()),
-                constraintViolation.getPropertyPath().toString()))
-            .collect(Collectors.toList());
+                constraintViolation -> new EndpointValidationException.ValidationErrorData(String.format(
+                        "Object of type '%s' has invalid property '%s' with value '%s', validation error: '%s'",
+                        constraintViolation.getRootBeanClass(),
+                        constraintViolation.getPropertyPath().toString(),
+                        constraintViolation.getInvalidValue(),
+                        constraintViolation.getMessage()),
+                        constraintViolation.getPropertyPath().toString()))
+                .collect(Collectors.toList());
     }
 
     private List<EndpointValidationException.ValidationErrorData> createMethodValidationErrors(
-        Collection<ConstraintViolation<Object>> methodConstraintViolations) {
+            Collection<ConstraintViolation<Object>> methodConstraintViolations) {
         return methodConstraintViolations.stream().map(constraintViolation -> {
             String parameterPath = constraintViolation.getPropertyPath()
-                .toString();
+                    .toString();
             return new EndpointValidationException.ValidationErrorData(String.format(
-                "Method '%s' of the object '%s' received invalid parameter '%s' with value '%s', validation error: '%s'",
-                parameterPath.split("\\.")[0],
-                constraintViolation.getRootBeanClass(), parameterPath,
-                constraintViolation.getInvalidValue(),
-                constraintViolation.getMessage()), parameterPath);
+                    "Method '%s' of the object '%s' received invalid parameter '%s' with value '%s', validation error: '%s'",
+                    parameterPath.split("\\.")[0],
+                    constraintViolation.getRootBeanClass(), parameterPath,
+                    constraintViolation.getInvalidValue(),
+                    constraintViolation.getMessage()), parameterPath);
         }).collect(Collectors.toList());
     }
 
@@ -386,71 +384,16 @@ public abstract class BaseVaadinConnectEndpointService<REQUEST, RESPONSE, CTX ex
         Map<String, JsonNode> parametersData = new LinkedHashMap<>();
         if (body != null) {
             body.fields().forEachRemaining(entry -> parametersData
-                .put(entry.getKey(), entry.getValue()));
+                    .put(entry.getKey(), entry.getValue()));
         }
         return parametersData;
     }
 
-    void validateEndpointBean(EndpointNameChecker endpointNameChecker,
-                              String name, Object endpointBean) {
-
-        Class<?> beanType = resolveUserClass(endpointBean.getClass());
-        String endpointName = Optional
-            .ofNullable(beanType.getAnnotation(Endpoint.class))
-            .map(Endpoint::value).filter(value -> !value.isEmpty())
-            .orElse(beanType.getSimpleName());
-        if (endpointName.isEmpty()) {
-            throw new IllegalStateException(String.format(
-                "A bean with name '%s' and type '%s' is annotated with '%s' "
-                    + "annotation but is an anonymous class hence has no name. ",
-                name, beanType, Endpoint.class)
-                + String.format(
-                "Either modify the bean declaration so that it is not an "
-                    + "anonymous class or specify an endpoint " +
-                    "name in the '%s' annotation",
-                Endpoint.class));
-        }
-        String validationError = endpointNameChecker.check(endpointName);
-        if (validationError != null) {
-            throw new IllegalStateException(
-                String.format("Endpoint name '%s' is invalid, reason: '%s'",
-                    endpointName, validationError));
-        }
-
-        vaadinEndpoints.put(endpointName.toLowerCase(Locale.ENGLISH),
-            new VaadinEndpointData(endpointBean, beanType.getMethods()));
-    }
-
-    protected Class<?> resolveUserClass(Class<?> beanClass) {
+    protected Class<?> resolveUserClass(Object instance) {
         // Check the bean type instead of the implementation type in
         // case of e.g. proxies
         //Class<?> beanType = ClassUtils.getUserClass(endpointBean.getClass());
-        return beanClass;
+        return instance.getClass();
     }
-
-    static class VaadinEndpointData {
-        final Map<String, Method> methods = new HashMap<>();
-        private final Object vaadinEndpointObject;
-
-        private VaadinEndpointData(Object vaadinEndpointObject,
-                                   Method... endpointMethods) {
-            this.vaadinEndpointObject = vaadinEndpointObject;
-            Stream.of(endpointMethods)
-                .filter(method -> method.getDeclaringClass() != Object.class
-                    && !method.isBridge())
-                .forEach(method -> methods.put(
-                    method.getName().toLowerCase(Locale.ENGLISH),
-                    method));
-        }
-
-        private Optional<Method> getMethod(String methodName) {
-            return Optional.ofNullable(methods.get(methodName));
-        }
-
-        private Object getEndpointObject() {
-            return vaadinEndpointObject;
-        }
-    }
-
 }
 

@@ -20,33 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.mcollovati.vertx.vaadin.connect;
+package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
+public class VertxAccessAnnotationCheckerTest {
 
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
-
-@HandlesTypes({Endpoint.class})
-public class VertxConnectEndpointsInitializer implements ClassLoaderAwareServletContainerInitializer {
-
-    @Override
-    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
-
-        if (set == null) {
-            return;
-        }
-
-        ClassFinder finder = new ClassFinder.DefaultClassFinder(set);
-        Set<Class<?>> endpoints = finder.getAnnotatedClasses(Endpoint.class);
-        new VaadinServletContext(ctx)
-            .setAttribute(VaadinConnectEndpointRegistry.class, VaadinConnectEndpointRegistry.fromClasses(endpoints));
-
-
-    }
 }
