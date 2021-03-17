@@ -44,7 +44,7 @@ public final class Sync {
         try {
             Promise<T> p = Promise.promise();
             Future<T> f = p.future();
-            f.setHandler(ar -> {
+            f.onComplete(ar -> {
                 countDownLatch.countDown();
                 if (ar.failed()) {
                     throw new VertxException(ar.cause());

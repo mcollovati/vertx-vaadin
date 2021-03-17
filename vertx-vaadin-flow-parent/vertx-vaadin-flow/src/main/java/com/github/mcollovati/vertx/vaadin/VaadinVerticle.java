@@ -91,7 +91,7 @@ public class VaadinVerticle extends AbstractVerticle {
             .<Void>map(router -> {
                 serviceInitialized(vaadinService, router);
                 return null;
-            }).setHandler(startFuture);
+            }).onComplete(startFuture);
 
         // Perform potential synchronous startup tasks
         start();
@@ -125,7 +125,7 @@ public class VaadinVerticle extends AbstractVerticle {
         }, t -> {
             log.error("Cannot start http server", t);
             return Future.failedFuture(t);
-        }).setHandler(promise);
+        }).onComplete(promise);
         return promise.future();
     }
 
@@ -247,7 +247,7 @@ public class VaadinVerticle extends AbstractVerticle {
                     VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
                     vaadinService = vertxVaadin.vaadinService();
                     return vertxVaadin;
-                }).setHandler(event);
+                }).onComplete(event);
             } catch (ServletException ex) {
                 promise.fail(ex);
             }

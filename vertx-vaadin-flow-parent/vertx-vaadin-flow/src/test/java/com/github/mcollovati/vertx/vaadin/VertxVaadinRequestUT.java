@@ -48,6 +48,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.impl.SocketAddressImpl;
@@ -75,6 +76,8 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -407,8 +410,11 @@ public class VertxVaadinRequestUT {
 
     @Test
     public void shouldDelegateGetMethod() {
-        vaadinRequest.getMethod();
-        verify(httpServerRequest).rawMethod();
+        HttpMethod.values().forEach(met -> {
+            when(httpServerRequest.method()).thenReturn(met);
+            assertThat(vaadinRequest.getMethod()).isEqualTo(met.name());
+        });
+        verify(httpServerRequest,times(HttpMethod.values().size())).method();
     }
 
     @Test

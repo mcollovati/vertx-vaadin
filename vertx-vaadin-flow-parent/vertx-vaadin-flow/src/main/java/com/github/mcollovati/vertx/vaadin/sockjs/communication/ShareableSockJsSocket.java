@@ -23,15 +23,16 @@
 package com.github.mcollovati.vertx.vaadin.sockjs.communication;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.shareddata.Shareable;
 import io.vertx.core.streams.Pipe;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.handler.sockjs.SockJSSocket;
 
@@ -72,23 +73,23 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
-    public SockJSSocket write(Buffer data) {
+    public Future<Void> write(Buffer data) {
         return socket.write(data);
     }
 
     @Override
-    public SockJSSocket write(String data) {
+    public Future<Void> write(String data) {
         return socket.write(data);
     }
 
     @Override
-    public SockJSSocket write(String data, Handler<AsyncResult<Void>> handler) {
-        return socket.write(data, handler);
+    public void write(String data, Handler<AsyncResult<Void>> handler) {
+        socket.write(data, handler);
     }
 
     @Override
-    public SockJSSocket write(Buffer data, Handler<AsyncResult<Void>> handler) {
-        return socket.write(data, handler);
+    public void write(Buffer data, Handler<AsyncResult<Void>> handler) {
+        socket.write(data, handler);
     }
 
     @Override
@@ -107,8 +108,8 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
-    public void end() {
-        socket.end();
+    public Future<Void> end() {
+        return socket.end();
     }
 
     @Override
@@ -142,6 +143,11 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
+    public RoutingContext routingContext() {
+        return socket.routingContext();
+    }
+
+    @Override
     public Session webSession() {
         return socket.webSession();
     }
@@ -152,7 +158,7 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
-    public ReadStream<Buffer> fetch(long amount) {
+    public SockJSSocket fetch(long amount) {
         return socket.fetch(amount);
     }
 
@@ -162,8 +168,8 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
-    public void pipeTo(WriteStream<Buffer> dst) {
-        socket.pipeTo(dst);
+    public Future<Void> pipeTo(WriteStream<Buffer> dst) {
+        return socket.pipeTo(dst);
     }
 
     @Override
@@ -177,8 +183,8 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
-    public void end(Buffer data) {
-        socket.end(data);
+    public Future<Void> end(Buffer data) {
+        return socket.end(data);
     }
 
     @Override
