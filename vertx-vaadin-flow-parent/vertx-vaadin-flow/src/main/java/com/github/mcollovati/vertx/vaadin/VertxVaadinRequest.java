@@ -276,7 +276,7 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     @Override
     public String getMethod() {
-        return request.rawMethod();
+        return request.method().name();
     }
 
     @Override

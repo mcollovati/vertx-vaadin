@@ -253,7 +253,7 @@ public class VertxVaadin {
 
         initSockJS(vaadinRouter, sessionHandler);
 
-        vaadinRouter.route("/*").handler(StaticHandler.create("META-INF/resources"));
+        vaadinRouter.routeWithRegex("/.+").handler(StaticHandler.create("META-INF/resources"));
         vaadinRouter.route("/*").blockingHandler(this::handleVaadinRequest);
 
         serviceInitialized(vaadinRouter);
@@ -279,6 +279,7 @@ public class VertxVaadin {
         if (config.supportsSockJS()) {
 
             SockJSHandlerOptions options = new SockJSHandlerOptions()
+                .setRegisterWriteHandler(true)
                 .setSessionTimeout(config.sessionTimeout())
                 .setHeartbeatInterval(config.sockJSHeartbeatInterval());
             SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
@@ -329,7 +330,7 @@ public class VertxVaadin {
     }
 
     public static VertxVaadin create(Vertx vertx, JsonObject config) {
-        StartupContext startupContext = Sync.await(completer -> StartupContext.of(vertx, new VaadinOptions(config)).setHandler(completer));
+        StartupContext startupContext = Sync.await(completer -> StartupContext.of(vertx, new VaadinOptions(config)).onComplete(completer));
         return create(vertx, startupContext);
     }
 

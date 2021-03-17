@@ -29,6 +29,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -67,12 +70,13 @@ public class SessionStoreAdapterIT {
 
         final Async async = context.async();
 
-        vertx.createHttpClient().getNow(PORT, "localhost", "/",
-            response -> response.handler(b -> {
+        vertx.createHttpClient().request(HttpMethod.GET, PORT, "localhost", "/")
+            .flatMap(HttpClientRequest::send)
+            .flatMap(HttpClientResponse::body)
+            .onComplete(b -> {
                 context.assertTrue(b.toString().contains("Done"));
                 async.complete();
-            })
-        );
+            });
     }
 
     @VaadinServletConfiguration(productionMode = false, ui = MyUi.class)

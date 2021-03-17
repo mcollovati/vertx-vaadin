@@ -174,7 +174,7 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
     }
 
     private void onConnect(SockJSSocket sockJSSocket) {
-        RoutingContext routingContext = CurrentInstance.get(RoutingContext.class);
+        RoutingContext routingContext = sockJSSocket.routingContext();
 
         String uuid = sockJSSocket.writeHandlerID();
         connectedSocketsLocalMap.put(uuid, asSharable(sockJSSocket));

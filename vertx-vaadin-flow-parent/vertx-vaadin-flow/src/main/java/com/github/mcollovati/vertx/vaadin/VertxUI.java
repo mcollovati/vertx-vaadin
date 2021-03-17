@@ -68,7 +68,7 @@ public class VertxUI {
     }
 
     public void access(Command command, Handler<AsyncResult<Void>> handler) {
-        access(command).setHandler(handler);
+        access(command).onComplete(handler);
     }
 
     public Future<Void> schedule(UIRunnable task, long delay, TimeUnit unit) {
