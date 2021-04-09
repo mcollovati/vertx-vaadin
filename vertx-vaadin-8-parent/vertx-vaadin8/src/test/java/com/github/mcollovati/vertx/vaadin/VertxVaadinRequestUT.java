@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.utils.RandomStringGenerator;
 import com.github.mcollovati.vertx.web.ExtendedSession;
@@ -46,11 +47,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.web.Cookie;
+import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.impl.ParsableLanguageValue;
@@ -66,11 +68,13 @@ import org.mockito.junit.MockitoRule;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.list;
+import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -294,7 +298,7 @@ public class VertxVaadinRequestUT {
             .setMaxAge(90L).setPath("path").setSecure(true);
         Cookie cookie2 = Cookie.cookie("cookie2", "value2");
         when(routingContext.cookieCount()).thenReturn(0).thenReturn(2);
-        when(routingContext.cookies()).thenReturn(new LinkedHashSet<>(Arrays.asList(cookie1, cookie2)));
+        when(routingContext.cookieMap()).thenReturn(Stream.of(cookie1, cookie2).collect(Collectors.toMap(Cookie::getName, identity())));
         assertThat(vaadinRequest.getCookies()).isNull();
         javax.servlet.http.Cookie[] cookies = vaadinRequest.getCookies();
         assertThat(cookies).hasSize(2);
@@ -394,8 +398,11 @@ public class VertxVaadinRequestUT {
 
     @Test
     public void shouldDelegateGetMethod() {
-        vaadinRequest.getMethod();
-        verify(httpServerRequest).rawMethod();
+        HttpMethod.values().forEach(met -> {
+            when(httpServerRequest.method()).thenReturn(met);
+            assertThat(vaadinRequest.getMethod()).isEqualTo(met.name());
+        });
+        verify(httpServerRequest,times(HttpMethod.values().size())).method();
     }
 
     @Test

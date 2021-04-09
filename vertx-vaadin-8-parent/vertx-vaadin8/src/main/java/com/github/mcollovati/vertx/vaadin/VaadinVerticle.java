@@ -33,6 +33,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
@@ -54,7 +55,7 @@ public class VaadinVerticle extends AbstractVerticle {
     private VertxVaadinService vaadinService;
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Promise<Void> startFuture) throws Exception {
         log.info("Starting vaadin verticle " + getClass().getName());
 
         VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
@@ -82,7 +83,7 @@ public class VaadinVerticle extends AbstractVerticle {
         router.mountSubRouter(mountPoint, vertxVaadin.router());
 
         Integer httpPort = httpPort();
-        httpServer.requestHandler(router::accept).listen(httpPort);
+        httpServer.requestHandler(router).listen(httpPort);
 
         serviceInitialized(vaadinService, router);
 
@@ -155,7 +156,7 @@ public class VaadinVerticle extends AbstractVerticle {
 
                     if (VaadinServlet.PARAMETER_WIDGETSET.equals(name.value())
                         && method.getDefaultValue().equals(stringValue)) {
-                        // Do not set the widgetset to anything so that the
+                        // Do not set the VertxVaadinRequestUTwidgetset to anything so that the
                         // framework can fallback to the default. Setting
                         // anything to the init parameter will force that into
                         // use and e.g. AppWidgetset will not be used even

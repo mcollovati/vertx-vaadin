@@ -45,7 +45,6 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -178,7 +177,6 @@ public class VertxVaadin {
             .setStatusCode(302).end()
         );
 
-        vaadinRouter.route().handler(CookieHandler.create());
         vaadinRouter.route().handler(BodyHandler.create());
 
         // Disable SessionHandler for /VAADIN/ static resources
@@ -192,7 +190,7 @@ public class VertxVaadin {
                     Objects.toString(ctx.request().getParam("compressed"), "")
                 )
             ));
-        vaadinRouter.route("/VAADIN/*").handler(StaticHandler.create("VAADIN", getClass().getClassLoader()));
+        vaadinRouter.route("/VAADIN/*").handler(StaticHandler.create("VAADIN"));
 
         initSockJS(vaadinRouter, sessionHandler);
 
@@ -254,7 +252,7 @@ public class VertxVaadin {
         MessageProducer<String> sessionExpiredProducer = sessionExpiredProducer(service);
         store.expirationHandler(res -> {
             if (res.succeeded()) {
-                sessionExpiredProducer.send(res.result());
+                sessionExpiredProducer.write(res.result());
             } else {
                 res.cause().printStackTrace();
             }
