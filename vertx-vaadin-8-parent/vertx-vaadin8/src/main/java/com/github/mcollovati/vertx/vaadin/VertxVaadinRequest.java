@@ -180,7 +180,7 @@ public class VertxVaadinRequest implements VaadinRequest {
     @Override
     public Cookie[] getCookies() {
         if (routingContext.cookieCount() > 0) {
-            return routingContext.cookies().stream().map(CookieUtils::fromVertxCookie).toArray(Cookie[]::new);
+            return routingContext.cookieMap().values().stream().map(CookieUtils::fromVertxCookie).toArray(Cookie[]::new);
         }
         return null;
     }
@@ -250,7 +250,7 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     @Override
     public String getMethod() {
-        return request.rawMethod();
+        return request.method().name();
     }
 
     @Override

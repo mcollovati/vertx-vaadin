@@ -33,7 +33,7 @@ import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 class CookieUtils {
 
 
-    static Cookie fromVertxCookie(io.vertx.ext.web.Cookie cookie) {
+    static Cookie fromVertxCookie(io.vertx.core.http.Cookie cookie) {
         io.netty.handler.codec.http.cookie.Cookie decoded = ClientCookieDecoder.STRICT.decode(cookie.encode());
         Cookie out = new Cookie(decoded.name(), decoded.value());
         Optional.ofNullable(decoded.domain()).ifPresent(out::setDomain);
@@ -48,8 +48,8 @@ class CookieUtils {
         return out;
     }
 
-    public static io.vertx.ext.web.Cookie toVertxCookie(Cookie cookie) {
-        return io.vertx.ext.web.Cookie.cookie(cookie.getName(), cookie.getValue())
+    public static io.vertx.core.http.Cookie toVertxCookie(Cookie cookie) {
+        return io.vertx.core.http.Cookie.cookie(cookie.getName(), cookie.getValue())
             .setMaxAge(cookie.getMaxAge()).setSecure(cookie.getSecure())
             .setHttpOnly(cookie.isHttpOnly()).setPath(cookie.getPath())
             .setDomain(cookie.getDomain());

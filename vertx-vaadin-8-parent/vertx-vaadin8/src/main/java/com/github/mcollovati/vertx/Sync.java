@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -41,21 +42,21 @@ public final class Sync {
     public static <T> T await(Consumer<Handler<AsyncResult<T>>> task) {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         try {
-            Future<T> f = Future.<T>future().setHandler(ar -> {
+            Promise<T> p = Promise.promise();
+            Future<T> f = p.future();
+            f.onComplete(ar -> {
                 countDownLatch.countDown();
                 if (ar.failed()) {
                     throw new VertxException(ar.cause());
                 }
             });
-            task.accept(f.completer());
+            task.accept(p);
             countDownLatch.await();
             return f.result();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new VertxException(e);
         }
-
     }
-
 
 }
