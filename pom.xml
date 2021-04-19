@@ -88,7 +88,7 @@
         <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
 
         <vertx.version>3.8.3</vertx.version>
-        <vaadin.version>8.8.5</vaadin.version>
+        <vaadin.version>19.0.5</vaadin.version>
         <vaadin.platform.version>14.1.22</vaadin.platform.version>
         <vaadin.flow.version>2.1.7</vaadin.flow.version>
 
