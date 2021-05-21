@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>1.0.v8v14.3</version>
+    <version>1.0.v8v14.4</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin root Pom</description>
@@ -89,8 +89,8 @@
 
         <vertx.version>4.0.3</vertx.version>
         <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>14.4.0</vaadin.platform.version>
-        <vaadin.flow.version>2.4.0</vaadin.flow.version>
+        <vaadin.platform.version>14.6.0</vaadin.platform.version>
+        <vaadin.flow.version>2.6.0</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
