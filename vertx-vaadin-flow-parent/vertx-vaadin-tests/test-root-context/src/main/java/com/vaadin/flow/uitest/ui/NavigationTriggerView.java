@@ -36,25 +36,26 @@ public class NavigationTriggerView extends AbstractDivView
         // Cannot use the RouterLink component since these views are not
         // registered as regular views.
         Element routerLink = ElementFactory
-            .createRouterLink(CLASS_NAME + "/routerlink", "Router link");
+                .createRouterLink(CLASS_NAME + "/routerlink/", "Router link");
         routerLink.setAttribute("id", "routerlink");
 
         Element navigateButton = ElementFactory.createButton("UI.navigate");
         navigateButton.addEventListener("click",
-            e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
+                e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
         navigateButton.setAttribute("id", "navigate");
 
         Element forwardButton = ElementFactory.createButton("forward");
         forwardButton.addEventListener("click", e -> getUI().get()
-            .navigate(NavigationTriggerView.class, "forward"));
+                .navigate(NavigationTriggerView.class, "forward"));
         forwardButton.setAttribute("id", "forwardButton");
 
         Element rerouteButton = ElementFactory.createButton("reroute");
         rerouteButton.addEventListener("click", e -> getUI().get()
-            .navigate(NavigationTriggerView.class, "reroute"));
+                .navigate(NavigationTriggerView.class, "reroute"));
         rerouteButton.setAttribute("id", "rerouteButton");
 
-        getElement().appendChild(routerLink, navigateButton, forwardButton, rerouteButton);
+        getElement().appendChild(routerLink, navigateButton, forwardButton,
+                rerouteButton);
     }
 
     public static String buildMessage(String path, NavigationTrigger trigger,
