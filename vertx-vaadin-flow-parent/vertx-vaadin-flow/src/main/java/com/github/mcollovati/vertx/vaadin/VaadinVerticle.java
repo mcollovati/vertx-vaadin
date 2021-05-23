@@ -42,12 +42,7 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
-import com.vaadin.flow.server.startup.AnnotationValidator;
-import com.vaadin.flow.server.startup.DevModeInitializer;
-import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
-import com.vaadin.flow.server.startup.RouteRegistryInitializer;
-import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
-import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
+import com.vaadin.flow.server.startup.*;
 import com.vaadin.flow.shared.ApplicationConstants;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -231,6 +226,9 @@ public class VaadinVerticle extends AbstractVerticle {
 
             Promise<Void> initializerFuture = Promise.promise();
             try {
+                new LookupServletContainerInitializer()
+                        .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
+
                 finalizeVaadinConfig(vaadinConfig);
                 runInitializers(startupContext, initializerFuture, map);
                 initializerFuture.future().map(unused -> {
@@ -238,6 +236,8 @@ public class VaadinVerticle extends AbstractVerticle {
                     vaadinService = vertxVaadin.vaadinService();
                     return vertxVaadin;
                 }).onComplete(event);
+            } catch (ServletException ex) {
+                initializerFuture.fail(new VaadinConfigurationException(ex.getMessage(), ex));
             } catch (VaadinConfigurationException ex) {
                 initializerFuture.fail(ex);
             }
@@ -302,7 +302,7 @@ public class VaadinVerticle extends AbstractVerticle {
         Stream.of(
             RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
             WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
-            DevModeInitializer.class
+            DevModeInitializer.class, LookupServletContainerInitializer.class
         ).forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }
