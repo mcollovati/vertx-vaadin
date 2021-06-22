@@ -208,6 +208,7 @@ public class VertxVaadin {
         vaadinRouter.routeWithRegex("^(?!/(VAADIN(?!/dynamic)|frontend|frontend-es6|webjars|webroot)/).*$").handler(sessionHandler);
 
         // Serve push javascript
+        StaticHandler vaadinStatic = StaticHandler.create("VAADIN/static");
         StaticHandler metaInfVaadinStatic = StaticHandler.create("META-INF/resources/VAADIN/static");
 
         String pushJavascript = String.format(
@@ -220,19 +221,22 @@ public class VertxVaadin {
         if (DevModeHandler.getDevModeHandler() != null) {
             logger.info("Starting DevModeHandler proxy");
             HttpReverseProxy proxy = HttpReverseProxy.create(vertx, () -> DevModeHandler.getDevModeHandler().getPort());
-            vaadinRouter.routeWithRegex(".+\\.js$").blockingHandler(proxy::forward);
+            vaadinRouter.routeWithRegex("^/themes\\/[\\s\\S]+?\\/").handler(proxy::forward);
+            vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(proxy::forward);
         }
 
         //
         vaadinRouter.route("/VAADIN/static/client/*")
             .handler(StaticHandler.create("META-INF/resources/VAADIN/static/client"));
         vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build"));
-        vaadinRouter.route("/VAADIN/static/*").handler(StaticHandler.create("VAADIN/static"));
+        vaadinRouter.route("/VAADIN/static/*").handler(vaadinStatic);
         vaadinRouter.route("/VAADIN/static/*").handler(metaInfVaadinStatic);
+        vaadinRouter.routeWithRegex("^/themes\\/[\\s\\S]+?\\/").handler(metaInfVaadinStatic);
         vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN"));
         vaadinRouter.route("/webroot/*").handler(StaticHandler.create("webroot"));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("webroot"));
         vaadinRouter.route("/webjars/*").handler(StaticHandler.create("META-INF/resources/webjars"));
+
 
         vaadinRouter.routeWithRegex("/frontend/bower_components/(?<webjar>.*)").handler(ctx -> {
                 logger.trace("Rerouting bower component to {}/webjars/{}",
