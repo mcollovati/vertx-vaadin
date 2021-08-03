@@ -24,14 +24,18 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import java.util.logging.Level;
+
 public class SessionCloseLogoutIT extends ChromeBrowserTest {
 
     @Test
     public void changeOnClient() throws InterruptedException {
         open();
-        if (hasClientIssue("7600")) {
-            return;
-        }
+        // clean all messages: if there is an error in the console it won't
+        // appear anymore
+        getLogEntries(Level.ALL).forEach(logEntry -> {
+            // no-op
+        });
 
         $(NativeButtonElement.class).first().click();
 

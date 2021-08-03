@@ -217,7 +217,7 @@ public class VertxVaadinConnectEndpointServiceTest {
     }
 
     private void mockDenyAll() {
-        when(principal.isAuthorized(any(), any()))
+        when(principal.isAuthorized(anyString(), any()))
                 .then(i -> {
                     i.getArgumentAt(1, Handler.class).handle(Future.succeededFuture(false));
                     return principal;
@@ -419,7 +419,7 @@ public class VertxVaadinConnectEndpointServiceTest {
     public void should_CallMethodAnonymously_When_UserPrincipalIsInRole() {
         //when(routingContextMock.isUserInRole("FOO_ROLE")).thenReturn(true);
         reset(principal);
-        when(principal.isAuthorized(any(), any()))
+        when(principal.isAuthorized(anyString(), any()))
                 .then(i -> {
                     boolean inRole = "FOO_ROLE".equals(i.getArgumentAt(0, String.class));
                     i.getArgumentAt(1, Handler.class).handle(Future.succeededFuture(inRole));

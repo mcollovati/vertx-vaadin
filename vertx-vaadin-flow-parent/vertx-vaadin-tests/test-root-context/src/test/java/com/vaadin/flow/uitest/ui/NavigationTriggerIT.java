@@ -20,6 +20,7 @@ import java.util.List;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -52,28 +53,36 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
             "navigate");
 
-        if (hasClientIssue("7572")) {
-            return;
-        }
+    }
+
+    @Test
+    @Ignore("Ignored because of fusion issue https://github.com/vaadin/flow/issues/10513")
+    public void testNavigationTriggers_back_forward() {
+        String url = getTestURL() + "/abc/";
+        getDriver().get(url);
+
+        findElement(By.id("routerlink")).click();
+
+        findElement(By.id("navigate")).click();
 
         getDriver().navigate().back();
         assertMessageCount(4);
         assertLastMessage("/routerlink",
-            isClientRouter() ? NavigationTrigger.CLIENT_SIDE
-                : NavigationTrigger.HISTORY,
-            "routerlink");
+                isClientRouter() ? NavigationTrigger.CLIENT_SIDE
+                        : NavigationTrigger.HISTORY,
+                "routerlink");
 
         getDriver().navigate().forward();
         assertMessageCount(5);
         assertLastMessage("/navigate",
-            isClientRouter() ? NavigationTrigger.CLIENT_SIDE
-                : NavigationTrigger.HISTORY,
-            "navigate");
+                isClientRouter() ? NavigationTrigger.CLIENT_SIDE
+                        : NavigationTrigger.HISTORY,
+                "navigate");
 
         findElement(By.id("forwardButton")).click();
         assertMessageCount(6);
         assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC,
-            "forwarded");
+                "forwarded");
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);

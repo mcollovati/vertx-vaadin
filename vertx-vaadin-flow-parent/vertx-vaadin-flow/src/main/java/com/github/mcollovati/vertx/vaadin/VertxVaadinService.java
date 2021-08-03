@@ -31,6 +31,7 @@ import java.util.Objects;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
+import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -128,11 +129,11 @@ public class VertxVaadinService extends VaadinService {
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
         if (getDeploymentConfiguration().useV14Bootstrap()) {
-            handlers.add(0, VertxBootstrapHandler.patchIfNeeded());
+            handlers.add(0, new VertxBootstrapHandler());
             logger.debug("Using '{}' in deprecated V14 bootstrapping", BootstrapHandler.class.getName());
             UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
         } else {
-            handlers.add(0, new IndexHtmlRequestHandler());
+            handlers.add(0, new VertxIndexHtmlRequestHandler());
             logger.debug("Using '{}' in client mode bootstrapping", IndexHtmlRequestHandler.class.getName());
         }
     }

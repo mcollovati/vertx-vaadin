@@ -151,6 +151,7 @@
                                      <followSymlinks>false</followSymlinks>
                                  </fileset>
                              </filesets>
+                             <skip>true</skip>
                          </configuration>
                      </execution>
                  </executions>
@@ -180,7 +181,7 @@
                             <goal>wait</goal>
                         </goals>
                         <configuration>
-                            <url>http://localhost:8888/view/</url>
+                            <url>http://localhost:8888/__check-start</url>
                             <timeout>${verticleStartTimeout}</timeout>
                             <skip>${skipTests}</skip>
                         </configuration>

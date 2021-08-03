@@ -25,6 +25,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractPushUpdateDivView extends Div {
     private AtomicInteger count = new AtomicInteger();

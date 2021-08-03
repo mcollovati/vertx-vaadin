@@ -43,6 +43,7 @@ import java.lang.reflect.Method;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -76,7 +77,7 @@ public class VertxConnectAccessCheckerTest {
         when(routingContextMock.user()).thenReturn(user);
         when(requestMock.getHeader("X-CSRF-Token"))
             .thenReturn("Vaadin CCDM");
-        when(user.isAuthorized(any(), any()))
+        when(user.isAuthorized(anyString(), any()))
             .then(i -> {
                 boolean inRole = "ROLE_USER".equals(i.getArgumentAt(0, String.class));
                 i.getArgumentAt(1, Handler.class).handle(Future.succeededFuture(inRole));

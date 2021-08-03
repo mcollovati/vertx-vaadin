@@ -5,6 +5,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.ParentLayout;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.VaadinService;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ public class TestAppShell implements AppShellConfigurator {
 
         VaadinService service = settings.getRequest().getService();
         service.getRouter().getRegistry()
-            .getNavigationTarget(settings.getRequest().getPathInfo())
+            .getNavigationTarget(PathUtil.trimPath(settings.getRequest().getPathInfo()))
             .flatMap(this::findTestPushAnnotation)
             .ifPresent(push -> {
                 logger.debug("Setting push {}", push.value());
