@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: [ "master", "vaadin-14.2", "vaadin-18", "vaadin-19" ]
+        branch: [ "master", "vaadin-14.2", "development" ]
 
     steps:
       - uses: actions/checkout@v2
