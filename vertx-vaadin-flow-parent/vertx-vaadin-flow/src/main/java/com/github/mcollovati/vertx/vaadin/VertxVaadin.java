@@ -209,7 +209,8 @@ public class VertxVaadin {
 
         // Serve push javascript
         StaticHandler vaadinStatic = StaticHandler.create("VAADIN/static");
-        StaticHandler metaInfVaadinStatic = StaticHandler.create("META-INF/resources/VAADIN/static");
+        StaticHandler metaInfVaadinStatic = StaticHandler.create("META-INF/VAADIN/static");
+        StaticHandler metaInfResourcesVaadinStatic = StaticHandler.create("META-INF/resources/VAADIN/static");
 
         String pushJavascript = String.format(
             "META-INF/resources/VAADIN/static/push/vaadinPush%s",
@@ -231,6 +232,7 @@ public class VertxVaadin {
         vaadinRouter.route("/VAADIN/build/*").handler(StaticHandler.create("META-INF/VAADIN/build"));
         vaadinRouter.route("/VAADIN/static/*").handler(vaadinStatic);
         vaadinRouter.route("/VAADIN/static/*").handler(metaInfVaadinStatic);
+        vaadinRouter.route("/VAADIN/static/*").handler(metaInfResourcesVaadinStatic);
         vaadinRouter.routeWithRegex("^/themes\\/[\\s\\S]+?\\/").handler(metaInfVaadinStatic);
         vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(StaticHandler.create("VAADIN"));
         vaadinRouter.route("/webroot/*").handler(StaticHandler.create("webroot"));
