@@ -90,12 +90,14 @@ repositories {
 |14.0|3.7|vertx-vaadin-flow:14.0.0|[![CircleCI](https://img.shields.io/badge/stable-green.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/134)|
 |14.0|3.8.3|vertx-vaadin-flow:14.0.10|[![CircleCI](https://img.shields.io/badge/stable-green.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14)|
 |14.1|3.8.3|vertx-vaadin-flow:14.1.0|[![CircleCI](https://img.shields.io/badge/stable-green.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/master)|
-|14.2|3.8.3|vertx-vaadin-flow:14.2.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14.2.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14.2)|
+|14.2|3.8.3|vertx-vaadin-flow:14.2.x|[![CircleCI](https://img.shields.io/badge/stable-green.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/672)|
+|14.6|4.0.3|vertx-vaadin-flow:14.4.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14.2.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-14.2)|
 |15|3.8.5|vertx-vaadin-flow:15.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-15)|
 |16|3.8.5|vertx-vaadin-flow:16.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-16)|
 |17|3.8.5|vertx-vaadin-flow:17.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-17)|
-|18|3.8.5|vertx-vaadin-flow:18.0.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-18.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-18)|
-|19|3.8.5|vertx-vaadin-flow:19.0.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
+|18|3.8.5|vertx-vaadin-flow:18.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-18)|
+|19|3.8.5|vertx-vaadin-flow:19.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-19)|
+|20|4.0.3|vertx-vaadin-flow:20.0.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
 
 ## Documentation
 
