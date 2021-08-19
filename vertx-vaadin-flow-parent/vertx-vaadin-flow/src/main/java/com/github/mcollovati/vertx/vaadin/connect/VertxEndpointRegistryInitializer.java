@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.github.mcollovati.vertx.support.FusionWorkAround;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
@@ -44,7 +45,7 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
         if (set == null) {
             return;
         }
-
+        FusionWorkAround.install();
         ClassFinder finder = new ClassFinder.DefaultClassFinder(set);
         Set<Class<?>> endpoints = finder.getAnnotatedClasses(Endpoint.class);
         new VaadinServletContext(ctx).setAttribute(VaadinEndpointRegistry.class, fromClasses(endpoints));

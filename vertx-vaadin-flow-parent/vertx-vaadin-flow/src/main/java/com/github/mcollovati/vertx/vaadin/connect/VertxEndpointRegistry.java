@@ -65,7 +65,7 @@ public class VertxEndpointRegistry extends EndpointRegistry implements VaadinEnd
         } catch (IllegalStateException e) {
             throw e;
         } catch (Throwable e) {
-            throw new IllegalStateException("Cannot invoke base class 'registerEndpoint' method");
+            throw new IllegalStateException("Cannot invoke base class 'registerEndpoint' method", e);
         }
     }
 
