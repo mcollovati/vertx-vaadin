@@ -52,6 +52,8 @@ public class TestBootVerticle extends VaadinVerticle {
                     e.printStackTrace();
                     LOGGER.trace("======================== check start. dev mod err ");
                 }
+            } else if (service.getDeploymentConfiguration().isProductionMode()) {
+                response.setStatusCode(200);
             }
             LOGGER.trace("======================== check start -> " + response.getStatusCode());
             response.end();

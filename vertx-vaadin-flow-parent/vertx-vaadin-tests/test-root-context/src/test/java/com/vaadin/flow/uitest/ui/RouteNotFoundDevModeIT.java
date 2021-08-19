@@ -15,9 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.DevModeOnly;
+import com.vaadin.flow.DevModeRule;
+import org.junit.Rule;
 import org.junit.Test;
 
+@DevModeOnly
 public class RouteNotFoundDevModeIT extends RouteNotFoundIT {
+
+    @Rule
+    public DevModeRule devModeRule = new DevModeRule();
 
     @Test
     public void notFoundDevMode() {

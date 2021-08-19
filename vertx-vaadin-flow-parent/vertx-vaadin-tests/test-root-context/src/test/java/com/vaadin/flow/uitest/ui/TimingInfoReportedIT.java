@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.DevModeOnly;
+import com.vaadin.flow.DevModeRule;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -24,7 +27,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 /**
  * This test only works in DevMode since it needs client logging enabled.
  */
+@DevModeOnly
 public class TimingInfoReportedIT extends ChromeBrowserTest {
+
+    @Rule
+    public DevModeRule devModeRule = new DevModeRule();
+
     @Test
     public void ensureTimingsAvailable() {
         // The very first request can contain 0 as

@@ -18,8 +18,11 @@ package com.vaadin.flow.uitest.ui.dependencies;
 import java.util.List;
 import java.util.logging.Level;
 
+import com.vaadin.flow.DevModeOnly;
+import com.vaadin.flow.DevModeRule;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -28,6 +31,9 @@ import org.openqa.selenium.logging.LogEntry;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class DynamicDependencyIT extends ChromeBrowserTest {
+
+    @Rule
+    public DevModeRule devModeRule = new DevModeRule();
 
     @Test
     public void dynamicDependencyIsExecutedBeforeOtherMessageProcessing() {
@@ -39,17 +45,20 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
     }
 
     @Test
+    @DevModeOnly
     public void dependecyIsNoPromise_errorLogged() {
         testErrorCase("nopromise", "result is not a Promise");
     }
 
     @Test
+    @DevModeOnly
     public void dependecyLoaderThrows_errorLogged()
             throws InterruptedException {
         testErrorCase("throw", "Throw on purpose");
     }
 
     @Test
+    @DevModeOnly
     public void dependecyLoaderRejects_errorLogged()
             throws InterruptedException {
         testErrorCase("reject", "Reject on purpose");
