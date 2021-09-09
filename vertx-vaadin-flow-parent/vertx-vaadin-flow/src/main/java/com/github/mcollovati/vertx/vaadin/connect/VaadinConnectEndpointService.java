@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.fusion.Endpoint;
 
 /**
  * The service that is responsible for processing Vaadin Connect requests.

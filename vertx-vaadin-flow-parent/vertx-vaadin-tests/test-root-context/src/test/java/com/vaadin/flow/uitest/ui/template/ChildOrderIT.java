@@ -47,7 +47,7 @@ public class ChildOrderIT extends ChromeBrowserTest {
     @Test
     public void appendElementsFromServer_elementsAreAddedAfterExistingOnes() {
         TestBenchElement container = root.$(TestBenchElement.class)
-            .id("containerWithElement");
+                .id("containerWithElement");
 
         assertNodeOrder(container, "Client child");
 
@@ -56,12 +56,12 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
         clickAndWaitForContainerToChange(container, "addChildToContainer1");
         assertNodeOrder(container, "Client child", "Server child 1",
-            "Server child 2");
+                "Server child 2");
 
         clickAndWaitForContainerToChange(container,
-            "addClientSideChildToContainer1");
+                "addClientSideChildToContainer1");
         assertNodeOrder(container, "Client child", "Server child 1",
-            "Server child 2", "Client child");
+                "Server child 2", "Client child");
 
         /*
          * Client side nodes added after the server side ones are not considered
@@ -69,23 +69,23 @@ public class ChildOrderIT extends ChromeBrowserTest {
          */
         clickAndWaitForContainerToChange(container, "addChildToContainer1");
         assertNodeOrder(container, "Client child", "Server child 1",
-            "Server child 2", "Server child 3", "Client child");
+                "Server child 2", "Server child 3", "Client child");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer1");
+                "removeChildFromContainer1");
         assertNodeOrder(container, "Client child", "Server child 1",
-            "Server child 2", "Client child");
+                "Server child 2", "Client child");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer1");
+                "removeChildFromContainer1");
         assertNodeOrder(container, "Client child", "Server child 1",
-            "Client child");
+                "Client child");
     }
 
     @Test
     public void prependElementsFromServer_elementsAreAddedBeforeExistingOnes() {
         TestBenchElement container = root.$(TestBenchElement.class)
-            .id("containerWithElement");
+                .id("containerWithElement");
 
         assertNodeOrder(container, "Client child");
 
@@ -94,32 +94,32 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer1");
         assertNodeOrder(container, "Client child", "Server child 2",
-            "Server child 1");
+                "Server child 1");
 
         clickAndWaitForContainerToChange(container,
-            "addClientSideChildToContainer1");
+                "addClientSideChildToContainer1");
         assertNodeOrder(container, "Client child", "Server child 2",
-            "Server child 1", "Client child");
+                "Server child 1", "Client child");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer1");
         assertNodeOrder(container, "Client child", "Server child 3",
-            "Server child 2", "Server child 1", "Client child");
+                "Server child 2", "Server child 1", "Client child");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer1");
+                "removeChildFromContainer1");
         assertNodeOrder(container, "Client child", "Server child 3",
-            "Server child 2", "Client child");
+                "Server child 2", "Client child");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer1");
+                "removeChildFromContainer1");
         assertNodeOrder(container, "Client child", "Server child 3",
-            "Client child");
+                "Client child");
     }
 
     @Test
     public void appendTextsFromServer_textsAreAddedAfterExistingOnes() {
         TestBenchElement container = root.$(TestBenchElement.class)
-            .id("containerWithText");
+                .id("containerWithText");
 
         assertNodeOrder(container, "Client text");
 
@@ -128,12 +128,12 @@ public class ChildOrderIT extends ChromeBrowserTest {
 
         clickAndWaitForContainerToChange(container, "addChildToContainer2");
         assertNodeOrder(container, "Client text", "Server text 1",
-            "Server text 2");
+                "Server text 2");
 
         clickAndWaitForContainerToChange(container,
-            "addClientSideChildToContainer2");
+                "addClientSideChildToContainer2");
         assertNodeOrder(container, "Client text", "Server text 1",
-            "Server text 2", "Client text");
+                "Server text 2", "Client text");
 
         /*
          * Client side nodes added after the server side ones are not considered
@@ -141,69 +141,70 @@ public class ChildOrderIT extends ChromeBrowserTest {
          */
         clickAndWaitForContainerToChange(container, "addChildToContainer2");
         assertNodeOrder(container, "Client text", "Server text 1",
-            "Server text 2", "Server text 3", "Client text");
+                "Server text 2", "Server text 3", "Client text");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer2");
+                "removeChildFromContainer2");
         assertNodeOrder(container, "Client text", "Server text 1",
-            "Server text 2", "Client text");
+                "Server text 2", "Client text");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer2");
+                "removeChildFromContainer2");
         assertNodeOrder(container, "Client text", "Server text 1",
-            "Client text");
+                "Client text");
     }
 
     @Test
     public void prependTextsFromServer_textsAreAddedBeforeExistingOnes() {
         TestBenchElement container = root.$(TestBenchElement.class)
-            .id("containerWithText");
+                .id("containerWithText");
 
         assertNodeOrder(container, "Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 1Client text");
+        assertNodeOrder(container, "Client text", "Server text 1");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 2", "Server text 1Client text");
+        assertNodeOrder(container, "Client text", "Server text 2",
+                "Server text 1");
 
         clickAndWaitForContainerToChange(container,
-            "addClientSideChildToContainer2");
-        assertNodeOrder(container, "Server text 2", "Server text 1Client text",
-            "Client text");
+                "addClientSideChildToContainer2");
+        assertNodeOrder(container, "Client text", "Server text 2",
+                "Server text 1", "Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
-            "Server text 1Client text", "Client text");
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Server text 2", "Server text 1", "Client text");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
-            "Server text 1", "Client text");
+                "removeChildFromContainer2");
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Server text 2", "Client text");
 
         clickAndWaitForContainerToChange(container,
-            "removeChildFromContainer2");
-        assertNodeOrder(container, "Server text 3", "Server text 2",
-            "Client text");
+                "removeChildFromContainer2");
+        assertNodeOrder(container, "Client text", "Server text 3",
+                "Client text");
     }
 
     @Test
     public void containerWithElementAddedOnConstructor_orderIsPreserved() {
         TestBenchElement container = root.$(TestBenchElement.class)
-            .id("containerWithElementAddedOnConstructor");
+                .id("containerWithElementAddedOnConstructor");
 
         assertNodeOrder(container, "Client child", "Server child 1",
-            "Server child 2");
+                "Server child 2");
     }
 
     private void clickAndWaitForContainerToChange(WebElement container,
                                                   String buttonToclick) {
         String innertText = container.getAttribute("innerText");
         TestBenchElement button = root.$(TestBenchElement.class)
-            .id(buttonToclick);
+                .id(buttonToclick);
         button.click();
         waitUntilNot(driver -> container.getAttribute("innerText")
-            .equals(innertText));
+                .equals(innertText));
     }
 
     private void assertNodeOrder(WebElement container, String... nodes) {

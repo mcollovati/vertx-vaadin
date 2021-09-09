@@ -41,6 +41,7 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 /**
  * A {@link Instantiator} wrapper that overwrites some Vaadin implementations.
  */
+@Deprecated
 class VertxVaadinInstantiator implements Instantiator {
 
     private final Instantiator delegate;
@@ -57,9 +58,11 @@ class VertxVaadinInstantiator implements Instantiator {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getOrCreate(Class<T> type) {
+        /*
         if (BrowserLiveReloadAccess.class.equals(type)) {
             return (T) new VertxVaadinBrowserLiveReload.Access();
         }
+         */
         return delegate.getOrCreate(type);
     }
 

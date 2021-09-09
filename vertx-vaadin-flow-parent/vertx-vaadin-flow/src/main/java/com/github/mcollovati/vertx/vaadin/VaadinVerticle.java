@@ -37,21 +37,22 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistryInitializer;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.startup.AnnotationValidator;
-import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 import com.vaadin.flow.server.startup.RouteRegistryInitializer;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
-import com.vaadin.flow.server.startup.fusion.ConnectEndpointsValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.fusion.startup.ConnectEndpointsValidator;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
@@ -85,13 +86,13 @@ public class VaadinVerticle extends AbstractVerticle {
         log.info("Starting vaadin verticle " + getClass().getName());
 
         prepareConfig()
-            .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
-            .compose(this::initVertxVaadin)
-            .compose(this::startupHttpServer)
-            .<Void>map(router -> {
-                serviceInitialized(vaadinService, router);
-                return null;
-            }).onComplete(startFuture);
+                .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
+                .compose(this::initVertxVaadin)
+                .compose(this::startupHttpServer)
+                .<Void>map(router -> {
+                    serviceInitialized(vaadinService, router);
+                    return null;
+                }).onComplete(startFuture);
 
         // Perform potential synchronous startup tasks
         start();
@@ -109,7 +110,7 @@ public class VaadinVerticle extends AbstractVerticle {
 
 
         HttpServerOptions serverOptions = new HttpServerOptions(
-            config().getJsonObject("server", new JsonObject())
+                config().getJsonObject("server", new JsonObject())
         ).setCompressionSupported(true);
 
         httpServer = vertx.createHttpServer(serverOptions).requestHandler(router);
@@ -134,7 +135,7 @@ public class VaadinVerticle extends AbstractVerticle {
         // search first new port key server.port, then, for backward compatibility
         // fallback to httpPort
         Integer httpPort = config().getJsonObject("server", new JsonObject())
-            .getInteger("port", config().getInteger("httpPort", 8080));
+                .getInteger("port", config().getInteger("httpPort", 8080));
         if (httpPort == 0) {
             try (ServerSocket socket = new ServerSocket(0)) {
                 promise.complete(socket.getLocalPort());
@@ -160,14 +161,14 @@ public class VaadinVerticle extends AbstractVerticle {
         VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
 
         Optional.ofNullable(vaadinVerticleConfiguration)
-            .map(VaadinVerticleConfiguration::serviceName)
-            .ifPresent(serviceName -> cfgBackend.put("serviceName", serviceName));
+                .map(VaadinVerticleConfiguration::serviceName)
+                .ifPresent(serviceName -> cfgBackend.put("serviceName", serviceName));
         cfgBackend.put("mountPoint", Optional.ofNullable(vaadinVerticleConfiguration)
-            .map(VaadinVerticleConfiguration::mountPoint).orElse("/")
+                .map(VaadinVerticleConfiguration::mountPoint).orElse("/")
         );
         Optional.ofNullable(vaadinVerticleConfiguration).map(VaadinVerticleConfiguration::basePackages)
-            .map(pkgs -> new JsonArray(asList(pkgs)))
-            .ifPresent(pkgs -> cfgBackend.put("flowBasePackages", pkgs));
+                .map(pkgs -> new JsonArray(asList(pkgs)))
+                .ifPresent(pkgs -> cfgBackend.put("flowBasePackages", pkgs));
         cfgBackend.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
 
         String mountPoint = cfgBackend.getString("mountPoint");
@@ -187,8 +188,8 @@ public class VaadinVerticle extends AbstractVerticle {
             log.error("Error during Vaadin service destroy", ex);
         }
 
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        if (handler != null && !handler.reuseDevServer()) {
+        DevModeHandler handler = DevModeHandlerManager.getDevModeHandler(vaadinService).orElse(null);
+        if (handler != null && !vaadinService.getDeploymentConfiguration().reuseDevServer()) {
             handler.stop();
         }
 
@@ -223,12 +224,12 @@ public class VaadinVerticle extends AbstractVerticle {
                 classGraph.verbose();
             }
             classGraph.ignoreParentClassLoaders()
-                .enableClassInfo()
-                .ignoreClassVisibility()
-                .enableAnnotationInfo()
-                .whitelistPackages(pkgs.toArray(new String[0]))
-                .ignoreParentClassLoaders()
-                .removeTemporaryFilesAfterScan();
+                    .enableClassInfo()
+                    .ignoreClassVisibility()
+                    .enableAnnotationInfo()
+                    .whitelistPackages(pkgs.toArray(new String[0]))
+                    .ignoreParentClassLoaders()
+                    .removeTemporaryFilesAfterScan();
             try (ScanResult scanResult = classGraph.scan()) {
                 map.putAll(seekRequiredClasses(scanResult));
 
@@ -238,7 +239,7 @@ public class VaadinVerticle extends AbstractVerticle {
 
             try {
                 new LookupServletContainerInitializer()
-                    .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
+                        .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
                 finalizeVaadinConfig(vaadinOpts);
 
                 Promise<Void> initializerFuture = Promise.promise();
@@ -258,7 +259,7 @@ public class VaadinVerticle extends AbstractVerticle {
     private void finalizeVaadinConfig(VaadinOptions vaadinOpts) {
         VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), new VertxVaadinContext(vertx));
         DeploymentConfiguration deploymentConfiguration = new DeploymentConfigurationFactory()
-            .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
+                .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
         vaadinOpts.update(deploymentConfiguration.getInitParameters());
     }
 
@@ -273,8 +274,6 @@ public class VaadinVerticle extends AbstractVerticle {
             }
         };
 
-        //runInitializer(initializerFactory.apply(new LookupServletContainerInitializer()))
-        //.compose(unused ->
         CompositeFuture.join(asList(
             runInitializer(initializerFactory.apply(new VertxEndpointRegistryInitializer())),
             runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
@@ -320,9 +319,9 @@ public class VaadinVerticle extends AbstractVerticle {
             };
 
             Set<Class<?>> classes = Stream.of(handledTypes.value())
-                .map(classFinder)
-                .flatMap(c -> c.loadClasses().stream())
-                .collect(Collectors.toSet());
+                    .map(classFinder)
+                    .flatMap(c -> c.loadClasses().stream())
+                    .collect(Collectors.toSet());
 
             if (!classes.isEmpty()) {
                 map.put(initializerClass, classes);

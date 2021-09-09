@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.rest;
 
-import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.fusion.Endpoint;
 
 import java.time.LocalTime;
 import java.time.ZonedDateTime;

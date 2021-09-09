@@ -35,8 +35,8 @@ import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.github.mcollovati.vertx.vaadin.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.connect.EndpointNameChecker;
-import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
+import com.vaadin.fusion.EndpointNameChecker;
+import com.vaadin.fusion.ExplicitNullableTypeChecker;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 

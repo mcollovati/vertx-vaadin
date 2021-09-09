@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
-import com.vaadin.flow.server.connect.EndpointExposed;
+import com.vaadin.fusion.EndpointExposed;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**

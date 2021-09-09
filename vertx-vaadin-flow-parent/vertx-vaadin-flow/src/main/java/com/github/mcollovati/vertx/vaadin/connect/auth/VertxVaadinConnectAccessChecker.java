@@ -22,10 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import com.github.mcollovati.vertx.Sync;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
 public class VertxVaadinConnectAccessChecker

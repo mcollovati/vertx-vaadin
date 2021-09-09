@@ -4,11 +4,11 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.mcollovati.vertx.vaadin.VaadinVerticle;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinService;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -25,25 +25,25 @@ public class TestBootVerticle extends VaadinVerticle {
     protected void serviceInitialized(VertxVaadinService service, Router router) {
         String mountPoint = service.getVaadinOptions().mountPoint();
         config().getJsonArray("mountAliases", new JsonArray())
-            .stream()
-            .map(String.class::cast)
-            .forEach(alias -> router.routeWithRegex(alias + "/.*").handler(ctx -> {
+                .stream()
+                .map(String.class::cast)
+                .forEach(alias -> router.routeWithRegex(alias + "/.*").handler(ctx -> {
 
-                ctx.reroute(ctx.request().uri()
-                    .replaceFirst(alias + "/", mountPoint + "/"));
-            }));
+                    ctx.reroute(ctx.request().uri()
+                            .replaceFirst(alias + "/", mountPoint + "/"));
+                }));
         TestBootVerticle.viewLocators.put(deploymentID(), new ViewClassLocator(getClass().getClassLoader()));
         router.get("/__check-start").order(0).handler(ctx -> {
             LOGGER.trace("======================== check start");
             HttpServerResponse response = ctx.response();
-            DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
+            DevModeHandler devModeHandler = DevModeHandlerManager.getDevModeHandler(service).orElse(null);
             response.setStatusCode(404);
             if (devModeHandler != null) {
                 LOGGER.trace("======================== check start. dev mod 1");
                 try {
                     Field startFutureField = devModeHandler.getClass().getDeclaredField("devServerStartFuture");
                     startFutureField.setAccessible(true);
-                    CompletableFuture<?> o = (CompletableFuture<?>)startFutureField.get(devModeHandler);
+                    CompletableFuture<?> o = (CompletableFuture<?>) startFutureField.get(devModeHandler);
                     if (o.isDone()) {
                         LOGGER.info("DevModeHandler ready");
                         response.setStatusCode(200);

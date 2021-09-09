@@ -40,12 +40,9 @@ import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.VaadinContextInitializer;
+import com.vaadin.flow.internal.*;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -249,7 +246,7 @@ public class VertxVaadin {
         vaadinRouter.routeWithRegex("/VAADIN/static/push/vaadinPush(SockJS)?(?<suffix>.*)")
                 .handler(ctx -> ctx.response().sendFile(pushJavascript + ctx.request().getParam("suffix")));
 
-        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
+        DevModeHandler devModeHandler = DevModeHandlerManager.getDevModeHandler(service).orElse(null);
         if (devModeHandler != null) {
             logger.info("Starting DevModeHandler proxy");
             HttpReverseProxy proxy = HttpReverseProxy.create(vertx, devModeHandler);

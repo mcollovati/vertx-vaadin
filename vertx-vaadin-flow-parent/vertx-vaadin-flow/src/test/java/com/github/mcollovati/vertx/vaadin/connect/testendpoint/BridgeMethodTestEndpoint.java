@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.testendpoint;
 
-import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.fusion.Endpoint;
 
 /**
  * Source code adapted from Vaadin Flow (https://github.com/vaadin/flow)

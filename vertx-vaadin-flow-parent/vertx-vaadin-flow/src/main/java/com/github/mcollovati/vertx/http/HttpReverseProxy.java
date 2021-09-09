@@ -23,15 +23,22 @@
 package com.github.mcollovati.vertx.http;
 
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.flow.internal.DevModeHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -47,6 +54,7 @@ public class HttpReverseProxy {
 
 
     private WebClient client;
+    private BiFunction<HttpMethod, String, RequestOptions> requestFactory;
 
     public HttpReverseProxy(CompletableFuture<WebClient> webClientFuture) {
         webClientFuture.whenComplete((wc, err) -> {
@@ -69,7 +77,6 @@ public class HttpReverseProxy {
                     .setDefaultPort(port);
                 return WebClient.create(vertx, options);
             });
-
         return new HttpReverseProxy(webClientFuture);
     }
 
@@ -83,9 +90,7 @@ public class HttpReverseProxy {
             String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
             logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
 
-
             HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), requestURI);
-
             serverRequest.headers().forEach(entry -> {
                 String valueOk = "Connection".equals(entry.getKey()) ? "close" : entry.getValue();
                 clientRequest.putHeader(entry.getKey(), valueOk);
@@ -122,11 +127,13 @@ public class HttpReverseProxy {
 
     @SuppressWarnings("unchecked")
     private static CompletableFuture<Integer> getDevModeHandlerFuture(DevModeHandler devModeHandler) {
+
         try {
-            Field devServerStartFuture = DevModeHandler.class.getDeclaredField("devServerStartFuture");
+            // TODO: find a way to remove explicit cast on DevModeHandlerImpl
+            Field devServerStartFuture = DevModeHandlerImpl.class.getDeclaredField("devServerStartFuture");
             devServerStartFuture.setAccessible(true);
             return ((CompletableFuture<Void>) devServerStartFuture.get(devModeHandler))
-                .thenApply(unused -> devModeHandler.getPort());
+                .thenApply(unused -> ((DevModeHandlerImpl)devModeHandler).getPort());
         } catch (Exception ex) {
             logger.error("Cannot get DevModHandler future", ex);
             CompletableFuture<Integer> future = new CompletableFuture<>();

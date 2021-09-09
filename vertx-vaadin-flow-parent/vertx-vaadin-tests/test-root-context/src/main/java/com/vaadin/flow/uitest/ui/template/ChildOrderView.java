@@ -64,53 +64,53 @@ public class ChildOrderView extends PolymerTemplate<TemplateModel> {
 
         Div childOnConstructor1 = new Div();
         childOnConstructor1.setText(
-            "Server child " + (containerWithElementAddedOnConstructor
-                .getElement().getChildCount() + 1));
+                "Server child " + (containerWithElementAddedOnConstructor
+                        .getElement().getChildCount() + 1));
         containerWithElementAddedOnConstructor.add(childOnConstructor1);
 
         Div childOnConstructor2 = new Div();
         childOnConstructor2.setText(
-            "Server child " + (containerWithElementAddedOnConstructor
-                .getElement().getChildCount() + 1));
+                "Server child " + (containerWithElementAddedOnConstructor
+                        .getElement().getChildCount() + 1));
         containerWithElementAddedOnConstructor.add(childOnConstructor2);
 
         addChildToContainer1.addClickListener(event -> {
             Div div = new Div();
             div.setText("Server child "
-                + (containerWithElement.getElement().getChildCount() + 1));
+                    + (containerWithElement.getElement().getChildCount() + 1));
             containerWithElement.add(div);
         });
 
         prependChildToContainer1.addClickListener(event -> {
             Div div = new Div();
             div.setText("Server child "
-                + (containerWithElement.getElement().getChildCount() + 1));
+                    + (containerWithElement.getElement().getChildCount() + 1));
             containerWithElement.getElement().insertChild(0, div.getElement());
         });
 
         removeChildFromContainer1.addClickListener(event -> {
             if (containerWithElement.getElement().getChildCount() > 0) {
                 containerWithElement.getElement().removeChild(
-                    containerWithElement.getElement().getChildCount() - 1);
+                        containerWithElement.getElement().getChildCount() - 1);
             }
         });
 
         addChildToContainer2.addClickListener(event -> {
             Element text = Element.createText("\nServer text "
-                + (containerWithText.getElement().getChildCount()));
+                    + (containerWithText.getElement().getChildCount() + 1));
             containerWithText.getElement().appendChild(text);
         });
 
         prependChildToContainer2.addClickListener(event -> {
             Element text = Element.createText("\nServer text "
-                + (containerWithText.getElement().getChildCount()));
+                    + (containerWithText.getElement().getChildCount() + 1));
             containerWithText.getElement().insertChild(0, text);
         });
 
         removeChildFromContainer2.addClickListener(event -> {
             if (containerWithText.getElement().getChildCount() > 0) {
                 containerWithText.getElement().removeChild(
-                    containerWithText.getElement().getChildCount() - 1);
+                        containerWithText.getElement().getChildCount() - 1);
             }
         });
     }

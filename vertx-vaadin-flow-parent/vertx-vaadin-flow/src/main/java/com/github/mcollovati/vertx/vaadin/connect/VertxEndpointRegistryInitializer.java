@@ -22,19 +22,17 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
+import com.github.mcollovati.vertx.support.FusionWorkAround;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
+import com.vaadin.fusion.Endpoint;
+import com.vaadin.fusion.EndpointNameChecker;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.github.mcollovati.vertx.support.FusionWorkAround;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.EndpointNameChecker;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 
 @HandlesTypes({Endpoint.class})
 public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServletContainerInitializer {

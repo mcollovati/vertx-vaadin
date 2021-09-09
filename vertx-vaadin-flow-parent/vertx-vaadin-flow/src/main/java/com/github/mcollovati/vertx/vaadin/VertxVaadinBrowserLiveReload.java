@@ -23,11 +23,9 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSLiveReload;
+import com.vaadin.base.devserver.BrowserLiveReloadAccessorImpl;
 import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import org.atmosphere.cpr.AtmosphereResource;
 
 class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
@@ -38,10 +36,6 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
     VertxVaadinBrowserLiveReload(BrowserLiveReload delegate, SockJSLiveReload reloader) {
         this.delegate = delegate;
         this.reloader = reloader;
-        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
-        if (devModeHandler != null) {
-            devModeHandler.setLiveReload(this);
-        }
     }
 
     @Override
@@ -74,16 +68,16 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
         reloader.reload();
     }
 
-    static class Access extends BrowserLiveReloadAccess {
+    public static class Accessor extends BrowserLiveReloadAccessorImpl {
+
         @Override
-        public BrowserLiveReload getLiveReload(VaadinService service) {
-            VaadinContext context = service.getContext();
+        public BrowserLiveReload getLiveReload(VaadinContext context) {
             BrowserLiveReload liveReload;
             synchronized (this) {
                 Holder liveReloadHolder = context.getAttribute(Holder.class);
                 if (liveReloadHolder == null) {
-                    SockJSLiveReload reloader = service.getContext().getAttribute(SockJSLiveReload.class);
-                    liveReload = super.getLiveReload(service);
+                    SockJSLiveReload reloader = context.getAttribute(SockJSLiveReload.class);
+                    liveReload = super.getLiveReload(context);
                     if (liveReload != null && reloader != null) {
                         liveReload = new VertxVaadinBrowserLiveReload(liveReload, reloader);
                     }

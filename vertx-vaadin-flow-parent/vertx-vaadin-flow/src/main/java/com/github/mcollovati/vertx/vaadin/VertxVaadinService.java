@@ -28,16 +28,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
 import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -105,10 +107,12 @@ public class VertxVaadinService extends VaadinService {
     }
 
 
+    /*
     @Override
     protected Instantiator createInstantiator() throws ServiceException {
         return new VertxVaadinInstantiator(super.createInstantiator());
     }
+     */
 
     @Override
     protected List<RequestHandler> createRequestHandlers()
@@ -118,9 +122,14 @@ public class VertxVaadinService extends VaadinService {
         handlers.removeIf(FaviconHandler.class::isInstance);
         handlers.replaceAll(RequestHandlerReplacements::replace);
         if (getDeploymentConfiguration().enableDevServer()) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            if (handler != null) {
-                handlers.add(0, handler);
+            Optional<DevModeHandler> handlerManager = DevModeHandlerManager
+                    .getDevModeHandler(this);
+            if (handlerManager.isPresent()) {
+                handlers.add(handlerManager.get());
+            } else {
+                logger.warn("no DevModeHandlerManager implementation found "
+                                + "but dev server enabled. Include the "
+                                + "com.vaadin.vaadin-dev-server dependency.");
             }
         }
         addBootstrapHandler(handlers);

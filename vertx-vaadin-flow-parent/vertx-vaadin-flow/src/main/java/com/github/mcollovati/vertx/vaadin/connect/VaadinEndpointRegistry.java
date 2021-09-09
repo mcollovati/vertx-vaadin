@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.vaadin.flow.server.connect.EndpointRegistry;
+import com.vaadin.fusion.EndpointRegistry;
 
 public interface VaadinEndpointRegistry {
 
