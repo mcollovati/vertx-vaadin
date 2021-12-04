@@ -62,8 +62,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.impl.FileResolver;
+
+import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.spi.file.FileResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,7 +215,7 @@ public final class StartupContext {
         @Override
         public URL getResource(String path) throws MalformedURLException {
             FileSystem fileSystem = startupContext.vertx.fileSystem();
-            FileResolver fileResolver = new FileResolver();
+            FileResolver fileResolver = new FileResolverImpl();
             String relativePath = toRelativePath(path);
             URI resourceURI = Stream.of(relativePath, "META-INF/resources/" + relativePath)
                 .filter(fileSystem::existsBlocking)
