@@ -37,6 +37,13 @@ jobs:
             - v2-dependencies-{{ checksum "pom.xml" }}
             - v2-dependencies-
 
+      - run:
+          command: |
+            if [ ! -f ~/.vaadin/etc/npmrc ]; then
+              mkdir --parents ~/.vaadin/etc
+              echo "fund=false" > ~/.vaadin/etc/npmrc
+            fi
+
       # TODO: does not work well with multimodule project
       #- run: mvn dependency:resolve-plugins dependency:go-offline
 
