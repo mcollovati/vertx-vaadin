@@ -38,6 +38,7 @@ jobs:
             - v2-dependencies-
 
       - run:
+          name: "Seteup npmrc"
           command: |
             if [ ! -f ~/.vaadin/etc/npmrc ]; then
               mkdir --parents ~/.vaadin/etc
@@ -112,6 +113,14 @@ jobs:
       - restore_cache:
           keys:
             - ui-tests-dependencies-{{ checksum "pom.xml" }}
+
+      - run:
+          name: "Seteup npmrc"
+          command: |
+            if [ ! -f ~/.vaadin/etc/npmrc ]; then
+              mkdir --parents ~/.vaadin/etc
+              echo "fund=false" > ~/.vaadin/etc/npmrc
+            fi
 
       - run:
           name: "Setup custom environment variables"
