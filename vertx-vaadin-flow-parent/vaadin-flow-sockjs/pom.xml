@@ -93,6 +93,7 @@
                 <directory>${flow-client-generated-sources}</directory>
                 <includes>
                     <include>META-INF/resources/frontend/**</include>
+                    <include>META-INF/frontend/**</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>
@@ -201,7 +202,7 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${flow-client-generated-sources}</outputDirectory>
-                                    <includes>META-INF/resources/frontend/**</includes>
+                                    <includes>META-INF/resources/frontend/**,META-INF/frontend/**</includes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>com.vaadin</groupId>
@@ -211,7 +212,7 @@
                                     <classifier>sources</classifier>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${flow-client-generated-sources}</outputDirectory>
-                                    <includes>com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**</includes>
+                                    <includes>com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**,META-INF/frontend/**</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
