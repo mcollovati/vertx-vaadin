@@ -224,12 +224,13 @@ public class VaadinVerticle extends AbstractVerticle {
                 vaadinConfig.sockJSSupport(haSockJS);
             }
 
-            Promise<Void> initializerFuture = Promise.promise();
             try {
                 new LookupServletContainerInitializer()
                         .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
 
                 finalizeVaadinConfig(vaadinConfig);
+
+                Promise<Void> initializerFuture = Promise.promise();
                 runInitializers(startupContext, initializerFuture, map);
                 initializerFuture.future().map(unused -> {
                     VertxVaadin vertxVaadin = createVertxVaadin(startupContext);
@@ -237,9 +238,9 @@ public class VaadinVerticle extends AbstractVerticle {
                     return vertxVaadin;
                 }).onComplete(event);
             } catch (ServletException ex) {
-                initializerFuture.fail(new VaadinConfigurationException(ex.getMessage(), ex));
+                event.fail(new VaadinConfigurationException(ex.getMessage(), ex));
             } catch (VaadinConfigurationException ex) {
-                initializerFuture.fail(ex);
+                event.fail(ex);
             }
         }, promise);
         return promise.future();
