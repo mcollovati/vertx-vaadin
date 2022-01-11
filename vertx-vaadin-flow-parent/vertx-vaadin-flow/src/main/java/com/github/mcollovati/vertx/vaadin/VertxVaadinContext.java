@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
+
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 
@@ -71,9 +72,7 @@ public class VertxVaadinContext implements VaadinContext {
 
     @Override
     public Enumeration<String> getContextParameterNames() {
-        return Collections.enumeration(vaadinOptions.keySet()
-            .stream().map(String.class::cast)
-            .collect(Collectors.toList()));
+        return Collections.enumeration(vaadinOptions.stringPropertyNames());
     }
 
     @Override
