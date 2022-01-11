@@ -6,6 +6,7 @@
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
         <version>1.0.v8v14.4</version>
+        <relativePath/>
     </parent>
 
     <artifactId>vertx-vaadin-flow</artifactId>
