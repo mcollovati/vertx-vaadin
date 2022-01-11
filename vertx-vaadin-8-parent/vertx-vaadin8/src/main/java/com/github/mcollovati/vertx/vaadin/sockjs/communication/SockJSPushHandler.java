@@ -68,6 +68,7 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSSocket;
 import io.vertx.ext.web.impl.RoutingContextDecorator;
+import io.vertx.ext.web.impl.RoutingContextInternal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -571,7 +572,7 @@ class SockJSRoutingContext extends RoutingContextDecorator {
     private Session session;
 
     SockJSRoutingContext(RoutingContext source, Handler<RoutingContext> action) {
-        super(source.currentRoute(), source);
+        super(source.currentRoute(), (RoutingContextInternal) source);
         this.action = action;
     }
 
