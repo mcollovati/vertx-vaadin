@@ -395,7 +395,9 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>vertx-vaadin-8-parent</module>
+		<!--
+		<module>vertx-vaadin-8-parent</module>
+		-->
                 <module>vertx-vaadin-flow-parent</module>
             </modules>
         </profile>
