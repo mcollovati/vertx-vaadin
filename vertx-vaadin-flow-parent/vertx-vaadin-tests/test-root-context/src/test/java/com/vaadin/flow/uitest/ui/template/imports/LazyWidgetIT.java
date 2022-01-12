@@ -36,13 +36,13 @@ public class LazyWidgetIT extends ChromeBrowserTest {
     public void lazyLoadedPolymerTemplateWorksAsElement() {
         open();
         waitForElementVisible(By.id("template")); // template is lazy loaded,
-                                                  // need some time to load
+        // need some time to load
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         String input = "InputMaster";
         Assert.assertFalse(
                 "No greeting should be present before we press the button",
-                isPresentInShadowRoot(template, By.id("greeting")));
+                template.$("*").attribute("id", "greeting").exists());
 
         template.$(TestBenchElement.class).id("input").sendKeys(input);
         template.$(TestBenchElement.class).id("button").click();
