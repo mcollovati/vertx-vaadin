@@ -92,7 +92,7 @@ public final class StartupContext {
     }
 
     public VaadinConfig vaadinConfig() {
-        VertxVaadinContext vaadinContext = new VertxVaadinContext(vertx, vaadinOptions);
+        VertxVaadinContext vaadinContext = new VertxVaadinContext(context, vaadinOptions);
         return vaadinOptions.asVaadinConfig(vaadinContext);
     }
 

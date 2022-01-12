@@ -45,6 +45,11 @@ public class VertxVaadinContext implements VaadinContext {
         this.context = vertx.getOrCreateContext();
         this.vaadinOptions = vaadinOptions.asProperties();
     }
+    public VertxVaadinContext(Context context, VaadinOptions vaadinOptions) {
+        this.vertx = context.owner();
+        this.context = context;
+        this.vaadinOptions = vaadinOptions.asProperties();
+    }
 
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
