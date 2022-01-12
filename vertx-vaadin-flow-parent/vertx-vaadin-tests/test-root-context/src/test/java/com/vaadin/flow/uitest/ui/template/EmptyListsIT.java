@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -33,10 +34,10 @@ public class EmptyListsIT extends ChromeBrowserTest {
     public void emptyListsAreProperlyHandled() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $("*").id("template");
 
         Assert.assertTrue(
-            isPresentInShadowRoot(template, By.className("item")));
+            template.$("*").attributeContains("class", "item").exists());
 
         findElement(By.id("set-empty")).click();
 
