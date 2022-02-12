@@ -167,7 +167,6 @@ workflows:
               only:
                 - master
                 - development
-                - vaadin-18
                 - vaadin-14.2
     jobs:
       - ui-tests
