@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -29,6 +30,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@Ignore("Temporary disabled until https://github.com/vaadin/flow/pull/12991 get ported to flow 2.8")
 public class HistoryIT extends ChromeBrowserTest {
 
     @Test
