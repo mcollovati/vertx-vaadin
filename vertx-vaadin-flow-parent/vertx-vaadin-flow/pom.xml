@@ -12,7 +12,7 @@
     <artifactId>vertx-vaadin-flow</artifactId>
     <packaging>jar</packaging>
     <name>vertx-vaadin-flow</name>
-    <version>14.6.0</version>
+    <version>14.6.1-SNAPSHOT</version>
     <description>An adapter to run Vaadin Flow applications on Vertx</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
