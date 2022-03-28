@@ -32,9 +32,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class DynamicDependencyIT extends ChromeBrowserTest {
 
-    @Rule
-    public DevModeRule devModeRule = new DevModeRule();
-
     @Test
     public void dynamicDependencyIsExecutedBeforeOtherMessageProcessing() {
         open();
@@ -45,20 +42,17 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    @DevModeOnly
     public void dependecyIsNoPromise_errorLogged() {
         testErrorCase("nopromise", "result is not a Promise");
     }
 
     @Test
-    @DevModeOnly
     public void dependecyLoaderThrows_errorLogged()
             throws InterruptedException {
         testErrorCase("throw", "Throw on purpose");
     }
 
     @Test
-    @DevModeOnly
     public void dependecyLoaderRejects_errorLogged()
             throws InterruptedException {
         testErrorCase("reject", "Reject on purpose");

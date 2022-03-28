@@ -1,6 +1,36 @@
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
@@ -10,22 +40,15 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.impl.FileResolver;
+import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.spi.file.FileResolver;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.ServletContext;
-import java.io.*;
-import java.net.*;
-import java.nio.file.FileSystem;
-import java.nio.file.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -41,9 +64,9 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     protected static final Pattern APP_THEME_PATTERN = Pattern.compile("^\\/themes\\/[\\s\\S]+?\\/");
 
 
-    private final VaadinService vaadinService;
-    private final List<String> manifestPaths;
-    private DeploymentConfiguration deploymentConfiguration;
+    private final VertxVaadinService vaadinService;
+    private final DeploymentConfiguration deploymentConfiguration;
+    private final DevModeHandler devModeHandler;
     private final StaticFileServer vaadinStaticFileServer;
     private final ResponseWriter responseWriter;
 
@@ -56,129 +79,87 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
      *
      * @param vaadinService vaadin service for the deployment, not <code>null</code>
      */
-    public VertxStaticFileServer(VaadinService vaadinService) {
+    public VertxStaticFileServer(VertxVaadinService vaadinService) {
         this.vaadinService = vaadinService;
         vaadinStaticFileServer = new StaticFileServer(vaadinService);
-        manifestPaths = getManifestPathsFromJson();
         deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
+        this.devModeHandler = DevModeHandlerManager
+            .getDevModeHandler(vaadinService).orElse(null);
     }
 
-    private List<String> getManifestPathsFromJson() {
-        InputStream stream = vaadinService.getClassLoader()
-                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
-        if (stream == null) {
-            // manifest.json resource does not exist, probably dev mode
-            return new ArrayList<>();
-        }
-        return FrontendUtils.parseManifestPaths(FrontendUtils.streamToString(stream));
-    }
-
-    boolean isStaticResourceRequest(RoutingContext routingContext) {
-        URL resource;
-
-        String requestFilename = getRequestFilename(routingContext);
-        if (requestFilename.endsWith("/")) {
+    public boolean serveStaticResource(RoutingContext routingContext) throws IOException {
+        String filenameWithPath = getRequestFilename(routingContext);
+        if (filenameWithPath.endsWith("/")) {
             // Directories are not static resources although
             // servletContext.getResource will return a URL for them, at
             // least with Jetty
             return false;
         }
 
-        if (APP_THEME_PATTERN.matcher(requestFilename).find()
-                || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
-            // The path is reserved for internal resources only
-            // We rather serve 404 than let it fall through
-            return true;
-        }
-
-        if (manifestPaths.contains(requestFilename)) {
-            // The path is on the webpack manifest list, so it is a static
-            // resource as well.
-            return true;
-        }
-        resource = getStaticResource(requestFilename);
-
-        if (resource != null && resourceIsDirectory(resource)) {
-            return false;
-        }
-
-        if (resource == null && shouldFixIncorrectWebjarPaths()
-                && isIncorrectWebjarPath(requestFilename)) {
-            // Flow issue #4601
-            return true;
-        }
-
-        return resource != null;
-    }
-
-    static final String UNSAFE_PATH_ERROR_MESSAGE_PATTERN = "Blocked attempt to access file: {}";
-
-    public boolean serveStaticResource(RoutingContext routingContext) {
-        String filenameWithPath = getRequestFilename(routingContext);
-        if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
-            getLogger().info(UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
-                    filenameWithPath);
-            routingContext.response().setStatusCode(HttpResponseStatus.FORBIDDEN.code());
-            return true;
-        }
-
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
-                || manifestPaths.contains(filenameWithPath)) {
-            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                                + filenameWithPath.replaceFirst("^/", ""));
+        if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = vaadinService.getClassLoader()
+                .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                    + filenameWithPath.replaceFirst("^/", ""));
 
-            } else {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES
-                                + filenameWithPath.replaceFirst("^/", ""));
-            }
+        } else if (!"/index.html".equals(filenameWithPath)) {
+            // index.html needs to be handled by IndexHtmlRequestHandler
+            resourceUrl = vaadinService.getClassLoader()
+                .getResource(VAADIN_WEBAPP_RESOURCES
+                    + filenameWithPath.replaceFirst("^/", ""));
         }
+
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
         }
         if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
-                && isIncorrectWebjarPath(filenameWithPath)) {
+            && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
             resourceUrl = getStaticResource(
-                    fixIncorrectWebjarPath(filenameWithPath));
+                fixIncorrectWebjarPath(filenameWithPath));
         }
 
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
-            routingContext.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code());
-            return true;
+            return false;
+        }
+
+        if (resourceIsDirectory(resourceUrl)) {
+            // Directories are not static resources although
+            // servletContext.getResource will return a URL for them, at
+            // least with Jetty
+            return false;
         }
 
         // There is a resource!
 
         // Intentionally writing cache headers also for 304 responses
-        writeCacheHeaders(filenameWithPath, routingContext.response());
+        HttpServerResponse response = routingContext.response();
+        writeCacheHeaders(filenameWithPath, response);
 
         long timestamp = writeModificationTimestamp(resourceUrl, routingContext);
         if (browserHasNewestVersion(routingContext.request(), timestamp)) {
             // Browser is up to date, nothing further to do than set the
             // response code
-            routingContext.response().setStatusCode(HttpResponseStatus.NOT_MODIFIED.code());
+            response.setStatusCode(HttpServletResponse.SC_NOT_MODIFIED);
             return true;
         }
-        try {
-            responseWriter.writeResponseContents(filenameWithPath, resourceUrl, routingContext);
-            routingContext.response().end();
-        } catch (IOException ex) {
-            routingContext.fail(ex);
-        }
+        responseWriter.writeResponseContents(filenameWithPath, resourceUrl, routingContext);
         return true;
     }
 
+    static final String UNSAFE_PATH_ERROR_MESSAGE_PATTERN = "Blocked attempt to access file: {}";
+
+
     @Override
     public void handle(RoutingContext routingContext) {
-        if (!isStaticResourceRequest(routingContext) || !serveStaticResource(routingContext)) {
-            routingContext.next();
+        try {
+            if (!serveStaticResource(routingContext)) {
+                routingContext.next();
+            }
+        } catch (IOException e) {
+            routingContext.fail(e);
         }
     }
 
@@ -232,8 +213,8 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             return lastModifiedTime;
         } catch (Exception e) {
             getLogger().trace(
-                    "Failed to find out last modified timestamp. Continuing without it.",
-                    e);
+                "Failed to find out last modified timestamp. Continuing without it.",
+                e);
         } finally {
             try {
                 // Explicitly close the input stream to prevent it
@@ -377,8 +358,8 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
+            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
 
@@ -399,7 +380,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         if ("jar".equals(resource.getProtocol())) {
             // Get the file path in jar
             final String pathInJar = resource.getPath()
-                    .substring(resource.getPath().indexOf('!') + 1);
+                .substring(resource.getPath().indexOf('!') + 1);
             try {
                 FileSystem fileSystem = getFileSystem(resourceURI);
                 // Get the file path inside the jar.
@@ -415,7 +396,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
         // If not a jar check if a file path directory.
         return "file".equals(resource.getProtocol())
-                && Files.isDirectory(Paths.get(resourceURI));
+            && Files.isDirectory(Paths.get(resourceURI));
     }
 
     /**
@@ -447,7 +428,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             return new URI(scheme);
         } catch (URISyntaxException syntaxException) {
             throw new IllegalArgumentException(syntaxException.getMessage(),
-                    syntaxException);
+                syntaxException);
         }
     }
 
@@ -457,12 +438,12 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             URI fileURI = getFileURI(resourceURI);
             if (!fileURI.getScheme().equals("file")) {
                 throw new IOException("Can not read scheme '"
-                        + fileURI.getScheme() + "' for resource " + resourceURI
-                        + " and will determine this as not a folder");
+                    + fileURI.getScheme() + "' for resource " + resourceURI
+                    + " and will determine this as not a folder");
             }
 
             if (openFileSystems.computeIfPresent(fileURI,
-                    (key, value) -> value + 1) != null) {
+                (key, value) -> value + 1) != null) {
                 // Get filesystem is for the file to get the correct provider
                 return FileSystems.getFileSystem(resourceURI);
             }
@@ -474,14 +455,14 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     }
 
     private FileSystem getNewOrExistingFileSystem(URI resourceURI)
-            throws IOException {
+        throws IOException {
         try {
             return FileSystems.newFileSystem(resourceURI,
-                    Collections.emptyMap());
+                Collections.emptyMap());
         } catch (FileSystemAlreadyExistsException fsaee) {
             getLogger().trace(
-                    "Tried to get new filesystem, but it already existed for target uri.",
-                    fsaee);
+                "Tried to get new filesystem, but it already existed for target uri.",
+                fsaee);
             return FileSystems.getFileSystem(resourceURI);
         }
     }
@@ -492,7 +473,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             try {
                 URI fileURI = getFileURI(resourceURI);
                 final Integer locks = openFileSystems.computeIfPresent(fileURI,
-                        (key, value) -> value - 1);
+                    (key, value) -> value - 1);
                 if (locks != null && locks == 0) {
                     openFileSystems.remove(fileURI);
                     // Get filesystem is for the file to get the correct
@@ -501,7 +482,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
                 }
             } catch (IOException ioe) {
                 getLogger().error("Failed to close FileSystem for '{}'",
-                        resourceURI);
+                    resourceURI);
                 getLogger().debug("Exception closing FileSystem", ioe);
             }
         }
@@ -530,8 +511,8 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
     private boolean shouldFixIncorrectWebjarPaths() {
         return deploymentConfiguration.isProductionMode()
-                && deploymentConfiguration.getBooleanProperty(
-                PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
+            && deploymentConfiguration.getBooleanProperty(
+            PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
     }
 
     private boolean isIncorrectWebjarPath(String requestFilename) {
@@ -540,7 +521,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
     private String fixIncorrectWebjarPath(String requestFilename) {
         return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
-                .replaceAll("/webjars/");
+            .replaceAll("/webjars/");
     }
 
 
@@ -554,9 +535,9 @@ class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
     private static final Pattern RANGE_HEADER_PATTERN = Pattern
-            .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+        .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
     private static final Pattern BYTE_RANGE_PATTERN = Pattern
-            .compile("(\\d*)-(\\d*)");
+        .compile("(\\d*)-(\\d*)");
 
     /**
      * Maximum number of ranges accepted in a single Range header. Remaining
@@ -605,7 +586,7 @@ class ResponseWriter implements Serializable {
      *                     the resource
      */
     public void writeResponseContents(String filenameWithPath, URL resourceUrl, RoutingContext routingContext)
-            throws IOException {
+        throws IOException {
         writeContentType(filenameWithPath, routingContext);
 
         URL url = null;
@@ -625,8 +606,8 @@ class ResponseWriter implements Serializable {
                 }
             } catch (Exception e) {
                 getLogger().debug(
-                        "Unexpected exception looking for Brotli resource {}",
-                        brotliFilenameWithPath, e);
+                    "Unexpected exception looking for Brotli resource {}",
+                    brotliFilenameWithPath, e);
             }
         }
 
@@ -642,8 +623,8 @@ class ResponseWriter implements Serializable {
                 }
             } catch (Exception e) {
                 getLogger().debug(
-                        "Unexpected exception looking for gzipped resource {}",
-                        gzippedFilenameWithPath, e);
+                    "Unexpected exception looking for gzipped resource {}",
+                    gzippedFilenameWithPath, e);
             }
         }
 
@@ -720,18 +701,18 @@ class ResponseWriter implements Serializable {
                 response.putHeader(HttpHeaders.CONTENT_LENGTH, "0");
                 response.setStatusCode(416); // Range Not Satisfiable
                 getLogger().info("received a malformed range: '{}'",
-                        rangeMatcher.group());
+                    rangeMatcher.group());
                 return;
             }
             long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
             long end = endGroup.isEmpty() ? Long.MAX_VALUE
-                    : Long.parseLong(endGroup);
+                : Long.parseLong(endGroup);
             if (end < start
-                    || (resourceLength >= 0 && start >= resourceLength)) {
+                || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
                 getLogger().info(
-                        "received an illegal range '{}' for resource '{}'",
-                        rangeMatcher.group(), resourceURL);
+                    "received an illegal range '{}' for resource '{}'",
+                    rangeMatcher.group(), resourceURL);
                 response.putHeader(HttpHeaders.CONTENT_LENGTH, "0");
                 response.setStatusCode(416);
                 return;
@@ -741,8 +722,8 @@ class ResponseWriter implements Serializable {
             if (!verifyRangeLimits(ranges)) {
                 ranges.pop();
                 getLogger().info(
-                        "serving only {} ranges for resource '{}' even though more were requested",
-                        ranges.size(), resourceURL);
+                    "serving only {} ranges for resource '{}' even though more were requested",
+                    ranges.size(), resourceURL);
                 break;
             }
         }
@@ -758,7 +739,7 @@ class ResponseWriter implements Serializable {
             }
             setContentLength(response, end - start + 1);
             response.putHeader(HttpHeaders.CONTENT_RANGE,
-                    createContentRangeHeader(start, end, resourceLength));
+                createContentRangeHeader(start, end, resourceLength));
 
             final InputStream dataStream = connection.getInputStream();
             try {
@@ -770,7 +751,7 @@ class ResponseWriter implements Serializable {
             }
         } else {
             writeMultipartRangeContents(ranges, connection, response,
-                    resourceURL);
+                resourceURL);
         }
     }
 
@@ -798,8 +779,8 @@ class ResponseWriter implements Serializable {
                     response.write(String.format("Content-Type: %s\r\n", mimeType));
                 }
                 response.write(String.format("Content-Range: %s\r\n\r\n",
-                        createContentRangeHeader(start, end,
-                                connection.getContentLengthLong())));
+                    createContentRangeHeader(start, end,
+                        connection.getContentLengthLong())));
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
@@ -849,28 +830,28 @@ class ResponseWriter implements Serializable {
         for (int i = 0; i < ranges.size(); i++) {
             for (int j = i + 1; j < ranges.size(); j++) {
                 if (ranges.get(i).getFirst() <= ranges.get(j).getSecond()
-                        && ranges.get(j).getFirst() <= ranges.get(i)
-                        .getSecond()) {
+                    && ranges.get(j).getFirst() <= ranges.get(i)
+                    .getSecond()) {
                     count++;
                 }
             }
         }
         if (count > MAX_OVERLAPPING_RANGE_COUNT) {
             getLogger().info("more than {} overlapping ranges requested",
-                    MAX_OVERLAPPING_RANGE_COUNT);
+                MAX_OVERLAPPING_RANGE_COUNT);
             return false;
         }
         return true;
     }
 
     private URL getResource(String resource)
-            throws MalformedURLException {
-        FileResolver fileResolver = new FileResolver();
+        throws MalformedURLException {
+        FileResolver fileResolver = new FileResolverImpl();
         File file = fileResolver.resolveFile(resource);
         if (!file.exists() && resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                && isAllowedVAADINBuildUrl(resource)) {
+            && isAllowedVAADINBuildUrl(resource)) {
             file = fileResolver.resolveFile(
-                    VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
+                VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
         }
         return file.exists() ? file.toURI().toURL() : null;
     }
@@ -887,9 +868,9 @@ class ResponseWriter implements Serializable {
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
         // Check that we target VAADIN/build and do not have '/../'
         if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || filenameWithPath.contains("/../")) {
+            || filenameWithPath.contains("/../")) {
             getLogger().info("Blocked attempt to access file: {}",
-                    filenameWithPath);
+                filenameWithPath);
             return false;
         }
 
@@ -904,7 +885,7 @@ class ResponseWriter implements Serializable {
         long bytesTotal = 0L;
         int bytes;
         while (bytesTotal < count && (bytes = dataStream.read(buffer, 0,
-                (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
+            (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
             Buffer bf = Buffer.buffer(bufferSize);
             bf.appendBytes(buffer, 0, bytes);
             response.write(bf);
@@ -991,7 +972,7 @@ class ResponseWriter implements Serializable {
 
         // gzip;q=0.123 or gzip;q=0.123,compress...
         String qValue = acceptEncoding
-                .substring(qValueIndex + qPrefix.length());
+            .substring(qValueIndex + qPrefix.length());
         int endOfQValue = qValue.indexOf(',');
         if (endOfQValue != -1) {
             qValue = qValue.substring(0, endOfQValue);

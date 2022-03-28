@@ -22,18 +22,20 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSLiveReload;
+import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
+import com.github.mcollovati.vertx.vaadin.sockjs.communication.VertxVaadinLiveReload;
 import com.vaadin.base.devserver.BrowserLiveReloadAccessorImpl;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import org.atmosphere.cpr.AtmosphereResource;
 
 class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
 
     private final BrowserLiveReload delegate;
-    private final SockJSLiveReload reloader;
+    private final VertxVaadinLiveReload reloader;
 
-    VertxVaadinBrowserLiveReload(BrowserLiveReload delegate, SockJSLiveReload reloader) {
+    VertxVaadinBrowserLiveReload(BrowserLiveReload delegate, VertxVaadinLiveReload reloader) {
         this.delegate = delegate;
         this.reloader = reloader;
     }
@@ -64,6 +66,11 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
     }
 
     @Override
+    public void onMessage(String msg) {
+        delegate.onMessage(msg);
+    }
+
+    @Override
     public void reload() {
         reloader.reload();
     }
@@ -71,22 +78,20 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
     public static class Accessor extends BrowserLiveReloadAccessorImpl {
 
         @Override
+        public BrowserLiveReload getLiveReload(VaadinService service) {
+            service.getContext().getAttribute(
+                VertxDebugWindowConnection.class, () -> new VertxDebugWindowConnection((VertxVaadinService) service)
+            );
+            return super.getLiveReload(service);
+        }
+
+        @Override
         public BrowserLiveReload getLiveReload(VaadinContext context) {
-            BrowserLiveReload liveReload;
-            synchronized (this) {
-                Holder liveReloadHolder = context.getAttribute(Holder.class);
-                if (liveReloadHolder == null) {
-                    SockJSLiveReload reloader = context.getAttribute(SockJSLiveReload.class);
-                    liveReload = super.getLiveReload(context);
-                    if (liveReload != null && reloader != null) {
-                        liveReload = new VertxVaadinBrowserLiveReload(liveReload, reloader);
-                    }
-                    liveReloadHolder = new Holder(liveReload);
-                    context.setAttribute(Holder.class, liveReloadHolder);
-                }
-                liveReload = liveReloadHolder.liveReload;
-            }
-            return liveReload;
+            VertxDebugWindowConnection connection = context.getAttribute(
+                VertxDebugWindowConnection.class, VertxDebugWindowConnection::new);
+            return context.getAttribute(Holder.class, () -> new Holder(
+                new VertxVaadinBrowserLiveReload(super.getLiveReload(context), connection)
+            )).liveReload;
         }
     }
 

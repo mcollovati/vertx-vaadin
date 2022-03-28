@@ -22,14 +22,37 @@
  */
 package com.github.mcollovati.vertx.vaadin.communication;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import elemental.json.JsonObject;
 
 public class VertxJavaScriptBootstrapHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VertxVaadinRequest)request).getRoutingContext().request().absoluteURI();
+        return ((VertxVaadinRequest) request).getRoutingContext().request().absoluteURI();
+    }
+
+    @Override
+    protected BootstrapContext createBootstrapContext(VaadinRequest request, VaadinResponse response, UI ui, Function<VaadinRequest, String> callback) {
+        return new JavaScriptBootstrapContext(request, response, ui, callback) {
+            @Override
+            public JsonObject getApplicationParameters() {
+                JsonObject parameters = super.getApplicationParameters();
+                if (parameters.hasKey("liveReloadUrl")) {
+                    Optional.ofNullable(parameters.getString("liveReloadUrl"))
+                        .filter(url -> !url.endsWith("/websocket"))
+                        .map(url -> url.replaceFirst("/$", "") + "/websocket")
+                        .ifPresent(url -> parameters.put("liveReloadUrl", url));
+                }
+                return parameters;
+            }
+        };
     }
 }

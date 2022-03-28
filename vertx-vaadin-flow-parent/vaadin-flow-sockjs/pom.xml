@@ -11,13 +11,14 @@
     <artifactId>vaadin-flow-sockjs</artifactId>
     <packaging>jar</packaging>
     <name>vaadin-flow-sockjs</name>
-    <version>21.0.1-SNAPSHOT</version>
+    <version>23.0.0-SNAPSHOT</version>
     <description>Sockjs push connection implementation for Vaadin Flow</description>
     <url>https://github.com/mcollovati/vertx-vaadin</url>
 
     <properties>
         <flow-client.version>${vaadin.flow.version}</flow-client.version>
         <skipBuild>false</skipBuild>
+        <maven.compiler.source>1.8</maven.compiler.source>
 
         <sockjs-client.version>1.5.0</sockjs-client.version>
         <checkstyle.skip>false</checkstyle.skip>
@@ -93,12 +94,19 @@
                 <directory>${flow-client-generated-sources}</directory>
                 <includes>
                     <include>META-INF/resources/frontend/**</include>
+                    <include>META-INF/frontend/**</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>
         </resources>
         <plugins>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <sourcepath>${project.basedir}/src/main/java;${flow-client-generated-sources}</sourcepath>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -203,7 +211,7 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${flow-client-generated-sources}</outputDirectory>
                                     <includes>
-                                        com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**
+                                        com/vaadin/flow/linker/**,com/vaadin/client/**,META-INF/resources/frontend/**,META-INF/frontend/**
                                     </includes>
                                 </artifactItem>
                                 <artifactItem>
@@ -213,7 +221,7 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                                    <includes>META-INF/resources/frontend/**</includes>
+                                    <includes>META-INF/resources/frontend/**,META-INF/frontend/**</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

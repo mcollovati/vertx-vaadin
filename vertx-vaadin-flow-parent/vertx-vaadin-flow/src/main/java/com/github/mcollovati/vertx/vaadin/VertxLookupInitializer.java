@@ -1,15 +1,13 @@
 package com.github.mcollovati.vertx.vaadin;
 
-import com.vaadin.flow.di.AbstractLookupInitializer;
+import javax.servlet.ServletException;
+import java.util.Collection;
+import java.util.Map;
+
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
-
-import javax.servlet.ServletException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 import static java.util.Collections.singletonList;
 

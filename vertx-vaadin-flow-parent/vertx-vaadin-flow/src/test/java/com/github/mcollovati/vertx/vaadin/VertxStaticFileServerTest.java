@@ -231,18 +231,6 @@ public class VertxStaticFileServerTest implements Serializable {
         Mockito.when(routingContext.mountPoint()).thenReturn(encodedContextPath);
         Mockito.when(request.path()).thenReturn(requestURI);
         Mockito.when(request.uri()).thenReturn(requestURI);
-        /*
-        Mockito.when(request.getContextPath()).thenReturn(encodedContextPath);
-        Mockito.when(request.getServletPath()).thenReturn(servletPath);
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getRequestURI()).thenReturn(requestURI);
-         */
-    }
-
-    private void mockWebappResource(ClassLoader mockLoader, String pathInfo,
-                                    URL resourceUrl) {
-        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(resourceUrl);
     }
 
     @Test
@@ -250,7 +238,7 @@ public class VertxStaticFileServerTest implements Serializable {
         setupRequestURI("", "/static/file.png");
         Mockito.when(vaadinService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
-        Assert.assertTrue(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
@@ -258,14 +246,14 @@ public class VertxStaticFileServerTest implements Serializable {
         setupRequestURI("/foo", "/static/file.png");
         Mockito.when(vaadinService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
-        Assert.assertTrue(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
     public void isNotResourceRequest() throws Exception {
         setupRequestURI("", null);
         Mockito.when(vaadinService.getStaticResource("/")).thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
@@ -287,7 +275,7 @@ public class VertxStaticFileServerTest implements Serializable {
         Mockito.when(vaadinService.getStaticResource("/frontend"))
                 .thenReturn(folderPath);
         Assert.assertFalse("Folder on disk should not be a static resource.",
-                fileServer.isStaticResourceRequest(routingContext));
+                fileServer.serveStaticResource(routingContext));
 
         // Test any path ending with / to be seen as a directory
         setupRequestURI("", "/fake");
@@ -295,7 +283,7 @@ public class VertxStaticFileServerTest implements Serializable {
                 .thenReturn(new URL("file:///fake/"));
         Assert.assertFalse(
                 "Fake should not check the file system nor be a static resource.",
-                fileServer.isStaticResourceRequest(routingContext));
+                fileServer.serveStaticResource(routingContext));
 
         Path tempArchive = generateZipArchive(folder);
 
@@ -306,7 +294,7 @@ public class VertxStaticFileServerTest implements Serializable {
                         + "!/frontend"));
         Assert.assertFalse(
                 "Folder 'frontend' in jar should not be a static resource.",
-                fileServer.isStaticResourceRequest(routingContext));
+                fileServer.serveStaticResource(routingContext));
         setupRequestURI("", "/file.txt");
         Mockito.when(vaadinService.getStaticResource("/file.txt"))
                 .thenReturn(new URL("jar:file:///"
@@ -314,7 +302,7 @@ public class VertxStaticFileServerTest implements Serializable {
                         + "!/file.txt"));
         Assert.assertTrue(
                 "File 'file.txt' inside jar should be a static resource.",
-                fileServer.isStaticResourceRequest(routingContext));
+                fileServer.serveStaticResource(routingContext));
 
         folder.delete();
     }
@@ -645,39 +633,39 @@ public class VertxStaticFileServerTest implements Serializable {
                     }
                 }));
 
-        Assert.assertFalse(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
-    public void manifestPath_isResourceRequest() {
+    public void manifestPath_isResourceRequest() throws IOException {
         setupRequestURI("", "/sw.js");
         Mockito.when(vaadinService.getStaticResource("/sw.js"))
                 .thenReturn(null);
-        Assert.assertTrue(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
-    public void manifestPath_isResourceRequest_withContextPath() {
+    public void manifestPath_isResourceRequest_withContextPath() throws IOException {
         setupRequestURI("/foo", "/sw.js");
         Mockito.when(vaadinService.getStaticResource("/sw.js"))
                 .thenReturn(null);
-        Assert.assertTrue(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
-    public void manifestPath_indexHtml_isNotResourceRequest() {
+    public void manifestPath_indexHtml_isNotResourceRequest() throws IOException {
         setupRequestURI("", "/index.html");
         Mockito.when(vaadinService.getStaticResource("/index.html"))
                 .thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
-    public void manifestPath_indexHtml_isNotResourceRequest_withContextPath() {
+    public void manifestPath_indexHtml_isNotResourceRequest_withContextPath() throws IOException {
         setupRequestURI("/foo", "/index.html");
         Mockito.when(vaadinService.getStaticResource("/index.html"))
                 .thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(routingContext));
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
@@ -1117,7 +1105,6 @@ public class VertxStaticFileServerTest implements Serializable {
 
         setupRequestURI("", "/frontend/src/webjars/foo/bar.js");
 
-        Assert.assertTrue(fileServer.isStaticResourceRequest(routingContext));
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertArrayEquals(fileData, responseOutput.getBytes());
     }
@@ -1135,10 +1122,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
         setupRequestURI("", "/frontend/src/webjars/foo/bar.js");
 
-        Assert.assertFalse(fileServer.isStaticResourceRequest(routingContext));
-        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test

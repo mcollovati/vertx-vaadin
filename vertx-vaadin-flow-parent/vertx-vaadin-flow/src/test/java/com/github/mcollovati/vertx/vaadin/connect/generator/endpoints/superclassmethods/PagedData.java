@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
-import com.vaadin.fusion.EndpointExposed;
+import dev.hilla.EndpointExposed;
 
 import java.util.Collections;
 import java.util.List;

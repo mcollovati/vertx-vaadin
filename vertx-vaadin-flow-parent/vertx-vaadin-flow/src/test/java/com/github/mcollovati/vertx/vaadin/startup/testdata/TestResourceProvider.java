@@ -20,6 +20,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 public class TestResourceProvider implements ResourceProvider {
@@ -31,7 +32,7 @@ public class TestResourceProvider implements ResourceProvider {
 
     @Override
     public List<URL> getApplicationResources(String path) throws IOException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

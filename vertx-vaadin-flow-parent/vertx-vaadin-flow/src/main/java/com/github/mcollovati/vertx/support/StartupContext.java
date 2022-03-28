@@ -51,8 +51,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinConfig;
-import com.vaadin.flow.server.VaadinConfig;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
@@ -65,8 +63,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.impl.FileResolver;
+import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.FileResolverFactory;
+import io.vertx.core.spi.file.FileResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,13 +95,13 @@ public final class StartupContext implements VaadinConfig {
 
     @Override
     public VaadinContext getVaadinContext() {
-        return new VertxVaadinContext(vertx);
+        return new VertxVaadinContext(context);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Enumeration<String> getConfigParameterNames() {
-        return (Enumeration<String>)vaadinOptions.asProperties().propertyNames();
+        return (Enumeration<String>) vaadinOptions.asProperties().propertyNames();
     }
 
     @Override
@@ -227,7 +228,8 @@ public final class StartupContext implements VaadinConfig {
         @Override
         public URL getResource(String path) throws MalformedURLException {
             FileSystem fileSystem = startupContext.vertx.fileSystem();
-            FileResolver fileResolver = new FileResolver();
+            FileResolver fileResolver = startupContext.vertx instanceof VertxInternal ?
+                ((VertxInternal) startupContext.vertx).fileResolver() : new FileResolverImpl();
             String relativePath = toRelativePath(path);
             URI resourceURI = Stream.of(relativePath, "META-INF/resources/" + relativePath)
                 .filter(fileSystem::existsBlocking)

@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Set;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
@@ -60,7 +62,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
- *
+ * <p>
  * Code adapted from the original {@link com.vaadin.flow.server.communication.StreamReceiverHandler}
  */
 public class StreamReceiverHandler implements Serializable {
@@ -73,7 +75,7 @@ public class StreamReceiverHandler implements Serializable {
     /**
      * An UploadInterruptedException will be thrown by an ongoing upload if
      * {@link StreamVariable#isInterrupted()} returns <code>true</code>.
-     *
+     * <p>
      * By checking the exception of an
      * {@link StreamVariable.StreamingErrorEvent} or {link FailedEvent} against
      * this class, it is possible to determine if an upload was interrupted by
@@ -109,7 +111,9 @@ public class StreamReceiverHandler implements Serializable {
         session.lock();
         try {
             String secKey = streamReceiver.getId();
-            if (secKey == null || !secKey.equals(securityKey)) {
+            if (secKey == null || !MessageDigest.isEqual(
+                secKey.getBytes(StandardCharsets.UTF_8),
+                securityKey.getBytes(StandardCharsets.UTF_8))) {
                 getLogger().warn(
                     "Received incoming stream with faulty security key.");
                 return;
@@ -423,8 +427,9 @@ public class StreamReceiverHandler implements Serializable {
             } finally {
                 session.unlock();
             }
+            return now;
         }
-        return now;
+        return lastStreamingEvent;
     }
 
     /**

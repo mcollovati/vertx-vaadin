@@ -25,13 +25,13 @@ public class TestBootVerticle extends VaadinVerticle {
     protected void serviceInitialized(VertxVaadinService service, Router router) {
         String mountPoint = service.getVaadinOptions().mountPoint();
         config().getJsonArray("mountAliases", new JsonArray())
-                .stream()
-                .map(String.class::cast)
-                .forEach(alias -> router.routeWithRegex(alias + "/.*").handler(ctx -> {
+            .stream()
+            .map(String.class::cast)
+            .forEach(alias -> router.routeWithRegex(alias + "/.*").handler(ctx -> {
 
-                    ctx.reroute(ctx.request().uri()
-                            .replaceFirst(alias + "/", mountPoint + "/"));
-                }));
+                ctx.reroute(ctx.request().uri()
+                    .replaceFirst(alias + "/", mountPoint + "/"));
+            }));
         TestBootVerticle.viewLocators.put(deploymentID(), new ViewClassLocator(getClass().getClassLoader()));
         router.get("/__check-start").order(0).handler(ctx -> {
             LOGGER.trace("======================== check start");
@@ -41,8 +41,7 @@ public class TestBootVerticle extends VaadinVerticle {
             if (devModeHandler != null) {
                 LOGGER.trace("======================== check start. dev mod 1");
                 try {
-                    Field startFutureField = devModeHandler.getClass().getDeclaredField("devServerStartFuture");
-                    startFutureField.setAccessible(true);
+                    Field startFutureField = findStartFutureField(devModeHandler.getClass());
                     CompletableFuture<?> o = (CompletableFuture<?>) startFutureField.get(devModeHandler);
                     if (o.isDone()) {
                         LOGGER.info("DevModeHandler ready");
@@ -58,6 +57,20 @@ public class TestBootVerticle extends VaadinVerticle {
             LOGGER.trace("======================== check start -> " + response.getStatusCode());
             response.end();
         });
+    }
+
+    private Field findStartFutureField(Class<?> clazz) throws NoSuchFieldException {
+        do {
+            try {
+                Field field = clazz.getDeclaredField("devServerStartFuture");
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        while (clazz != Object.class);
+        throw new NoSuchFieldException("Cannot find devServerStartFuture");
     }
 
     public static ViewClassLocator getViewLocator(VaadinService vaadinService) {

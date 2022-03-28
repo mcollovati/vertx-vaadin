@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.vaadin.fusion.EndpointNameChecker;
-import com.vaadin.fusion.EndpointRegistry;
+import dev.hilla.EndpointNameChecker;
+import dev.hilla.EndpointRegistry;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

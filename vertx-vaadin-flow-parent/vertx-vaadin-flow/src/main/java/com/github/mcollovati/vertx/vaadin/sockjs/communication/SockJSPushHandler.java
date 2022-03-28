@@ -25,20 +25,30 @@ package com.github.mcollovati.vertx.vaadin.sockjs.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import com.vaadin.base.devserver.DebugWindowMessage;
+import com.vaadin.base.devserver.FeatureFlagMessage;
+import com.vaadin.base.devserver.ServerInfo;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
@@ -55,20 +65,30 @@ import com.vaadin.flow.server.communication.ServerRpcHandler;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import elemental.json.JsonException;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
+import io.vertx.ext.auth.User;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.ParsedHeaderValues;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSSocket;
-import io.vertx.ext.web.impl.RoutingContextDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +98,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Source code adapted from Vaadin {@link com.vaadin.flow.server.communication.PushHandler}
  */
-public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveReload {
+public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLiveReload {
 
     private static final Logger logger = LoggerFactory.getLogger(SockJSPushHandler.class);
 
@@ -177,9 +197,15 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
         String uuid = sockJSSocket.writeHandlerID();
         connectedSocketsLocalMap.put(uuid, asSharable(sockJSSocket));
 
-        if (isLiveReloadConnection(routingContext)) {
+        if (isDebugWindowConnection(routingContext)) {
             liveReload.add(uuid);
             sockJSSocket.write("{\"command\": \"hello\"}");
+            sendDebugWindowCommand(sockJSSocket, "serverInfo", new ServerInfo());
+            sendDebugWindowCommand(sockJSSocket, "featureFlags", new FeatureFlagMessage(FeatureFlags
+                .get(service.getContext()).getFeatures().stream()
+                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
+                .collect(Collectors.toList())));
+
         } else {
             // Send an ACK
             sockJSSocket.write("ACK-CONN|" + uuid);
@@ -195,20 +221,24 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
         }
     }
 
+    private void sendDebugWindowCommand(SockJSSocket sockJSSocket, String command, Object data) {
+        try {
+            sockJSSocket.write(Json.encode(new DebugWindowMessage(command, data)));
+        } catch (Exception e) {
+            logger.error("Error sending message", e);
+        }
+    }
+
     private SockJSSocket asSharable(SockJSSocket socket) {
         if (socket instanceof Shareable) {
             return socket;
         }
         return new ShareableSockJsSocket(socket);
     }
-    private boolean isLiveReloadConnection(RoutingContext routingContext) {
-        //String refreshConnection = routingContext.request().getParam(ApplicationConstants.LIVE_RELOAD_CONNECTION);
 
+    private boolean isDebugWindowConnection(RoutingContext routingContext) {
         return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
-            && Boolean.TRUE.equals(routingContext.get(ApplicationConstants.LIVE_RELOAD_CONNECTION))
-            //&& refreshConnection != null
-            ////&& AtmosphereResource.TRANSPORT.WEBSOCKET.equals(resource.transport())
-            ;
+            && routingContext.queryParams().contains(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
     }
 
     private void initSocket(SockJSSocket sockJSSocket, RoutingContext routingContext, PushSocket socket) {
@@ -242,7 +272,26 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
     }
 
     private void onMessage(PushEvent event) {
-        callWithUi(event, receiveCallback);
+        boolean isLiveReload = liveReload.contains(event.socket.getUUID());
+        if (isLiveReload) {
+            String message = event.message().map(Buffer::toString).orElse("");
+            if (message.isEmpty()) {
+                logger.debug("Received live reload heartbeat");
+                return;
+            }
+            elemental.json.JsonObject json = elemental.json.Json.parse(message);
+            String command = json.getString("command");
+            if ("setFeature".equals(command)) {
+                elemental.json.JsonObject data = json.getObject("data");
+                FeatureFlags.get(service.getContext()).setEnabled(data.getString("featureId"),
+                    data.getBoolean("enabled"));
+            } else if ("reportTelemetry".equals(command)) {
+                elemental.json.JsonObject data = json.getObject("data");
+                DevModeUsageStatistics.handleBrowserData(data);
+            }
+        } else {
+            callWithUi(event, receiveCallback);
+        }
     }
 
     @Override
@@ -475,7 +524,9 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
     private static boolean isPushIdValid(VaadinSession session, String requestPushId) {
 
         String sessionPushId = session.getPushId();
-        return requestPushId != null && requestPushId.equals(sessionPushId);
+        return requestPushId != null && MessageDigest.isEqual(
+            requestPushId.getBytes(StandardCharsets.UTF_8), sessionPushId.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     /**
@@ -619,27 +670,27 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
 
 }
 
-class SockJSRoutingContext extends RoutingContextDecorator {
+class SockJSRoutingContext implements RoutingContext {
 
+    private final RoutingContext decoratedContext;
     private final List<Handler<Void>> headersEndHandlers = new ArrayList<>();
     private final Handler<RoutingContext> action;
     private Session session;
 
     SockJSRoutingContext(RoutingContext source, Handler<RoutingContext> action) {
-        super(source.currentRoute(), source);
+        decoratedContext = source;
         this.action = action;
     }
 
 
     @Override
     public HttpServerResponse response() {
-        return new HttpServerResponseWrapper(super.response()) {
+        return new HttpServerResponseWrapper(decoratedContext.response()) {
             @Override
             public int getStatusCode() {
                 return 200;
             }
         };
-
     }
 
     @Override
@@ -654,6 +705,7 @@ class SockJSRoutingContext extends RoutingContextDecorator {
 
     @Override
     public void next() {
+        // make sure the next handler run on the correct context
         vertx().runOnContext(future -> {
             action.handle(this);
             headersEndHandlers.forEach(h -> h.handle(null));
@@ -664,6 +716,239 @@ class SockJSRoutingContext extends RoutingContextDecorator {
     public int addHeadersEndHandler(Handler<Void> handler) {
         headersEndHandlers.add(handler);
         return headersEndHandlers.size();
+    }
+
+
+    @Override
+    public int addBodyEndHandler(Handler<Void> handler) {
+        return decoratedContext.addBodyEndHandler(handler);
+    }
+
+    @Override
+    public RoutingContext addCookie(io.vertx.core.http.Cookie cookie) {
+        return decoratedContext.addCookie(cookie);
+    }
+
+    @Override
+    public int addEndHandler(Handler<AsyncResult<Void>> handler) {
+        return decoratedContext.addEndHandler(handler);
+    }
+
+    @Override
+    public int cookieCount() {
+        return decoratedContext.cookieCount();
+    }
+
+    @Override
+    public Map<String, Cookie> cookieMap() {
+        return decoratedContext.cookieMap();
+    }
+
+    @Override
+    public Route currentRoute() {
+        return decoratedContext.currentRoute();
+    }
+
+    @Override
+    public Map<String, Object> data() {
+        return decoratedContext.data();
+    }
+
+    @Override
+    public void fail(int statusCode) {
+        // make sure the fail handler run on the correct context
+        vertx().runOnContext(future -> decoratedContext.fail(statusCode));
+    }
+
+    @Override
+    public void fail(Throwable throwable) {
+        // make sure the fail handler run on the correct context
+        vertx().runOnContext(future -> decoratedContext.fail(throwable));
+    }
+
+    @Override
+    public void fail(int statusCode, Throwable throwable) {
+        vertx().runOnContext(future -> decoratedContext.fail(statusCode, throwable));
+    }
+
+    @Override
+    public boolean failed() {
+        return decoratedContext.failed();
+    }
+
+    @Override
+    public Throwable failure() {
+        return decoratedContext.failure();
+    }
+
+    @Override
+    public Set<FileUpload> fileUploads() {
+        return decoratedContext.fileUploads();
+    }
+
+    @Override
+    public <T> T get(String key) {
+        return decoratedContext.get(key);
+    }
+
+    @Override
+    public <T> T get(String key, T defaultValue) {
+        return decoratedContext.get(key, defaultValue);
+    }
+
+    @Override
+    public <T> T remove(String key) {
+        return decoratedContext.remove(key);
+    }
+
+    @Override
+    public String getAcceptableContentType() {
+        return decoratedContext.getAcceptableContentType();
+    }
+
+    @Override
+    public Buffer getBody() {
+        return decoratedContext.getBody();
+    }
+
+    @Override
+    public JsonObject getBodyAsJson(int maxAllowedLength) {
+        return decoratedContext.getBodyAsJson(maxAllowedLength);
+    }
+
+    @Override
+    public JsonArray getBodyAsJsonArray(int maxAllowedLength) {
+        return decoratedContext.getBodyAsJsonArray(maxAllowedLength);
+    }
+
+    @Override
+    public String getBodyAsString() {
+        return decoratedContext.getBodyAsString();
+    }
+
+    @Override
+    public String getBodyAsString(String encoding) {
+        return decoratedContext.getBodyAsString(encoding);
+    }
+
+    @Override
+    public Cookie getCookie(String name) {
+        return decoratedContext.getCookie(name);
+    }
+
+    @Override
+    public String mountPoint() {
+        return decoratedContext.mountPoint();
+    }
+
+    @Override
+    public String normalizedPath() {
+        return decoratedContext.normalizedPath();
+    }
+
+    @Override
+    public RoutingContext put(String key, Object obj) {
+        return decoratedContext.put(key, obj);
+    }
+
+    @Override
+    public boolean removeBodyEndHandler(int handlerID) {
+        return decoratedContext.removeBodyEndHandler(handlerID);
+    }
+
+    @Override
+    public Cookie removeCookie(String name, boolean invalidate) {
+        return decoratedContext.removeCookie(name, invalidate);
+    }
+
+    @Override
+    public boolean removeEndHandler(int handlerID) {
+        return decoratedContext.removeEndHandler(handlerID);
+    }
+
+    @Override
+    public boolean removeHeadersEndHandler(int handlerID) {
+        return decoratedContext.removeHeadersEndHandler(handlerID);
+    }
+
+    @Override
+    public HttpServerRequest request() {
+        return decoratedContext.request();
+    }
+
+    @Override
+    public User user() {
+        return decoratedContext.user();
+    }
+
+    @Override
+    public boolean isSessionAccessed() {
+        return decoratedContext.isSessionAccessed();
+    }
+
+    @Override
+    public ParsedHeaderValues parsedHeaders() {
+        return decoratedContext.parsedHeaders();
+    }
+
+    @Override
+    public void setAcceptableContentType(String contentType) {
+        decoratedContext.setAcceptableContentType(contentType);
+    }
+
+    @Override
+    public void reroute(HttpMethod method, String path) {
+        decoratedContext.reroute(method, path);
+    }
+
+    @Override
+    public Map<String, String> pathParams() {
+        return decoratedContext.pathParams();
+    }
+
+    @Override
+    public String pathParam(String name) {
+        return decoratedContext.pathParam(name);
+    }
+
+    @Override
+    public MultiMap queryParams() {
+        return decoratedContext.queryParams();
+    }
+
+    @Override
+    public MultiMap queryParams(Charset charset) {
+        return decoratedContext.queryParams(charset);
+    }
+
+    @Override
+    public List<String> queryParam(String query) {
+        return decoratedContext.queryParam(query);
+    }
+
+    @Override
+    public void setBody(Buffer body) {
+        decoratedContext.setBody(body);
+    }
+
+    @Override
+    public void setUser(User user) {
+        decoratedContext.setUser(user);
+    }
+
+    @Override
+    public void clearUser() {
+        decoratedContext.clearUser();
+    }
+
+    @Override
+    public int statusCode() {
+        return decoratedContext.statusCode();
+    }
+
+    @Override
+    public Vertx vertx() {
+        return decoratedContext.vertx();
     }
 
 }

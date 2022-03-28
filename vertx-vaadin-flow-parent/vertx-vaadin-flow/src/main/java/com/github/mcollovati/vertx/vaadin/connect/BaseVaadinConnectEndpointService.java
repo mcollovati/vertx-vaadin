@@ -31,10 +31,10 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.fusion.EndpointRegistry;
-import com.vaadin.fusion.ExplicitNullableTypeChecker;
-import com.vaadin.fusion.exception.EndpointException;
-import com.vaadin.fusion.exception.EndpointValidationException;
+import dev.hilla.EndpointRegistry;
+import dev.hilla.ExplicitNullableTypeChecker;
+import dev.hilla.exception.EndpointException;
+import dev.hilla.exception.EndpointValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -31,7 +31,7 @@ public class ViewClassLocator {
             .enableClassInfo()
             .enableMethodInfo()
             .ignoreClassVisibility()
-            .overrideClassLoaders(classLoader)
+            .addClassLoader(classLoader)
             .scan()) {
 
             //noinspection unchecked

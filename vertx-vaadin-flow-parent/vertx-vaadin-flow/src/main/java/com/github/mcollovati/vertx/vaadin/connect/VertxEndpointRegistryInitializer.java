@@ -26,8 +26,8 @@ import com.github.mcollovati.vertx.support.FusionWorkAround;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
-import com.vaadin.fusion.Endpoint;
-import com.vaadin.fusion.EndpointNameChecker;
+import dev.hilla.Endpoint;
+import dev.hilla.EndpointNameChecker;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -39,21 +39,22 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
 
     @Override
     public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
-
-        if (set == null) {
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(ctx);
+        if (set == null || !Boolean.parseBoolean(vaadinServletContext.getContextParameter("hilla.enabled"))) {
             return;
         }
         FusionWorkAround.install();
         ClassFinder finder = new ClassFinder.DefaultClassFinder(set);
         Set<Class<?>> endpoints = finder.getAnnotatedClasses(Endpoint.class);
-        new VaadinServletContext(ctx).setAttribute(VaadinEndpointRegistry.class, fromClasses(endpoints));
+
+        vaadinServletContext.setAttribute(VaadinEndpointRegistry.class, fromClasses(endpoints));
     }
 
     static VaadinEndpointRegistry fromClasses(Set<Class<?>> endpoints) {
         VaadinEndpointRegistry registry = new VertxEndpointRegistry(new EndpointNameChecker());
         endpoints.stream()
-                .map(VertxEndpointRegistryInitializer::newInstance)
-                .forEach(registry::registerEndpoint);
+            .map(VertxEndpointRegistryInitializer::newInstance)
+            .forEach(registry::registerEndpoint);
         return registry;
     }
 

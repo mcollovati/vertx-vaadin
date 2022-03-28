@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.VaadinConfig;
+import com.vaadin.flow.server.VaadinContext;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -65,14 +66,24 @@ public final class VaadinOptions {
         return config.getString("mountPoint", "");
     }
 
-    public String connectEndpoint() {
+    public boolean hillaEnabled() {
+        return config.getBoolean("hilla.enabled", false);
+    }
+
+    public String hillaEndpoint() {
         return config.getString("endpoint.prefix", "/connect");
+    }
+
+    @Deprecated
+    public String connectEndpoint() {
+        return hillaEndpoint();
     }
 
     public String pushURL() {
         String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
-        if (pushURL.startsWith(mountPoint())) {
-            return pushURL.substring(mountPoint().length());
+        String mountPoint = mountPoint();
+        if (pushURL.startsWith(mountPoint)) {
+            return "/" + pushURL.substring(mountPoint().length()).replaceFirst("^/", "");
         }
         return pushURL;
     }
@@ -114,8 +125,8 @@ public final class VaadinOptions {
         properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
     }
 
-    VaadinConfig asVaadinConfig(Vertx vertx) {
-        return new VertxVaadinConfig(config, new VertxVaadinContext(vertx));
+    VaadinConfig asVaadinConfig(VaadinContext context) {
+        return new VertxVaadinConfig(config, context);
     }
 
     long sockJSHeartbeatInterval() {

@@ -25,7 +25,7 @@ package com.github.mcollovati.vertx.vaadin.sockjs.communication;
 /**
  * Provides a way to reload browser tabs via web socket connection.
  */
-public interface SockJSLiveReload {
+public interface VertxVaadinLiveReload {
 
     /**
      * Requests reload

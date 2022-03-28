@@ -40,6 +40,8 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
@@ -47,6 +49,7 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -200,7 +203,16 @@ public class MockServiceSessionSetup {
     }
     
     public static class TestRouteRegistry extends ApplicationRouteRegistry {
+        /**
+         * Creates a new test route registry.
+         */
+        public TestRouteRegistry() {
+            super(new MockVaadinContext(new DefaultRoutePathProvider()));
+        }
 
+        public TestRouteRegistry(RoutePathProvider provider) {
+            super(new MockVaadinContext(provider));
+        }
     }
 
     public class TestVertxVaadinService extends VertxVaadinService {

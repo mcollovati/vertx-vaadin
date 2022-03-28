@@ -73,6 +73,11 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     }
 
     @Override
+    public SockJSSocket closeHandler(Handler<Void> closeHandler) {
+        return socket.closeHandler(closeHandler);
+    }
+
+    @Override
     public Future<Void> write(Buffer data) {
         return socket.write(data);
     }

@@ -23,22 +23,20 @@
 package com.github.mcollovati.vertx.http;
 
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.vaadin.base.devserver.DevModeHandlerImpl;
+import com.vaadin.base.devserver.AbstractDevServerRunner;
+import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.StaticFileServer;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.http.RequestOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -53,15 +51,30 @@ public class HttpReverseProxy {
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
 
-    private WebClient client;
-    private BiFunction<HttpMethod, String, RequestOptions> requestFactory;
 
-    public HttpReverseProxy(CompletableFuture<WebClient> webClientFuture) {
+    private WebClient client;
+    private UnaryOperator<String> uriCustomizer;
+
+    public HttpReverseProxy(CompletableFuture<WebClient> webClientFuture, UnaryOperator<String> uriCustomizer) {
         webClientFuture.whenComplete((wc, err) -> {
             if (err == null) {
                 client = wc;
             }
         });
+        this.uriCustomizer = uriCustomizer;
+    }
+
+    private static UnaryOperator<String> createUriCustomizer(DevModeHandler devModeHandler) {
+        boolean isVite = devModeHandler instanceof ViteHandler;
+        if (isVite) {
+            return path -> {
+                if ("/index.html".equals(path)) {
+                    return "/VAADIN/index.html";
+                }
+                return path;
+            };
+        }
+        return UnaryOperator.identity();
     }
 
 
@@ -77,24 +90,38 @@ public class HttpReverseProxy {
                     .setDefaultPort(port);
                 return WebClient.create(vertx, options);
             });
-        return new HttpReverseProxy(webClientFuture);
+        return new HttpReverseProxy(webClientFuture, createUriCustomizer(devModeHandler));
     }
 
     public void forward(RoutingContext routingContext) {
+        HttpServerRequest serverRequest = routingContext.request();
+        String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
         if (client == null) {
             logger.debug("DevMode serve not yet started");
             routingContext.next();
+        } else if (requestURI.equals("") || requestURI.equals("/")) {
+            // Index file must be handled by IndexHtmlRequestHandler
+            logger.debug("Not a DevMode server request, Index file must be handled by IndexHtmlRequestHandler");
+            routingContext.next();
         } else {
 
-            HttpServerRequest serverRequest = routingContext.request();
-            String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
+            if (StaticFileServer.APP_THEME_PATTERN.matcher(requestURI).find()) {
+                requestURI = "/VAADIN/static" + requestURI;
+            }
+            requestURI = uriCustomizer.apply(requestURI);
+
             logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
 
-            HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), requestURI);
+            String devServerRequestPath = UrlUtil.encodeURI(requestURI) +
+                ((serverRequest.query() != null) ? "?" + serverRequest.query() : "");
+
+
+            HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), devServerRequestPath);
             serverRequest.headers().forEach(entry -> {
                 String valueOk = "Connection".equals(entry.getKey()) ? "close" : entry.getValue();
                 clientRequest.putHeader(entry.getKey(), valueOk);
             });
+
 
             clientRequest.sendBuffer(routingContext.getBody(), ar -> {
                 if (ar.succeeded()) {
@@ -102,38 +129,39 @@ public class HttpReverseProxy {
                     int statusCode = clientResponse.statusCode();
                     HttpServerResponse serverResponse = routingContext.response();
                     if (statusCode == HttpResponseStatus.OK.code()) {
-                        logger.debug("Served resource by webpack: {} {}", clientResponse.statusCode(), requestURI);
+                        logger.debug("Served resource by webpack: {} {}", clientResponse.statusCode(), devServerRequestPath);
                         serverResponse.setStatusCode(statusCode).setChunked(true);
                         serverResponse.headers().setAll(clientResponse.headers());
                         serverResponse.end(clientResponse.body());
                     } else if (statusCode == HttpResponseStatus.NOT_FOUND.code()) {
-                        logger.debug("Resource not served by webpack {}", requestURI);
+                        logger.debug("Resource not served by webpack {}", devServerRequestPath);
                         routingContext.next();
                     } else if (statusCode < 400) {
-                        logger.debug("Webpack response {} for resource {}", statusCode, requestURI);
+                        logger.debug("Webpack response {} for resource {}", statusCode, devServerRequestPath);
                         serverResponse.headers().setAll(clientResponse.headers());
                         serverResponse.setStatusCode(statusCode).end();
                     } else {
-                        logger.debug("Webpack failed with status {} for resource {}", statusCode, requestURI);
+                        logger.debug("Webpack failed with status {} for resource {}", statusCode, devServerRequestPath);
                         routingContext.fail(statusCode);
                     }
                 } else {
-                    logger.warn("Request to webpack failed: {}", requestURI, ar.cause());
+                    logger.warn("Request to webpack failed: {}", devServerRequestPath, ar.cause());
                     routingContext.next();
                 }
             });
         }
     }
 
+
     @SuppressWarnings("unchecked")
     private static CompletableFuture<Integer> getDevModeHandlerFuture(DevModeHandler devModeHandler) {
 
         try {
             // TODO: find a way to remove explicit cast on DevModeHandlerImpl
-            Field devServerStartFuture = DevModeHandlerImpl.class.getDeclaredField("devServerStartFuture");
+            Field devServerStartFuture = AbstractDevServerRunner.class.getDeclaredField("devServerStartFuture");
             devServerStartFuture.setAccessible(true);
             return ((CompletableFuture<Void>) devServerStartFuture.get(devModeHandler))
-                .thenApply(unused -> ((DevModeHandlerImpl)devModeHandler).getPort());
+                .thenApply(unused -> ((AbstractDevServerRunner) devModeHandler).getPort());
         } catch (Exception ex) {
             logger.error("Cannot get DevModHandler future", ex);
             CompletableFuture<Integer> future = new CompletableFuture<>();

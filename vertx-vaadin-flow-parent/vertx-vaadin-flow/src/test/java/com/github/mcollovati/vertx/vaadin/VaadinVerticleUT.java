@@ -22,21 +22,24 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.github.mcollovati.failures.lookup.FakeLookupInitializer;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class VaadinVerticleTest {
+public class VaadinVerticleUT {
 
     @Rule
     public RunTestOnContext rule = new RunTestOnContext();
@@ -63,12 +66,25 @@ public class VaadinVerticleTest {
         ));
     }
 
+    @Test
+    public void shouldPropagateFailureIfInitializationFails(TestContext context) {
+        TestVerticle verticle = new TestVerticle();
+        JsonObject config = testConfig();
+        config.getJsonObject("vaadin").getJsonArray("flowBasePackages")
+            .add(FakeLookupInitializer.class.getPackage().getName());
+        DeploymentOptions opts = new DeploymentOptions().setConfig(config);
+        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertFailure(ev ->
+            Assertions.assertThat(ev).isExactlyInstanceOf(ServletException.class)
+        ));
+    }
+
     private JsonObject testConfig() {
         return new JsonObject()
             .put("server", new JsonObject().put("port", 0))
             .put("vaadin", new JsonObject()
+                .put("hilla.enabled", false)
                 .put("productionMode", true)
-                .put("flowBasePackages", new JsonArray(Collections.singletonList(getClass().getPackage().getName())))
+                .put("flowBasePackages", new JsonArray().add(getClass().getPackage().getName()))
             );
     }
 

@@ -33,13 +33,13 @@ import java.util.Optional;
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
 import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -52,13 +52,17 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.impl.FileResolver;
+import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.file.FileResolver;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,13 +127,13 @@ public class VertxVaadinService extends VaadinService {
         handlers.replaceAll(RequestHandlerReplacements::replace);
         if (getDeploymentConfiguration().enableDevServer()) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
-                    .getDevModeHandler(this);
+                .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
                 handlers.add(handlerManager.get());
             } else {
                 logger.warn("no DevModeHandlerManager implementation found "
-                                + "but dev server enabled. Include the "
-                                + "com.vaadin.vaadin-dev-server dependency.");
+                    + "but dev server enabled. Include the "
+                    + "com.vaadin.vaadin-dev-server dependency.");
             }
         }
         addBootstrapHandler(handlers);
@@ -258,12 +262,15 @@ public class VertxVaadinService extends VaadinService {
     }
 
     private URL tryResolveFile(String path) {
-        FileSystem fileSystem = getVertx().fileSystem();
+        Vertx vertx = getVertx();
+        FileSystem fileSystem = vertx.fileSystem();
         String relativePath = makePathRelative(path);
         if (fileSystem.existsBlocking(relativePath)) {
             try {
-                return new FileResolver()
-                    .resolveFile(relativePath).toURI().toURL();
+                FileResolver fileResolver = (vertx instanceof VertxInternal) ?
+                    ((VertxInternal) vertx).fileResolver() :
+                    new FileResolverImpl();
+                return fileResolver.resolveFile(relativePath).toURI().toURL();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
