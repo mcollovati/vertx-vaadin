@@ -93,8 +93,10 @@ jobs:
       - run: ./mvnw -Prelease,release-flow -pl :vaadin-flow-sockjs,:vertx-vaadin-flow -DskipTests clean deploy
       - run: ./tools/build_flow_widgetsets.sh deploy
   ui-tests:
-    docker:
-      - image: circleci/openjdk:11-jdk-browsers
+    #docker:
+    #  - image: circleci/openjdk:11-jdk-browsers
+    machine:
+      image: ubuntu-2004:current
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
@@ -102,6 +104,17 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: enable ipv6
+          command: |
+            cat \<<'EOF' | sudo tee /etc/docker/daemon.json
+            {
+              "ipv6": true,
+              "fixed-cidr-v6": "2001:db8:1::/64"
+            }
+            EOF
+
+            sudo service docker restart        
       - restore_cache:
           keys:
             - ui-tests-dependencies-{{ checksum "pom.xml" }}
