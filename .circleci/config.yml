@@ -77,7 +77,7 @@ jobs:
       - run: ./tools/build_v8_widgetsets.sh deploy
   deploy-vaadin-flow:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:11-jdk
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
@@ -94,7 +94,7 @@ jobs:
       - run: ./tools/build_flow_widgetsets.sh deploy
   ui-tests:
     docker:
-      - image: circleci/openjdk:8-jdk-browsers
+      - image: circleci/openjdk:11-jdk-browsers
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
