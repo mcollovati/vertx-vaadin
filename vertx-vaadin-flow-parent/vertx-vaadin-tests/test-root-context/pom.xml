@@ -20,7 +20,7 @@
             DependenciesLoadingAnnotationsIT, FrontendInlineApiIT,
             RouteNotFoundProdModeIT
         </exclude.it.tests>
-        <verticleStartTimeout>60000</verticleStartTimeout>
+        <verticleStartTimeout>300000</verticleStartTimeout>
     </properties>
 
     <dependencies>
