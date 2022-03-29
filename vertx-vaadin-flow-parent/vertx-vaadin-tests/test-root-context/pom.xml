@@ -298,6 +298,7 @@
                             <systemPropertyVariables>
                                 <com.vaadin.testbench.Parameters.testsInParallel>1
                                 </com.vaadin.testbench.Parameters.testsInParallel>
+                                <com.vaadin.testbench.Parameters.maxAttempts>2</com.vaadin.testbench.Parameters.maxAttempts>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

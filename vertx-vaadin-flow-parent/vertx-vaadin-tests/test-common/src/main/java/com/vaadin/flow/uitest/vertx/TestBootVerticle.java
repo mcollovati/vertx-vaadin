@@ -1,6 +1,9 @@
 package com.vaadin.flow.uitest.vertx;
 
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -41,13 +44,13 @@ public class TestBootVerticle extends VaadinVerticle {
             if (devModeHandler != null) {
                 LOGGER.trace("======================== check start. dev mod 1");
                 try {
-                    Field startFutureField = findStartFutureField(devModeHandler.getClass());
-                    CompletableFuture<?> o = (CompletableFuture<?>) startFutureField.get(devModeHandler);
-                    if (o.isDone()) {
+                    Method isRunningMethod = findIsRunningMethod(devModeHandler.getClass());
+                    boolean isRunning = (boolean) isRunningMethod.invoke(devModeHandler);
+                    if (isRunning) {
                         LOGGER.info("DevModeHandler ready");
                         response.setStatusCode(200);
                     }
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                } catch (NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                     LOGGER.trace("======================== check start. dev mod err ");
                 }
@@ -59,13 +62,13 @@ public class TestBootVerticle extends VaadinVerticle {
         });
     }
 
-    private Field findStartFutureField(Class<?> clazz) throws NoSuchFieldException {
+    private Method findIsRunningMethod(Class<?> clazz) throws NoSuchFieldException {
         do {
             try {
-                Field field = clazz.getDeclaredField("devServerStartFuture");
-                field.setAccessible(true);
-                return field;
-            } catch (NoSuchFieldException e) {
+                Method method = clazz.getDeclaredMethod("isRunning");
+                method.setAccessible(true);
+                return method;
+            } catch (NoSuchMethodException e) {
                 clazz = clazz.getSuperclass();
             }
         }
