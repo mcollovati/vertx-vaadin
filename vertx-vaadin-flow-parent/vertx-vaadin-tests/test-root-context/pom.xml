@@ -134,6 +134,7 @@
                 <configuration>
                     <frontendResourcesDirectory>${project.build.outputDirectory}/META-INF/resources/frontend</frontendResourcesDirectory>
                 </configuration>
+                <!--
                 <executions>
                     <execution>
                         <id>auto-clean</id>
@@ -143,6 +144,7 @@
                         </goals>
                     </execution>
                 </executions>
+                -->
             </plugin>
             <plugin>
                 <groupId>io.reactiverse</groupId>
