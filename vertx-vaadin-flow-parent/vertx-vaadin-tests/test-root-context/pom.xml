@@ -128,44 +128,12 @@
     <build>
         <plugins>
              <!-- Auto run clean to remove previous mode compilation -->
-             <plugin>
-                 <artifactId>maven-clean-plugin</artifactId>
-                 <!-- This is because we run multiple modes on the same module -->
-                 <executions>
-                     <execution>
-                         <id>auto-clean</id>
-                         <phase>initialize</phase>
-                         <goals>
-                             <goal>clean</goal>
-                         </goals>
-                         <configuration>
-                             <filesets>
-                                 <fileset>
-                                     <directory>${project.build.directory}</directory>
-                                     <followSymlinks>false</followSymlinks>
-                                 </fileset>
-                                 <fileset>
-                                     <directory>${project.basedir}</directory>
-                                     <includes>
-                                         <include>node_modules/**</include>
-                                         <include>package*.json</include>
-                                         <include>webpack*.js</include>
-                                         <include>pnpm*</include>
-                                     </includes>
-                                     <followSymlinks>false</followSymlinks>
-                                 </fileset>
-                             </filesets>
-                             <skip>true</skip>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin>
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-maven-plugin</artifactId>
                 <configuration>
-                     <frontendResourcesDirectory>${project.build.outputDirectory}/META-INF/resources/frontend</frontendResourcesDirectory>
-                 </configuration>
+                    <frontendResourcesDirectory>${project.build.outputDirectory}/META-INF/resources/frontend</frontendResourcesDirectory>
+                </configuration>
                 <executions>
                     <execution>
                         <id>auto-clean</id>
