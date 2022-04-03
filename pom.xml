@@ -70,7 +70,6 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
-
         <license.directory>${maven.multiModuleProjectDirectory}/license</license.directory>
         <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
         <checkstyle.skip>true</checkstyle.skip>

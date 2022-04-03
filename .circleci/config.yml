@@ -138,7 +138,6 @@ jobs:
           verify
       - save_cache:
           paths:
-            - ~/.vaadin
             - ~/.m2
           key: ui-tests-dependencies-{{ checksum "pom.xml" }}
           when: always
