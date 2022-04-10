@@ -276,7 +276,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <config>${project.basedir}/src/test/conf/vertx-vaadin-test.conf</config>
+                            <config>${project.basedir}/src/test/conf/vertx-vaadin-test-prod.conf</config>
                             <verticle>com.vaadin.flow.uitest.vertx.TestBootVerticle</verticle>
                             <jvmArgs>
                                 <jvmArg>-Dvaadin.disableDevServer=true</jvmArg>
