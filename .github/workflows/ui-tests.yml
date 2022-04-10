@@ -37,7 +37,7 @@ jobs:
           ${{github.workspace}}/mvnw -B -ntp -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
           -Duitest.chrome-version=${CHROME_VERSION} -Duitest.firefox-version=${FIREFOX_VERSION} \
             -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory" \
-          vaadin:clean-frontend verify
+          vaadin:clean-frontend verify -Dvaadin.productionMode
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
