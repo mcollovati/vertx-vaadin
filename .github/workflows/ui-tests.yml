@@ -30,11 +30,11 @@ jobs:
           echo "FIREFOX_VERSION=$(firefox --version | sed 's/Mozilla Firefox //' |  cut -d. -f1)" >> $GITHUB_ENV
       - name: Compile and Install vertx-vaadin
         run: |
-          ./mvnw -N install && ./mvnw -Pcircleci -Prelease-flow,flow-ui-tests install -DskipTests -DskipVertxRun=true
+          ./mvnw -B -ntp -N install && ./mvnw -B -ntp -Pcircleci -Prelease-flow,flow-ui-tests install -DskipTests -DskipVertxRun=true
       - name: Run UI tests
         run: |
           cd vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context
-          ${{github.workspace}}/mvnw -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
+          ${{github.workspace}}/mvnw -B -ntp -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
           -Duitest.chrome-version=${CHROME_VERSION} -Duitest.firefox-version=${FIREFOX_VERSION} \
             -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory" \
           vaadin:clean-frontend verify

@@ -107,7 +107,7 @@
                                 <goal>prepare-frontend</goal>
                             </goals>
                             <configuration>
-                                <requireHomeNodeExec>true</requireHomeNodeExec>
+                                <requireHomeNodeExec>false</requireHomeNodeExec>
                             </configuration>
                         </execution>
                     </executions>
