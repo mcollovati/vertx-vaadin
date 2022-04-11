@@ -36,8 +36,8 @@ jobs:
           cd vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context
           ${{github.workspace}}/mvnw -B -ntp -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
           -Duitest.chrome-version=${CHROME_VERSION} -Duitest.firefox-version=${FIREFOX_VERSION} \
-            -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory" \
-          vaadin:clean-frontend verify -Dvaadin.productionMode
+            -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory" \
+          vaadin:clean-frontend verify
         env:
           VAADIN_PROKEY: ${{ secrets.VAADIN_PROKEY }}
       - uses: actions/upload-artifact@v2
