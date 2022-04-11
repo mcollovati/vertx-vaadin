@@ -28,15 +28,16 @@ jobs:
         run: |
           echo "CHROME_VERSION=$(google-chrome --version | sed 's/^Google Chrome //' | cut -d. -f1)" >> $GITHUB_ENV
           echo "FIREFOX_VERSION=$(firefox --version | sed 's/Mozilla Firefox //' |  cut -d. -f1)" >> $GITHUB_ENV
+          npm -v
       - name: Compile and Install vertx-vaadin
         run: |
           ./mvnw -B -ntp -N install && ./mvnw -B -ntp -Pcircleci -Prelease-flow,flow-ui-tests install -DskipTests -DskipVertxRun=true
       - name: Run UI tests
         run: |
           cd vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context
-          ${{github.workspace}}/mvnw -B -ntp -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
+          ${{github.workspace}}/mvnw -Xmx2048M -B -ntp -Pcircleci -Dvaadin.proKey=${VAADIN_PROKEY} -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
           -Duitest.chrome-version=${CHROME_VERSION} -Duitest.firefox-version=${FIREFOX_VERSION} \
-            -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory" \
+            -Dvertx.jvmArguments="-Dorg.slf4j.simpleLogger.logFile=/tmp/verticle.log -Xmx1024M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory" \
           vaadin:clean-frontend verify
         env:
           VAADIN_PROKEY: ${{ secrets.VAADIN_PROKEY }}
