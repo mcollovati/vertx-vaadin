@@ -120,6 +120,7 @@
     "@vaadin/virtual-list": "23.0.5",
     "construct-style-sheets-polyfill": "3.0.4",
     "date-fns": "2.23.0",
+    "exit-on-epipe": "^1.0.1",
     "lit": "2.1.4"
   },
   "devDependencies": {
@@ -258,7 +259,13 @@
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
     "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
     "lit": "$lit",
-    "@polymer/polymer": "$@polymer/polymer"
+    "@polymer/polymer": "$@polymer/polymer",
+    "@hilla/form": "$@hilla/form",
+    "@hilla/frontend": "$@hilla/frontend",
+    "@polymer/paper-input": "$@polymer/paper-input",
+    "@polymer/paper-slider": "$@polymer/paper-slider",
+    "date-fns": "$date-fns",
+    "exit-on-epipe": "$exit-on-epipe"
   },
   "vaadin": {
     "dependencies": {
@@ -403,6 +410,6 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "6ee77045679b1a01e32a6786a9809ef89c4868bc35227615673eb37f88dc14d7"
+    "hash": "699a08b6b9fc519b164e7379990b5027f9b1f64edcad823f7d74d219d305de84"
   }
 }
