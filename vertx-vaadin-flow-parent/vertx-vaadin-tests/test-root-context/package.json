@@ -147,6 +147,7 @@
   },
   "overrides": {
     "chokidar": "$chokidar",
+    "exit-on-epipe": "$exit-on-epipe",
     "@vaadin/bundles": "$@vaadin/bundles",
     "@vaadin/accordion": "$@vaadin/accordion",
     "@vaadin/app-layout": "$@vaadin/app-layout",
@@ -264,8 +265,7 @@
     "@hilla/frontend": "$@hilla/frontend",
     "@polymer/paper-input": "$@polymer/paper-input",
     "@polymer/paper-slider": "$@polymer/paper-slider",
-    "date-fns": "$date-fns",
-    "exit-on-epipe": "$exit-on-epipe"
+    "date-fns": "$date-fns"
   },
   "vaadin": {
     "dependencies": {
