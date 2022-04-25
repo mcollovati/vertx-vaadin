@@ -16,7 +16,7 @@
     <packaging>pom</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vertx-maven-plugin.version>1.0.27</vertx-maven-plugin.version>
+        <vertx-maven-plugin.version>1.0.22</vertx-maven-plugin.version>
         <vertx-vaadin-flow.version>${project.version}</vertx-vaadin-flow.version>
         <testbench.version>8.0.0</testbench.version>
 
