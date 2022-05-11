@@ -1,5 +1,6 @@
 package com.github.mcollovati.vertx.vaadin.communication;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,6 +15,9 @@ import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
+import elemental.json.JsonObject;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.Json;
@@ -40,12 +44,11 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
     }
 
 
-
     public void handle(ServerWebSocket webSocket) {
         if (isDebugWindowConnection(webSocket)) {
             String websocketId = webSocket.textHandlerID();
             liveReload.put(websocketId, service.getVertx().eventBus().publisher(websocketId));
-            webSocket.textMessageHandler(this::onMessage);
+            webSocket.textMessageHandler(message -> onMessage(websocketId, message));
             webSocket.closeHandler(unused -> onClose(websocketId));
 
             webSocket.writeTextMessage("{\"command\": \"hello\"}");
@@ -57,7 +60,7 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
         }
     }
 
-    private void onMessage(String message) {
+    private void onMessage(String websocketId, String message) {
         if (message.isEmpty()) {
             logger.debug("Received live reload heartbeat");
             return;
@@ -71,8 +74,47 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
         } else if ("reportTelemetry".equals(command)) {
             elemental.json.JsonObject data = json.getObject("data");
             DevModeUsageStatistics.handleBrowserData(data);
+        } else if ("checkLicense".equals(command)) {
+            JsonObject data = json.getObject("data");
+            String name = data.getString("name");
+            String version = data.getString("version");
+            Product product = new Product(name, version);
+            boolean ok;
+            String errorMessage = "";
+
+            try {
+                LicenseChecker.checkLicense(product.getName(),
+                    product.getVersion(), keyUrl -> {
+                        send(websocketId, "license-check-nokey",
+                            new ProductAndMessage(product, keyUrl));
+                    });
+                ok = true;
+            } catch (Exception e) {
+                ok = false;
+                errorMessage = e.getMessage();
+            }
+            if (ok) {
+                send(websocketId, "license-check-ok", product);
+            } else {
+                ProductAndMessage pm = new ProductAndMessage(product,
+                    errorMessage);
+                send(websocketId, "license-check-failed", pm);
+            }
+        } else {
+            getLogger().info("Unknown command from the browser: " + command);
         }
     }
+
+    private void send(String websocketId, String command,
+                      Object data) {
+        try {
+            Optional.ofNullable(liveReload.get(websocketId))
+                .ifPresent(producer -> producer.write(Json.encode(new DebugWindowMessage(command, data))));
+        } catch (Exception e) {
+            getLogger().error("Error sending message", e);
+        }
+    }
+
 
     private void onClose(String websocketId) {
         logger.debug("Live reload connection disconnected for {}", websocketId);
@@ -105,4 +147,25 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
             && webSocket.query().contains(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VertxDebugWindowConnection.class.getName());
+    }
+
+    static class ProductAndMessage implements Serializable {
+        private Product product;
+        private String message;
+
+        public ProductAndMessage(Product product, String message) {
+            this.product = product;
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Product getProduct() {
+            return product;
+        }
+    }
 }

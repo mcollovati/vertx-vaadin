@@ -55,7 +55,7 @@ public final class VaadinOptions {
     }
 
     public boolean debug() {
-        return config.getBoolean("debug", false);
+        return getBooleanProperty("debug", false);
     }
 
     public boolean productionMode() {
@@ -67,7 +67,7 @@ public final class VaadinOptions {
     }
 
     public boolean hillaEnabled() {
-        return config.getBoolean("hilla.enabled", false);
+        return getBooleanProperty("hilla.enabled", false);
     }
 
     public String hillaEndpoint() {
@@ -134,9 +134,19 @@ public final class VaadinOptions {
     }
 
     public boolean supportsSockJS() {
-        return config.getBoolean("sockJSSupport", true);
+        return getBooleanProperty("sockJSSupport", true);
     }
 
+    private boolean getBooleanProperty(String name, boolean defValue) {
+        if (config.containsKey(name)) {
+            Object value = config.getValue(name);
+            if (value instanceof String) {
+                return Boolean.parseBoolean((String) value);
+            }
+            return config.getBoolean(name);
+        }
+        return defValue;
+    }
 
     @SuppressWarnings("unchecked")
     private static Object adaptJson(Object object) {

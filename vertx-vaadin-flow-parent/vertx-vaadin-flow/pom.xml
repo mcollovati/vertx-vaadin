@@ -72,6 +72,11 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>fusion-endpoint</artifactId>
             <scope>provided</scope>
         </dependency>

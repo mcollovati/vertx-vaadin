@@ -66,8 +66,8 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
     }
 
     @Override
-    public void onMessage(String msg) {
-        delegate.onMessage(msg);
+    public void onMessage(AtmosphereResource resource, String msg) {
+        throw new UnsupportedOperationException("Not supported on vertx-vaadin");
     }
 
     @Override
