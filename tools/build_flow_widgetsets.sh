@@ -14,7 +14,7 @@ function get_vaadin_versions() {
     local __versions
     echo "Fetch Vaadin versions for ${vaadin_platform}..."
     case $vaadin_platform_full in
-        *-SNAPSHOT)
+        *-SNAPSHOT|*.alpha*|*.beta*|*.rc*)
         __versions=$(curl -s https://maven.vaadin.com/vaadin-prereleases/com/vaadin/vaadin-core/maven-metadata.xml | grep "<version>${vaadin_platform}\..*</version>" | sed -E 's/^.*<version>(.*)<\/version>.*/\1/g')
         ;;
         *)
