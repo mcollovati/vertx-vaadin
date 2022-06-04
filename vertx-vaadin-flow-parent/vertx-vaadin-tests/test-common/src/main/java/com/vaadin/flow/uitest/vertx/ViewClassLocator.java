@@ -39,6 +39,7 @@ public class ViewClassLocator {
                 .filter(classInfo -> !classInfo.isAbstract()
                     // Only include views which have a no-arg
                     // constructor
+                    && !classInfo.isInnerClass()
                     && classInfo.getConstructorInfo().
                     filter(methodInfo -> methodInfo.getParameterInfo().length == 0).size() == 1
                 ).loadClasses(true)

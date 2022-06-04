@@ -69,10 +69,6 @@ public class StartupContextTest {
             .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
         assertThat(startupContext.resolveResource("/VAADIN/static/push/vaadinPushSockJS.js.gz"))
             .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
-        assertThat(startupContext.resolveResource("vertx-version.txt"))
-            .hasValue("vertx-version.txt");
-        assertThat(startupContext.resolveResource("/vertx-version.txt"))
-            .hasValue("vertx-version.txt");
     }
 
     private Predicate<String> isChildOf(String parent) {

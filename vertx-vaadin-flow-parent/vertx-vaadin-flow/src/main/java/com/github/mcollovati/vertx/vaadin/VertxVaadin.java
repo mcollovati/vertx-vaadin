@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.github.mcollovati.vertx.Sync;
@@ -59,7 +60,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -101,9 +101,9 @@ public class VertxVaadin {
         this.vertx = Objects.requireNonNull(vertx);
         this.startupContext = Objects.requireNonNull(startupContext);
         config = startupContext.vaadinOptions();
-
         CurrentInstance.clearAll();
         try {
+            CurrentInstance.set(VertxVaadin.class, this);
             initializeVaadinContext(vertx);
             service = createVaadinService();
 
@@ -142,7 +142,7 @@ public class VertxVaadin {
     }
 
     private VaadinContext initializeVaadinContext(Vertx vertx) {
-        VertxVaadinContext context = new VertxVaadinContext(vertx);
+        VertxVaadinContext context = (VertxVaadinContext) startupContext.getVaadinContext();
         ApplicationClassLoaderAccess access = () -> context.getClass().getClassLoader();
         context.getAttribute(ApplicationClassLoaderAccess.class, () -> access);
 
@@ -151,6 +151,25 @@ public class VertxVaadin {
             initializer.initialize(context);
         }
         return context;
+    }
+
+    /**
+     * Provides access to {@link StartupContext} during instance creation.
+     *
+     * @param function {@link StartupContext} instance.
+     * @param <T>      the type of the computation result.
+     * @return result of applying given function to {@link StartupContext}
+     * @throws IllegalStateException if used after instance creation.
+     */
+    protected final <T> T computeWithStartupContext(Function<StartupContext, T> function) {
+        if (CurrentInstance.get(VertxVaadin.class) != this) {
+            throw new IllegalStateException("StartupContext cannot be used after VertxVaadin creation");
+        }
+        return function.apply(startupContext);
+    }
+
+    VertxVaadinContext newVaadinContext() {
+        return (VertxVaadinContext) startupContext.getVaadinContext();
     }
 
     private void configureSessionStore() {
@@ -188,7 +207,7 @@ public class VertxVaadin {
     }
 
     public String serviceName() {
-        return config.serviceName().orElseGet(() -> getClass().getName() + ".service");
+        return config.serviceName().orElseGet(() -> vertx.getOrCreateContext().deploymentID() + ".service");
     }
 
 
@@ -323,7 +342,7 @@ public class VertxVaadin {
         return config().sessionCookieName();
     }
 
-    private DeploymentConfiguration createDeploymentConfiguration() {
+    protected DeploymentConfiguration createDeploymentConfiguration() {
         return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(startupContext.getVaadinContext()), getClass(), config.asProperties());
     }
 

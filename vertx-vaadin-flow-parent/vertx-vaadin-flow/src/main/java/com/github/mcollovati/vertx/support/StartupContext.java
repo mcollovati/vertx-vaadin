@@ -65,6 +65,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.FileResolverFactory;
 import io.vertx.core.spi.file.FileResolver;
@@ -81,7 +82,11 @@ public final class StartupContext implements VaadinConfig {
 
     private StartupContext(Vertx vertx, Set<String> resources, VaadinOptions vaadinOptions) {
         this.resources = new HashSet<>(resources);
-        this.context = vertx.getOrCreateContext();
+        Context context = vertx.getOrCreateContext();
+        if (context instanceof ContextInternal && !((ContextInternal) context).isDuplicate()) {
+            context = ((ContextInternal) context).duplicate();
+        }
+        this.context = context;
         this.vaadinOptions = vaadinOptions;
         this.vertx = vertx;
     }
@@ -124,7 +129,7 @@ public final class StartupContext implements VaadinConfig {
 
     private static Handler<Promise<Set<String>>> scanResources(VaadinOptions vaadinOptions) {
         ClassGraph classGraph = new ClassGraph()
-            .whitelistPaths()
+            .acceptPackages()
             .removeTemporaryFilesAfterScan();
         if (vaadinOptions.debug()) {
             classGraph.verbose();
@@ -208,7 +213,7 @@ public final class StartupContext implements VaadinConfig {
             String relativePath = toRelativePath(path);
 
             Pattern pattern;
-            if (path.isEmpty()) {
+            if (relativePath.isEmpty()) {
                 pattern = Pattern.compile("^((?:META-INF/resources/|)[^/]+(?:/|$))");
             } else {
                 pattern = Pattern.compile(String.format("^((?:META-INF/resources/%1$s|%1$s)/[^/]+(?:/|$))", relativePath));
@@ -324,7 +329,7 @@ public final class StartupContext implements VaadinConfig {
 
         @Override
         public Object getAttribute(String name) {
-            return startupContext.context.get(name);
+            return startupContext.context.getLocal(name);
         }
 
         @Override
@@ -334,12 +339,12 @@ public final class StartupContext implements VaadinConfig {
 
         @Override
         public void setAttribute(String name, Object object) {
-            startupContext.context.put(name, object);
+            startupContext.context.putLocal(name, object);
         }
 
         @Override
         public void removeAttribute(String name) {
-            startupContext.context.remove(name);
+            startupContext.context.removeLocal(name);
         }
 
         @Override

@@ -29,13 +29,18 @@ import java.util.function.Supplier;
 import com.vaadin.flow.server.VaadinContext;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
 
 public class VertxVaadinContext implements VaadinContext {
 
-    private transient final Context context;
+    private final transient Context context;
 
     public VertxVaadinContext(Vertx vertx) {
-        this.context = vertx.getOrCreateContext();
+        Context context = vertx.getOrCreateContext();
+        if (context instanceof ContextInternal && !((ContextInternal) context).isDuplicate()) {
+            context = ((ContextInternal) context).duplicate();
+        }
+        this.context = context;
     }
 
     public VertxVaadinContext(Context context) {
@@ -44,10 +49,10 @@ public class VertxVaadinContext implements VaadinContext {
 
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-        T result = context.get(type.getName());
+        T result = context.getLocal(type.getName());
         if (result == null && defaultValueSupplier != null) {
             result = defaultValueSupplier.get();
-            context.put(type.getName(), result);
+            context.putLocal(type.getName(), result);
         }
         return result;
     }
@@ -57,13 +62,13 @@ public class VertxVaadinContext implements VaadinContext {
         if (value == null) {
             removeAttribute(clazz);
         } else {
-            context.put(clazz.getName(), value);
+            context.putLocal(clazz.getName(), value);
         }
     }
 
     @Override
     public void removeAttribute(Class<?> clazz) {
-        context.remove(clazz.getName());
+        context.removeLocal(clazz.getName());
     }
 
     // Not needed by Vertx-Vaadin
@@ -77,4 +82,5 @@ public class VertxVaadinContext implements VaadinContext {
     public String getContextParameter(String name) {
         return null;
     }
+
 }

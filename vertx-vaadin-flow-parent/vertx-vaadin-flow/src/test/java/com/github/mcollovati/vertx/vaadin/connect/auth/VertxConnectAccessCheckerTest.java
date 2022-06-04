@@ -150,6 +150,7 @@ public class VertxConnectAccessCheckerTest {
 
     @Test
     public void should_pass_When_not_having_session_And_not_having_token_in_request_header() throws Exception {
+        @PermitAll
         class Test {
             public void test() {
             }
@@ -173,6 +174,7 @@ public class VertxConnectAccessCheckerTest {
 
     @Test
     public void should_pass_When_csrf_disabled() throws Exception {
+        @PermitAll
         class Test {
             public void test() {
             }
@@ -216,6 +218,7 @@ public class VertxConnectAccessCheckerTest {
 
     @Test
     public void should_Pass_When_Authentication_And_matching_token() throws Exception {
+        @PermitAll
         class Test {
             public void test() {
             }

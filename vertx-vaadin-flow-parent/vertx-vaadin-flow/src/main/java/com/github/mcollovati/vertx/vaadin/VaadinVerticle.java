@@ -234,12 +234,12 @@ public class VaadinVerticle extends AbstractVerticle {
             if (isDebug) {
                 classGraph.verbose();
             }
-            classGraph.ignoreParentClassLoaders()
+            classGraph
                     .enableClassInfo()
                     .ignoreClassVisibility()
                     .enableAnnotationInfo()
-                    .whitelistPackages(pkgs.toArray(new String[0]))
-                    .ignoreParentClassLoaders()
+                    .acceptPackages(pkgs.toArray(new String[0]))
+                    //.ignoreParentClassLoaders()
                     .removeTemporaryFilesAfterScan();
             try (ScanResult scanResult = classGraph.scan()) {
                 boolean haSockJS = scanResult.getClassInfo("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection") != null;
@@ -255,7 +255,7 @@ public class VaadinVerticle extends AbstractVerticle {
             try {
                 new LookupServletContainerInitializer()
                         .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
-                finalizeVaadinConfig(vaadinOpts);
+                finalizeVaadinConfig(startupContext);
 
                 Promise<Void> initializerFuture = Promise.promise();
                 runInitializers(startupContext, initializerFuture, map);
@@ -271,11 +271,11 @@ public class VaadinVerticle extends AbstractVerticle {
         return promise.future();
     }
 
-    private void finalizeVaadinConfig(VaadinOptions vaadinOpts) {
-        VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), new VertxVaadinContext(vertx));
+    private void finalizeVaadinConfig(StartupContext startupContext) {
+        VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), startupContext.getVaadinContext());
         DeploymentConfiguration deploymentConfiguration = new DeploymentConfigurationFactory()
                 .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
-        vaadinOpts.update(deploymentConfiguration.getInitParameters());
+        startupContext.vaadinOptions().update(deploymentConfiguration.getInitParameters());
     }
 
 
@@ -325,7 +325,7 @@ public class VaadinVerticle extends AbstractVerticle {
     private void registerHandledTypes(ScanResult scanResult, Class<?> initializerClass, Map<Class<?>, Set<Class<?>>> map) {
 
         HandlesTypes handledTypes = initializerClass.getAnnotation(HandlesTypes.class);
-        if (handledTypes != null) {
+         if (handledTypes != null) {
             Function<Class<?>, ClassInfoList> classFinder = type -> {
                 if (type.isAnnotation()) {
                     return scanResult.getClassesWithAnnotation(type.getCanonicalName());

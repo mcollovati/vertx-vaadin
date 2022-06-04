@@ -18,6 +18,7 @@
     <modules>
         <module>vaadin-flow-sockjs</module>
         <module>vertx-vaadin-flow</module>
+        <module>vertx-vaadin-quarkus-extension</module>
     </modules>
 
     <build>

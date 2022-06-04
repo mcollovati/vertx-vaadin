@@ -36,6 +36,7 @@ import com.github.mcollovati.vertx.vaadin.VertxVaadin;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
@@ -107,10 +108,12 @@ public class MockServiceSessionSetup {
 
         ApplicationConfiguration applicationConfiguration = Mockito.mock(ApplicationConfiguration.class);
         Mockito.when(applicationConfiguration.isXsrfProtectionEnabled()).thenReturn(false);
-        Mockito.when(context.get(ApplicationConfiguration.class.getName())).thenReturn(applicationConfiguration);
+        Mockito.when(context.getLocal(ApplicationConfiguration.class.getName())).thenReturn(applicationConfiguration);
 
         JsonObject config = new JsonObject();
         Mockito.when(context.config()).thenReturn(config);
+        Mockito.when(context.duplicate()).thenReturn(context);
+
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
 

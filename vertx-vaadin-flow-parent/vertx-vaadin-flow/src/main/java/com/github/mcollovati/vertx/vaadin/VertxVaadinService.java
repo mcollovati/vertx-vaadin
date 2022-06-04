@@ -81,6 +81,10 @@ public class VertxVaadinService extends VaadinService {
         this.vertxVaadin = vertxVaadin;
     }
 
+    protected final VertxVaadin getVertxVaadin() {
+        return vertxVaadin;
+    }
+
     public Vertx getVertx() {
         return vertxVaadin.vertx();
     }
@@ -242,7 +246,7 @@ public class VertxVaadinService extends VaadinService {
 
     @Override
     protected VertxVaadinContext constructVaadinContext() {
-        return new VertxVaadinContext(getVertx());
+        return vertxVaadin.newVaadinContext();
     }
 
     private URL tryGetResource(String path) {

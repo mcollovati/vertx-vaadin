@@ -23,6 +23,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
 
@@ -74,7 +75,7 @@ public class HistoryView extends AbstractDivView {
     }
 
     private Element createStateButton(String text,
-            BiConsumer<JsonObject, String> stateUpdater) {
+            SerializableBiConsumer<JsonObject, String> stateUpdater) {
         return createButton(text, e -> {
             String stateJsonString = stateJsonInput.getProperty("value", "");
             JsonObject stateJson;
