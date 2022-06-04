@@ -236,6 +236,7 @@
                         <argLine>${surefireArgLine}</argLine>
                         <includes>
                             <include>**/*UT.java</include>
+                            <include>**/*Test.java</include>
                         </includes>
                     </configuration>
                 </plugin>
@@ -442,6 +443,8 @@
             <modules>
                 <module>vertx-vaadin-flow-parent/vaadin-flow-sockjs</module>
                 <module>vertx-vaadin-flow-parent/vertx-vaadin-flow</module>
+                <module>vertx-vaadin-flow-parent/vertx-vaadin-flow-jandex</module>
+                <module>vertx-vaadin-flow-parent/vertx-vaadin-quarkus-extension</module>
             </modules>
         </profile>
         <profile>

@@ -68,6 +68,7 @@ public class VaadinConnectHandler {
     }
 
     public static VaadinConnectHandler register(Router router, VertxVaadinService service) {
+
         VaadinEndpointRegistry endpointRegistry = service.getContext().getAttribute(VaadinEndpointRegistry.class);
         if (endpointRegistry == null) {
             endpointRegistry = new VertxEndpointRegistry(new EndpointNameChecker());

@@ -3,25 +3,16 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.VaadinService;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RoutingContext;
-import org.hamcrest.CustomMatcher;
-import org.hamcrest.Matcher;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -42,7 +33,29 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static com.vaadin.flow.server.Constants.*;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinService;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.RoutingContext;
+import org.hamcrest.CustomMatcher;
+import org.hamcrest.Matcher;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+
+import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
 public class VertxStaticFileServerTest implements Serializable {
@@ -166,7 +179,7 @@ public class VertxStaticFileServerTest implements Serializable {
         Mockito.when(routingContext.request()).thenReturn(request);
         Mockito.when(routingContext.response()).thenReturn(response);
 
-        fileServer = new OverrideableStaticFileServer(vaadinService);
+        fileServer = new OverrideableStaticFileServer(vaadinService, configuration);
 
         // Required by the ResponseWriter
         /////servletContext = Mockito.mock(ServletContext.class);
@@ -235,6 +248,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
     @Test
     public void isResourceRequest() throws Exception {
+        fileServer.writeResponse = false;
         setupRequestURI("", "/static/file.png");
         Mockito.when(vaadinService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
@@ -243,6 +257,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
     @Test
     public void isResourceRequestWithContextPath() throws Exception {
+        fileServer.writeResponse = false;
         setupRequestURI("/foo", "/static/file.png");
         Mockito.when(vaadinService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
@@ -258,6 +273,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
     @Test
     public void directoryIsNotResourceRequest() throws Exception {
+        fileServer.writeResponse = false;
         final TemporaryFolder folder = TemporaryFolder.builder().build();
         folder.create();
 
@@ -800,9 +816,7 @@ public class VertxStaticFileServerTest implements Serializable {
     public void serveNonExistingStaticResource() throws IOException {
         setupRequestURI("", "/nonexisting/file.js");
 
-        fileServer.serveStaticResource(routingContext);
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
@@ -855,7 +869,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -866,7 +880,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
     private void staticBuildResourceWithDirectoryChange_nothingServed(
             String pathInfo) throws IOException {
-        setupRequestURI("/context", "/servlet" + pathInfo);
+        setupRequestURI("/context",  pathInfo);
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
@@ -874,7 +888,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         // have data available for /VAADIN/vaadin-bundle-1234.cache.js
         Mockito.when(mockLoader.getResource(
@@ -890,7 +904,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertEquals(0, responseOutput.length());
-        Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN,
+        Assert.assertEquals(HttpStatusCode.BAD_REQUEST.getCode(),
                 responseCode.get());
     }
 
@@ -961,7 +975,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -971,21 +985,16 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void nonexistingStaticBuildResource_returnsNotFound()
-            throws IOException {
+    public void nonexistingStaticBuildResource_notServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
 
-        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
@@ -999,7 +1008,7 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertArrayEquals(fileData, responseOutput.getBytes());
@@ -1017,11 +1026,9 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
-        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
@@ -1160,11 +1167,14 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     private static class OverrideableStaticFileServer extends VertxStaticFileServer {
+        public boolean writeResponse = true;
         private Boolean overrideBrowserHasNewestVersion;
         private Integer overrideCacheTime;
+        private DeploymentConfiguration configuration;
 
-        OverrideableStaticFileServer(VertxVaadinService servletService) {
+        OverrideableStaticFileServer(VertxVaadinService servletService, DeploymentConfiguration configuration) {
             super(servletService);
+            this.configuration = configuration;
         }
 
         @Override
@@ -1185,5 +1195,32 @@ public class VertxStaticFileServerTest implements Serializable {
             }
             return super.getCacheTime(filenameWithPath);
         }
+
+        @Override
+        public boolean serveStaticResource(RoutingContext routingContext) throws IOException {
+            if (!writeResponse)
+                try {
+                    {
+                        ResponseWriter fakeWriter = new ResponseWriter(
+                            configuration) {
+                            @Override
+                            public void writeResponseContents(
+                                String filenameWithPath, URL resourceUrl, RoutingContext routingContext)
+                                throws IOException {
+                                return;
+                            }
+                        };
+                        Field f = VertxStaticFileServer.class
+                            .getDeclaredField("responseWriter");
+                        f.setAccessible(true);
+                        f.set(this, fakeWriter);
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException
+                    | NoSuchFieldException | SecurityException e) {
+                    throw new RuntimeException(e);
+                }
+            return super.serveStaticResource(routingContext);
+        }
+
     }
 }

@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -68,7 +69,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     private final DeploymentConfiguration deploymentConfiguration;
     private final DevModeHandler devModeHandler;
     private final StaticFileServer vaadinStaticFileServer;
-    private final ResponseWriter responseWriter;
+    private ResponseWriter responseWriter;
 
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
@@ -95,6 +96,14 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             // servletContext.getResource will return a URL for them, at
             // least with Jetty
             return false;
+        }
+
+        if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
+            getLogger().info("Blocked attempt to access file: {}",
+                filenameWithPath);
+            routingContext.response().setStatusCode(HttpStatusCode.BAD_REQUEST.getCode());
+            routingContext.end();
+            return true;
         }
 
         URL resourceUrl = null;

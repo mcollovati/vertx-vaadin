@@ -55,9 +55,12 @@ public class VertxVaadinContextTest {
         Vertx vertx = mock(Vertx.class);
         Context vertxContext = mock(Context.class);
         when(vertx.getOrCreateContext()).thenReturn(vertxContext);
-        doAnswer(i -> attributeMap.put(i.getArgumentAt(0, String.class), i.getArguments()[1])).when(vertxContext).put(anyString(), any());
-        doAnswer(i -> attributeMap.remove(i.getArgumentAt(0, String.class)) != null).when(vertxContext).remove(anyString());
-        when(vertxContext.get(anyString())).thenAnswer(i -> attributeMap.get(i.getArgumentAt(0, String.class)));
+        doAnswer(i -> attributeMap.put(i.getArgumentAt(0, String.class), i.getArguments()[1]))
+            .when(vertxContext).putLocal(anyString(), any());
+        doAnswer(i -> attributeMap.remove(i.getArgumentAt(0, String.class)) != null)
+            .when(vertxContext).removeLocal(anyString());
+        when(vertxContext.getLocal(anyString()))
+            .thenAnswer(i -> attributeMap.get(i.getArgumentAt(0, String.class)));
         context = new VertxVaadinContext(vertx);
     }
 

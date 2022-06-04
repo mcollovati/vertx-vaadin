@@ -26,6 +26,8 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
@@ -37,7 +39,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         statusLabel.setId("status");
 
         // Callback to run an expression
-        NativeRadioButtonGroup<Function<String, PendingJavaScriptResult>> methodSelect = new NativeRadioButtonGroup<>(
+        NativeRadioButtonGroup<SerializableFunction<String, PendingJavaScriptResult>> methodSelect = new NativeRadioButtonGroup<>(
                 "Method to use");
         methodSelect.addOption("Page.executeJavaScript",
                 UI.getCurrent().getPage()::executeJs).setId("execPage");
@@ -66,7 +68,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         resolveRejectSelect.addOption("Failure", "reject");
 
         // Builds JS expression from value expression and promise semantics
-        NativeRadioButtonGroup<BiFunction<String, String, String>> executionSelect = new NativeRadioButtonGroup<>(
+        NativeRadioButtonGroup<SerializableBiFunction<String, String, String>> executionSelect = new NativeRadioButtonGroup<>(
                 "Execution type");
         executionSelect.addOption("Synchronous", (value, resolveOrReject) -> {
             if ("resolve".equals(resolveOrReject)) {

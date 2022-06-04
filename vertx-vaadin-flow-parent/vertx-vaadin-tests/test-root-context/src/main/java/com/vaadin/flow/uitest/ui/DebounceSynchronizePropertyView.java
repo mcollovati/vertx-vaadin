@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
@@ -51,7 +52,7 @@ public class DebounceSynchronizePropertyView extends AbstractDebounceSynchronize
     }
 
     private Component createModeToggle(String caption, String id,
-            Consumer<DomListenerRegistration> configurator) {
+            SerializableConsumer<DomListenerRegistration> configurator) {
         Element checkbox = new Element("input");
         checkbox.setAttribute("type", "checkbox");
         checkbox.setAttribute("id", id);
