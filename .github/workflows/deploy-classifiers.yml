@@ -11,19 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: [ "master", "vaadin-14.2", "development" ]
+        branch: [ {name: "master", java: 8}, {name: "vaadin-14.2", java: 8}, { name: "development", java: 11} ]
 
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ matrix.branch }}
+          ref: ${{ matrix.branch.name }}
           fetch-depth: 0
       - name: Checkout latest tag
         run: git checkout $(git describe --abbrev=0 --tags --match="flow-*")
       - name: Set up Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
-          java-version: 1.8
+          java-version: ${{ matrix.branch.java }}
+          distribution: 'temurin'
           server-id: jfrog-vertx-vaadin # Value of the distributionManagement/repository/id field of the pom.xml
           server-username: JFROG_USERNAME # env variable for username in deploy
           server-password: JFROG_TOKEN # env variable for token in deploy
