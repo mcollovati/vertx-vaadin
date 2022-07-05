@@ -143,9 +143,11 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             // Browser is up to date, nothing further to do than set the
             // response code
             response.setStatusCode(HttpServletResponse.SC_NOT_MODIFIED);
+            routingContext.end();
             return true;
         }
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl, routingContext);
+        routingContext.end();
         return true;
     }
 
