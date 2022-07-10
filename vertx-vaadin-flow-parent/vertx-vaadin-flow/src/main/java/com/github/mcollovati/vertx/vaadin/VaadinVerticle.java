@@ -91,8 +91,11 @@ public class VaadinVerticle extends AbstractVerticle {
 
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
         String mountPoint = vertxVaadin.config().mountPoint();
+        if (!mountPoint.endsWith("/*")) {
+            mountPoint = mountPoint.replaceFirst("/?$", "/*");
+        }
         Router router = Router.router(vertx);
-        router.mountSubRouter(mountPoint, vertxVaadin.router());
+        router.route(mountPoint).subRouter(vertxVaadin.router());
         log.debug("Mounted Vaadin router on {}", mountPoint);
 
         HttpServerOptions serverOptions = new HttpServerOptions(

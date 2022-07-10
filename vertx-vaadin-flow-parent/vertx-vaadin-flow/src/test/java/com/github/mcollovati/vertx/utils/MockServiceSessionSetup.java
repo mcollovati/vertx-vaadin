@@ -51,6 +51,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
@@ -72,7 +73,7 @@ public class MockServiceSessionSetup {
     @Mock
     private WebBrowser browser;
     @Mock
-    private Context context;
+    private ContextInternal context;
     //@Mock
     //private WrappedHttpSession wrappedSession;
     //@Mock

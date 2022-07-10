@@ -633,7 +633,7 @@ public class SockJSPushHandler implements Handler<RoutingContext>, SockJSLiveRel
 
 }
 
-class SockJSRoutingContext implements RoutingContext {
+class SockJSRoutingContext implements RoutingContextInternal {
 
     private final RoutingContext decoratedContext;
     private final List<Handler<Void>> headersEndHandlers = new ArrayList<>();
@@ -745,7 +745,7 @@ class SockJSRoutingContext implements RoutingContext {
     }
 
     @Override
-    public Set<FileUpload> fileUploads() {
+    public List<FileUpload> fileUploads() {
         return decoratedContext.fileUploads();
     }
 
@@ -767,6 +767,11 @@ class SockJSRoutingContext implements RoutingContext {
     @Override
     public String getAcceptableContentType() {
         return decoratedContext.getAcceptableContentType();
+    }
+
+    @Override
+    public RequestBody body() {
+        return decoratedContext.body();
     }
 
     @Override
@@ -887,6 +892,46 @@ class SockJSRoutingContext implements RoutingContext {
     @Override
     public List<String> queryParam(String query) {
         return decoratedContext.queryParam(query);
+    }
+
+    @Override
+    public RoutingContextInternal visitHandler(int id) {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            ((RoutingContextInternal)decoratedContext).visitHandler(id);
+        }
+        return this;
+    }
+
+    @Override
+    public boolean seenHandler(int id) {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal)decoratedContext).seenHandler(id);
+        }
+        return false;
+    }
+
+    @Override
+    public RoutingContextInternal setMatchFailure(int matchFailure) {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            ((RoutingContextInternal)decoratedContext).setMatchFailure(matchFailure);
+        }
+        return this;
+    }
+
+    @Override
+    public Router currentRouter() {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal)decoratedContext).currentRouter();
+        }
+        return null;
+    }
+
+    @Override
+    public RoutingContextInternal parent() {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal)decoratedContext).parent();
+        }
+        return null;
     }
 
     @Override
