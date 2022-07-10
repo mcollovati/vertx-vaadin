@@ -107,10 +107,15 @@ public class VaadinVerticle extends AbstractVerticle {
 
         if (vertxVaadin.config().hillaEnabled()) {
             String connectEndpoint = vertxVaadin.config().hillaEndpoint();
-            router.mountSubRouter(connectEndpoint, vertxVaadin.connectRouter());
+            if (!connectEndpoint.endsWith("/*")) {
+            connectEndpoint = connectEndpoint.replaceFirst("/?$", "/*");
+            router.route(connectEndpoint).subRouter(vertxVaadin.connectRouter());}
         }
 
-        router.mountSubRouter(mountPoint, vertxVaadin.router());
+        if (!mountPoint.endsWith("/*")) {
+            mountPoint = mountPoint.replaceFirst("/?$", "/*");
+        }
+        router.route(mountPoint).subRouter(vertxVaadin.router());
         log.debug("Mounted Vaadin router on {}", mountPoint);
 
 

@@ -25,7 +25,6 @@ package com.github.mcollovati.vertx.utils;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -34,10 +33,9 @@ import java.util.function.Function;
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import com.github.mcollovati.vertx.vaadin.VertxVaadin;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
@@ -46,22 +44,19 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
-import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
@@ -83,7 +78,9 @@ public class MockServiceSessionSetup {
     @Mock
     private WebBrowser browser;
     @Mock
-    private Context context;
+    private ContextInternal context;
+    @Mock
+    private Lookup lookup;
     //@Mock
     //private WrappedHttpSession wrappedSession;
     //@Mock
@@ -201,7 +198,7 @@ public class MockServiceSessionSetup {
     public void setProductionMode(boolean productionMode) {
         deploymentConfiguration.setProductionMode(productionMode);
     }
-    
+
     public static class TestRouteRegistry extends ApplicationRouteRegistry {
         /**
          * Creates a new test route registry.

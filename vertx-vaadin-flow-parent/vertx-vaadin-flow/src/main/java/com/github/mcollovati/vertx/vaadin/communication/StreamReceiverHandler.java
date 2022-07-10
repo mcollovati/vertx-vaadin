@@ -31,6 +31,8 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
@@ -129,7 +131,7 @@ public class StreamReceiverHandler implements Serializable {
         }
 
         try {
-            Set<FileUpload> fileUploads = ((VertxVaadinRequest) request).getRoutingContext().fileUploads();
+            List<FileUpload> fileUploads = ((VertxVaadinRequest) request).getRoutingContext().fileUploads();
             if (!fileUploads.isEmpty()) {
                 doHandleMultipartFileUpload(session, request, response, fileUploads, streamReceiver, source);
             } else {
@@ -160,7 +162,7 @@ public class StreamReceiverHandler implements Serializable {
      *                     response
      */
     protected void doHandleMultipartFileUpload(VaadinSession session,
-                                               VaadinRequest request, VaadinResponse response, Set<FileUpload> uploads,
+                                               VaadinRequest request, VaadinResponse response, Collection<FileUpload> uploads,
                                                StreamReceiver streamReceiver, StateNode owner) throws IOException {
 
         long contentLength = getContentLength(request);
