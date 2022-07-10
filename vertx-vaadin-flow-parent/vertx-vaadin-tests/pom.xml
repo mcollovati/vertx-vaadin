@@ -75,13 +75,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-push</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>flow-html-components</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
