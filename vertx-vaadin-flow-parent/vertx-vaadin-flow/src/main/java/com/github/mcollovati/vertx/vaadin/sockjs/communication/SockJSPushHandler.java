@@ -82,6 +82,7 @@ import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.ParsedHeaderValues;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -89,6 +90,7 @@ import io.vertx.ext.web.Session;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSSocket;
+import io.vertx.ext.web.impl.RoutingContextInternal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -670,7 +672,7 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
 
 }
 
-class SockJSRoutingContext implements RoutingContext {
+class SockJSRoutingContext implements RoutingContextInternal {
 
     private final RoutingContext decoratedContext;
     private final List<Handler<Void>> headersEndHandlers = new ArrayList<>();
@@ -782,7 +784,7 @@ class SockJSRoutingContext implements RoutingContext {
     }
 
     @Override
-    public Set<FileUpload> fileUploads() {
+    public List<FileUpload> fileUploads() {
         return decoratedContext.fileUploads();
     }
 
@@ -804,6 +806,11 @@ class SockJSRoutingContext implements RoutingContext {
     @Override
     public String getAcceptableContentType() {
         return decoratedContext.getAcceptableContentType();
+    }
+
+    @Override
+    public RequestBody body() {
+        return decoratedContext.body();
     }
 
     @Override
@@ -924,6 +931,46 @@ class SockJSRoutingContext implements RoutingContext {
     @Override
     public List<String> queryParam(String query) {
         return decoratedContext.queryParam(query);
+    }
+
+    @Override
+    public RoutingContextInternal visitHandler(int id) {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            ((RoutingContextInternal)decoratedContext).visitHandler(id);
+        }
+        return this;
+    }
+
+    @Override
+    public boolean seenHandler(int id) {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal)decoratedContext).seenHandler(id);
+        }
+        return false;
+    }
+
+    @Override
+    public RoutingContextInternal setMatchFailure(int matchFailure) {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            ((RoutingContextInternal)decoratedContext).setMatchFailure(matchFailure);
+        }
+        return this;
+    }
+
+    @Override
+    public Router currentRouter() {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal)decoratedContext).currentRouter();
+        }
+        return null;
+    }
+
+    @Override
+    public RoutingContextInternal parent() {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal)decoratedContext).parent();
+        }
+        return null;
     }
 
     @Override

@@ -33,6 +33,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.LocalSessionStore;
+import io.vertx.ext.web.sstore.SessionStore;
 import io.vertx.ext.web.sstore.impl.LocalSessionStoreImpl;
 
 class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
@@ -40,7 +41,8 @@ class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
 
     private final LocalMap<String, Session> localMap;
     private final LocalSessionStore sessionsStore;
-    private Handler<AsyncResult<String>> expirationHandler = x -> {};
+    private Handler<AsyncResult<String>> expirationHandler = x -> {
+    };
 
     public ExtendedLocalSessionStoreImpl(Vertx vertx, String sessionMapName, long reaperInterval) {
         this.localMap = vertx.sharedData().getLocalMap(sessionMapName);
@@ -80,29 +82,58 @@ class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
     }
 
     @Override
-    public void get(String id, Handler<AsyncResult<Session>> resultHandler) {
+    public ExtendedSessionStore get(String id, Handler<AsyncResult<Session>> resultHandler) {
         sessionsStore.get(id, resultHandler);
+        return this;
     }
 
     @Override
-    public void delete(String id, Handler<AsyncResult<Void>> resultHandler) {
+    public Future<Session> get(String cookieValue) {
+        return sessionsStore.get(cookieValue);
+    }
+
+    @Override
+    public ExtendedSessionStore delete(String id, Handler<AsyncResult<Void>> resultHandler) {
         sessionsStore.delete(id, resultHandler);
+        return this;
     }
 
+    @Override
+    public Future<Void> delete(String cookieValue) {
+        return sessionsStore.delete(cookieValue);
+    }
 
     @Override
-    public void put(Session session, Handler<AsyncResult<Void>> resultHandler) {
+    public ExtendedSessionStore put(Session session, Handler<AsyncResult<Void>> resultHandler) {
         sessionsStore.put(session, resultHandler);
+        return this;
     }
 
     @Override
-    public void clear(Handler<AsyncResult<Void>> resultHandler) {
+    public Future<Void> put(Session session) {
+        return sessionsStore.put(session);
+    }
+
+    @Override
+    public ExtendedSessionStore clear(Handler<AsyncResult<Void>> resultHandler) {
         sessionsStore.clear(resultHandler);
+        return this;
     }
 
     @Override
-    public void size(Handler<AsyncResult<Integer>> resultHandler) {
+    public Future<Void> clear() {
+        return sessionsStore.clear();
+    }
+
+    @Override
+    public ExtendedSessionStore size(Handler<AsyncResult<Integer>> resultHandler) {
         sessionsStore.size(resultHandler);
+        return this;
+    }
+
+    @Override
+    public Future<Integer> size() {
+        return sessionsStore.size();
     }
 
     @Override

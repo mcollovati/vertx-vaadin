@@ -43,7 +43,8 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
     private final long reaperInterval;
     private final LocalMap<String, Session> localMap;
     private final ClusteredSessionStore clusteredSessionStore;
-    private Handler<AsyncResult<String>> expirationHandler = x -> {};
+    private Handler<AsyncResult<String>> expirationHandler = x -> {
+    };
     private long timerID = -1;
     private boolean closed;
 
@@ -82,73 +83,74 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
     }
 
     @Override
-    public void get(String id, Handler<AsyncResult<Session>> resultHandler) {
-        clusteredSessionStore.get(id, res -> {
-            if (res.succeeded()) {
-                Session localSession = localMap.get(id);
-                if (localSession == null && res.result() != null) {
-                    localMap.put(id, res.result());
-                }
-                resultHandler.handle(Future.succeededFuture(localMap.get(id)));
-            } else {
-                resultHandler.handle(Future.failedFuture(res.cause()));
-            }
-        });
-        /*
-        if (localMap.containsKey(id)) {
-            resultHandler.handle(Future.succeededFuture(localMap.get(id)));
-        } else {
-            clusteredSessionStore.get(id, res -> {
-                if (res.succeeded()) {
-                    Optional.ofNullable(res.result()).ifPresent(s -> localMap.put(id, s));
-                    resultHandler.handle(Future.succeededFuture(res.result()));
-                } else {
-                    resultHandler.handle(Future.failedFuture(res.cause()));
-                }
-            });
-        }*/
+    public NearCacheSessionStore get(String id, Handler<AsyncResult<Session>> resultHandler) {
+        get(id).onComplete(resultHandler);
+        return this;
     }
 
     @Override
-    public void delete(String id, Handler<AsyncResult<Void>> resultHandler) {
-        clusteredSessionStore.delete(id, res -> {
-            if (res.succeeded()) {
-                localMap.remove(id);
-                resultHandler.handle(Future.succeededFuture());
-            } else {
-                resultHandler.handle(Future.failedFuture(res.cause()));
-            }
-        });
+    public Future<Session> get(String cookieValue) {
+        return clusteredSessionStore.get(cookieValue)
+                .map(session -> {
+                    Session localSession = localMap.get(cookieValue);
+                    if (localSession == null && session != null) {
+                        localMap.put(cookieValue, session);
+                    }
+                    return localMap.get(cookieValue);
+                });
     }
 
+    @Override
+    public NearCacheSessionStore delete(String id, Handler<AsyncResult<Void>> resultHandler) {
+        delete(id).onComplete(resultHandler);
+        return this;
+    }
 
     @Override
-    public void put(Session session, Handler<AsyncResult<Void>> resultHandler) {
-        clusteredSessionStore.put(session, res -> {
+    public Future<Void> delete(String cookieValue) {
+        return clusteredSessionStore.delete(cookieValue).onSuccess(unused ->
+                localMap.remove(cookieValue));
+
+    }
+
+    @Override
+    public NearCacheSessionStore put(Session session, Handler<AsyncResult<Void>> resultHandler) {
+        put(session).onComplete(resultHandler);
+        return this;
+    }
+
+    @Override
+    public Future<Void> put(Session session) {
+        return clusteredSessionStore.put(session).transform(res -> {
             localMap.put(session.id(), session);
             if (res.succeeded()) {
-                resultHandler.handle(Future.succeededFuture());
+                return Future.succeededFuture();
             } else {
-                resultHandler.handle(Future.failedFuture(res.cause()));
+                return Future.failedFuture(res.cause());
             }
         });
     }
 
     @Override
-    public void clear(Handler<AsyncResult<Void>> resultHandler) {
-        clusteredSessionStore.clear(res -> {
-            if (res.succeeded()) {
-                localMap.clear();
-                resultHandler.handle(Future.succeededFuture());
-            } else {
-                resultHandler.handle(Future.failedFuture(res.cause()));
-            }
-        });
+    public NearCacheSessionStore clear(Handler<AsyncResult<Void>> resultHandler) {
+        clear().onComplete(resultHandler);
+        return this;
     }
 
     @Override
-    public void size(Handler<AsyncResult<Integer>> resultHandler) {
-        resultHandler.handle(Future.succeededFuture(localMap.size()));
+    public Future<Void> clear() {
+        return clusteredSessionStore.clear().onSuccess(unused -> localMap.clear());
+    }
+
+    @Override
+    public NearCacheSessionStore size(Handler<AsyncResult<Integer>> resultHandler) {
+        size().onComplete(resultHandler);
+        return this;
+    }
+
+    @Override
+    public Future<Integer> size() {
+        return Future.succeededFuture(localMap.size());
     }
 
     @Override
