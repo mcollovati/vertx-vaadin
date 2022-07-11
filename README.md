@@ -101,7 +101,7 @@ repositories {
 |19|3.8.5|vertx-vaadin-flow:19.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/vaadin-19)|
 |20|4.0.3|vertx-vaadin-flow:20.0.x|[![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)](https://circleci.com/gh/mcollovati/vertx-vaadin/721)|
 |21|4.0.3|vertx-vaadin-flow:21.0.x|![CircleCI](https://img.shields.io/badge/discontinued-inactive.svg?style=for-the-badge)|
-|23|4.2.3|vertx-vaadin-flow:23.1.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
+|23.1.1+|4.2.3|vertx-vaadin-flow:23.1.x|[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
 
 ## Documentation
 
