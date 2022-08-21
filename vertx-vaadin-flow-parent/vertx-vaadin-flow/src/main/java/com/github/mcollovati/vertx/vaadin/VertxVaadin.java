@@ -229,7 +229,10 @@ public class VertxVaadin {
 
         connectRouter.route().handler(sessionHandler);
         connectRouter.route().handler(BodyHandler.create());
-        VaadinConnectHandler.register(connectRouter, service);
+
+        if (config.hillaEnabled()) {
+            VaadinConnectHandler.register(connectRouter, service);
+        }
 
         // Redirect mountPoint to mountPoint/
         vaadinRouter.routeWithRegex("^$").handler(ctx -> ctx.response()

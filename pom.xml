@@ -395,15 +395,6 @@
 
     <profiles>
         <profile>
-            <id>default-setup</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>vertx-vaadin-flow-parent</module>
-            </modules>
-        </profile>
-        <profile>
             <id>release</id>
             <build>
                 <plugins>
@@ -445,6 +436,9 @@
         </profile>
         <profile>
             <id>release-flow</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <modules>
                 <module>vertx-vaadin-flow-parent/vaadin-flow-sockjs</module>
                 <module>vertx-vaadin-flow-parent/vertx-vaadin-flow</module>

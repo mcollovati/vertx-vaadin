@@ -28,11 +28,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.mcollovati.failures.lookup.FakeLookupInitializer;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.impl.IsolatingClassLoader;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.ext.web.Router;
+import net.bytebuddy.ByteBuddy;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,6 +81,17 @@ public class VaadinVerticleUT {
         ));
     }
 
+    @Test
+    public void shouldDisableHillaSupportByConfiguration(TestContext context) {
+        TestVerticle verticle = new TestVerticle();
+        JsonObject config = testConfig();
+        DeploymentOptions opts = new DeploymentOptions()
+                .setConfig(config);
+        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev ->
+                context.assertFalse(verticle.service.getVaadinOptions().hillaEnabled(), "Hilla support should be disabled")
+        ));
+    }
+
     private JsonObject testConfig() {
         return new JsonObject()
             .put("server", new JsonObject().put("port", 0))
@@ -91,6 +105,7 @@ public class VaadinVerticleUT {
     private static class TestVerticle extends VaadinVerticle {
         private AtomicBoolean startInvoked = new AtomicBoolean();
         private AtomicBoolean stopInvoked = new AtomicBoolean();
+        VertxVaadinService service;
 
         @Override
         public void start() {
@@ -100,6 +115,12 @@ public class VaadinVerticleUT {
         @Override
         public void stop() {
             stopInvoked.set(true);
+        }
+
+        @Override
+        protected void serviceInitialized(VertxVaadinService service, Router router) {
+            this.service = service;
+            super.serviceInitialized(service, router);
         }
     }
 }

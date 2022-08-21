@@ -121,6 +121,10 @@ public final class VaadinOptions {
         config.put("sockJSSupport", enabled);
     }
 
+    void disableHilla() {
+        config.put("hilla.enabled", false);
+    }
+
     void update(Properties properties) {
         properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
     }
