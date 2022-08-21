@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import java.net.ServerSocket;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +38,7 @@ import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistryInitializer;
+
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -52,6 +54,7 @@ import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
+
 import dev.hilla.startup.EndpointsValidator;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -86,13 +89,13 @@ public class VaadinVerticle extends AbstractVerticle {
         log.info("Starting vaadin verticle " + getClass().getName());
 
         prepareConfig()
-            .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
-            .compose(this::initVertxVaadin)
-            .compose(this::startupHttpServer)
-            .<Void>map(router -> {
-                serviceInitialized(vaadinService, router);
-                return null;
-            }).onComplete(startFuture);
+                .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
+                .compose(this::initVertxVaadin)
+                .compose(this::startupHttpServer)
+                .<Void>map(router -> {
+                    serviceInitialized(vaadinService, router);
+                    return null;
+                }).onComplete(startFuture);
 
         // Perform potential synchronous startup tasks
         start();
@@ -102,15 +105,17 @@ public class VaadinVerticle extends AbstractVerticle {
         String mountPoint = vertxVaadin.config().mountPoint();
         Router router = Router.router(vertx);
 
-        String connectEndpoint = vertxVaadin.config().hillaEndpoint();
-        router.mountSubRouter(connectEndpoint, vertxVaadin.connectRouter());
+        if (vertxVaadin.config().hillaEnabled()) {
+            String connectEndpoint = vertxVaadin.config().hillaEndpoint();
+            router.mountSubRouter(connectEndpoint, vertxVaadin.connectRouter());
+        }
 
         router.mountSubRouter(mountPoint, vertxVaadin.router());
         log.debug("Mounted Vaadin router on {}", mountPoint);
 
 
         HttpServerOptions serverOptions = new HttpServerOptions(
-            config().getJsonObject("server", new JsonObject())
+                config().getJsonObject("server", new JsonObject())
         ).setCompressionSupported(true);
 
         httpServer = vertx.createHttpServer(serverOptions).requestHandler(router);
@@ -135,7 +140,7 @@ public class VaadinVerticle extends AbstractVerticle {
         // search first new port key server.port, then, for backward compatibility
         // fallback to httpPort
         Integer httpPort = config().getJsonObject("server", new JsonObject())
-            .getInteger("port", config().getInteger("httpPort", 8080));
+                .getInteger("port", config().getInteger("httpPort", 8080));
         if (httpPort == 0) {
             try (ServerSocket socket = new ServerSocket(0)) {
                 promise.complete(socket.getLocalPort());
@@ -161,14 +166,14 @@ public class VaadinVerticle extends AbstractVerticle {
         VaadinVerticleConfiguration vaadinVerticleConfiguration = getClass().getAnnotation(VaadinVerticleConfiguration.class);
 
         Optional.ofNullable(vaadinVerticleConfiguration)
-            .map(VaadinVerticleConfiguration::serviceName)
-            .ifPresent(serviceName -> cfgBackend.put("serviceName", serviceName));
+                .map(VaadinVerticleConfiguration::serviceName)
+                .ifPresent(serviceName -> cfgBackend.put("serviceName", serviceName));
         cfgBackend.put("mountPoint", Optional.ofNullable(vaadinVerticleConfiguration)
-            .map(VaadinVerticleConfiguration::mountPoint).orElse("/")
+                .map(VaadinVerticleConfiguration::mountPoint).orElse("/")
         );
         Optional.ofNullable(vaadinVerticleConfiguration).map(VaadinVerticleConfiguration::basePackages)
-            .map(pkgs -> new JsonArray(asList(pkgs)))
-            .ifPresent(pkgs -> cfgBackend.put("flowBasePackages", pkgs));
+                .map(pkgs -> new JsonArray(asList(pkgs)))
+                .ifPresent(pkgs -> cfgBackend.put("flowBasePackages", pkgs));
         cfgBackend.mergeIn(config().getJsonObject("vaadin", new JsonObject()));
 
         String mountPoint = cfgBackend.getString("mountPoint");
@@ -225,22 +230,26 @@ public class VaadinVerticle extends AbstractVerticle {
                 classGraph.verbose();
             }
             classGraph.ignoreParentClassLoaders()
-                .enableClassInfo()
-                .ignoreClassVisibility()
-                .enableAnnotationInfo()
-                .whitelistPackages(pkgs.toArray(new String[0]))
-                .ignoreParentClassLoaders()
-                .removeTemporaryFilesAfterScan();
+                    .enableClassInfo()
+                    .ignoreClassVisibility()
+                    .enableAnnotationInfo()
+                    .whitelistPackages(pkgs.toArray(new String[0]))
+                    .ignoreParentClassLoaders()
+                    .removeTemporaryFilesAfterScan();
             try (ScanResult scanResult = classGraph.scan()) {
-                map.putAll(seekRequiredClasses(scanResult));
-
                 boolean haSockJS = scanResult.getClassInfo("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection") != null;
                 vaadinOpts.sockJSSupport(haSockJS);
+
+                boolean hasHilla = scanResult.getClassInfo("dev.hilla.EndpointRegistry") != null;
+                if (!hasHilla) {
+                    vaadinOpts.disableHilla();
+                }
+                map.putAll(seekRequiredClasses(scanResult, vaadinOpts));
             }
 
             try {
                 new LookupServletContainerInitializer()
-                    .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
+                        .process(map.get(LookupServletContainerInitializer.class), startupContext.servletContext());
                 finalizeVaadinConfig(vaadinOpts);
 
                 Promise<Void> initializerFuture = Promise.promise();
@@ -260,7 +269,7 @@ public class VaadinVerticle extends AbstractVerticle {
     private void finalizeVaadinConfig(VaadinOptions vaadinOpts) {
         VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), new VertxVaadinContext(vertx));
         DeploymentConfiguration deploymentConfiguration = new DeploymentConfigurationFactory()
-            .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
+                .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
         vaadinOpts.update(deploymentConfiguration.getInitParameters());
     }
 
@@ -276,14 +285,14 @@ public class VaadinVerticle extends AbstractVerticle {
         };
 
         CompositeFuture.join(asList(
-            runInitializer(initializerFactory.apply(new VertxEndpointRegistryInitializer())),
-            runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
-            runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
-            runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
-            runInitializer(initializerFactory.apply(new AnnotationValidator())),
-            runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
-            runInitializer(initializerFactory.apply(new VaadinAppShellInitializer())),
-            runInitializer(initializerFactory.apply(new DevModeStartupListener()))
+                runInitializer(initializerFactory.apply(new VertxEndpointRegistryInitializer())),
+                runInitializer(initializerFactory.apply(new RouteRegistryInitializer())),
+                runInitializer(initializerFactory.apply(new ErrorNavigationTargetInitializer())),
+                runInitializer(initializerFactory.apply(new WebComponentConfigurationRegistryInitializer())),
+                runInitializer(initializerFactory.apply(new AnnotationValidator())),
+                runInitializer(initializerFactory.apply(new WebComponentExporterAwareValidator())),
+                runInitializer(initializerFactory.apply(new VaadinAppShellInitializer())),
+                runInitializer(initializerFactory.apply(new DevModeStartupListener()))
         )).onComplete(event2 -> {
             if (event2.succeeded()) {
                 promise.complete();
@@ -293,15 +302,18 @@ public class VaadinVerticle extends AbstractVerticle {
         });
     }
 
-    private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult) {
+    private Map<Class<?>, Set<Class<?>>> seekRequiredClasses(ScanResult scanResult, VaadinOptions options) {
+        Set<Class<?>> initializers = new HashSet<>(Set.of(
+                RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
+                WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
+                DevModeStartupListener.class, VaadinAppShellInitializer.class,
+                LookupServletContainerInitializer.class));
+        if (options.hillaEnabled()) {
+            initializers.add(EndpointsValidator.class);
+            initializers.add(VertxEndpointRegistryInitializer.class);
+        }
         Map<Class<?>, Set<Class<?>>> map = new HashMap<>();
-        Stream.of(
-            RouteRegistryInitializer.class, AnnotationValidator.class, ErrorNavigationTargetInitializer.class,
-            WebComponentConfigurationRegistryInitializer.class, WebComponentExporterAwareValidator.class,
-            DevModeStartupListener.class, VaadinAppShellInitializer.class, EndpointsValidator.class,
-            LookupServletContainerInitializer.class,
-            VertxEndpointRegistryInitializer.class
-        ).forEach(type -> registerHandledTypes(scanResult, type, map));
+        initializers.forEach(type -> registerHandledTypes(scanResult, type, map));
         return map;
     }
 
@@ -320,9 +332,9 @@ public class VaadinVerticle extends AbstractVerticle {
             };
 
             Set<Class<?>> classes = Stream.of(handledTypes.value())
-                .map(classFinder)
-                .flatMap(c -> c.loadClasses().stream())
-                .collect(Collectors.toSet());
+                    .map(classFinder)
+                    .flatMap(c -> c.loadClasses().stream())
+                    .collect(Collectors.toSet());
 
             if (!classes.isEmpty()) {
                 map.put(initializerClass, classes);
