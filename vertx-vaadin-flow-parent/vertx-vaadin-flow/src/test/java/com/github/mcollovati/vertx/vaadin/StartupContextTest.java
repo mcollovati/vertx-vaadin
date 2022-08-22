@@ -41,7 +41,7 @@ public class StartupContextTest {
     @Before
     public void setup() {
         JsonObject config = new JsonObject();
-        config.put("debug", true);
+        config.put("debug", System.getProperty("vertxvaadin.classgraph.debug", "false"));
         startupContext = StartupContext.syncOf(Vertx.vertx(), new VaadinOptions(config));
     }
 
