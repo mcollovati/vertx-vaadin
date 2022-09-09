@@ -111,6 +111,7 @@
         <hilla.version>1.2-SNAPSHOT</hilla.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
+        <byte-buddy.version>1.12.14</byte-buddy.version>
         <junit-quickcheck.version>1.0</junit-quickcheck.version>
         <lombok.version>1.18.26</lombok.version>
         <junit.version>4.13.1</junit.version>
@@ -165,6 +166,16 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
             </dependency>
 
             <dependency>
