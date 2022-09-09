@@ -98,6 +98,7 @@
         <vaadin.flow.version>23.1.1</vaadin.flow.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
+        <byte-buddy.version>1.12.14</byte-buddy.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
         <lombok.version>1.18.4</lombok.version>
         <junit.version>4.13.1</junit.version>
@@ -145,6 +146,16 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${byte-buddy.version}</version>
             </dependency>
 
             <dependency>

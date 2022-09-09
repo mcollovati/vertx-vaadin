@@ -74,7 +74,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>license-checker</artifactId>
-            <version>1.4.1</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -101,6 +100,14 @@
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
             <version>${classgraph.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
         </dependency>
 
         <dependency>
