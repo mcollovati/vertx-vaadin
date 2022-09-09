@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.support.VaadinPatches;
 import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistryInitializer;
 
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
@@ -81,6 +82,10 @@ import static java.util.Arrays.asList;
  * Created by marco on 16/07/16.
  */
 public class VaadinVerticle extends AbstractVerticle {
+
+    static {
+        VaadinPatches.patch();
+    }
 
     private static final Logger log = LoggerFactory.getLogger(VaadinVerticle.class);
 
