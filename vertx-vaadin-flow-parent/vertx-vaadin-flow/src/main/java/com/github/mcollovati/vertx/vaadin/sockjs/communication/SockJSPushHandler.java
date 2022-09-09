@@ -33,22 +33,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import com.vaadin.base.devserver.DebugWindowMessage;
-import com.vaadin.base.devserver.FeatureFlagMessage;
-import com.vaadin.base.devserver.ServerInfo;
-import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.experimental.FeatureFlags;
+import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
@@ -74,7 +68,6 @@ import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -100,7 +93,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Source code adapted from Vaadin {@link com.vaadin.flow.server.communication.PushHandler}
  */
-public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLiveReload {
+public class SockJSPushHandler implements Handler<RoutingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(SockJSPushHandler.class);
 
@@ -156,7 +149,8 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
     private final Router router;
     private final SessionHandler sessionHandler;
     private final LocalMap<String, SockJSSocket> connectedSocketsLocalMap;
-    private final Set<String> liveReload = new HashSet<>();
+    private final Set<String> debugWindowHandlers = new HashSet<>();
+    private final VertxDebugWindowConnection debugWindow;
 
     /**
      * Callback used when we receive a request to establish a push channel for a
@@ -191,6 +185,7 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
         this.sessionHandler = sessionHandler;
         connectedSocketsLocalMap = socketsMap(service.getVertx());
         router = sockJSHandler.socketHandler(this::onConnect);
+        debugWindow = service.getContext().getAttribute(VertxDebugWindowConnection.class);
     }
 
     private void onConnect(SockJSSocket sockJSSocket) {
@@ -199,35 +194,18 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
         String uuid = sockJSSocket.writeHandlerID();
         connectedSocketsLocalMap.put(uuid, asSharable(sockJSSocket));
 
-        if (isDebugWindowConnection(routingContext)) {
-            liveReload.add(uuid);
-            sockJSSocket.write("{\"command\": \"hello\"}");
-            sendDebugWindowCommand(sockJSSocket, "serverInfo", new ServerInfo());
-            sendDebugWindowCommand(sockJSSocket, "featureFlags", new FeatureFlagMessage(FeatureFlags
-                .get(service.getContext()).getFeatures().stream()
-                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
-                .collect(Collectors.toList())));
+        PushSocket socket = new PushSocketImpl(sockJSSocket);
+        initSocket(sockJSSocket, routingContext, socket);
 
+        if (isDebugWindowConnection(routingContext)) {
+            debugWindowHandlers.add(uuid);
+            debugWindow.onConnect(uuid, sockJSSocket::write);
         } else {
             // Send an ACK
             sockJSSocket.write("ACK-CONN|" + uuid);
-
-
-            PushSocket socket = new PushSocketImpl(sockJSSocket);
-
-            initSocket(sockJSSocket, routingContext, socket);
-
             sessionHandler.handle(new SockJSRoutingContext(routingContext, rc ->
                 callWithUi(new PushEvent(socket, routingContext, null), establishCallback)
             ));
-        }
-    }
-
-    private void sendDebugWindowCommand(SockJSSocket sockJSSocket, String command, Object data) {
-        try {
-            sockJSSocket.write(Json.encode(new DebugWindowMessage(command, data)));
-        } catch (Exception e) {
-            logger.error("Error sending message", e);
         }
     }
 
@@ -258,10 +236,11 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
 
     private void onDisconnect(PushEvent ev) {
         connectedSocketsLocalMap.remove(ev.socket.getUUID());
-        boolean isLiveReload = liveReload.remove(ev.socket.getUUID());
+        boolean isDebugWindow = debugWindowHandlers.remove(ev.socket.getUUID());
         if (!ev.socket.isClosed()) {
-            if (isLiveReload) {
-                logger.debug("Live reload connection disconnected");
+            if (isDebugWindow) {
+                debugWindow.onClose(ev.socket.getUUID());
+                logger.debug("Debug window connection disconnected");
             } else {
                 connectionLost(ev);
             }
@@ -269,28 +248,20 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
     }
 
     private void onError(PushEvent ev, Throwable t) {
-        logger.error("Exception in push connection", t);
-        connectionLost(ev);
+        boolean isDebugWindow = debugWindowHandlers.contains(ev.socket.getUUID());
+        if (isDebugWindow) {
+            logger.error("Exception in debug window connection", t);
+        } else {
+            logger.error("Exception in push connection", t);
+            connectionLost(ev);
+        }
     }
 
     private void onMessage(PushEvent event) {
-        boolean isLiveReload = liveReload.contains(event.socket.getUUID());
-        if (isLiveReload) {
+        boolean isDebugWindow = debugWindowHandlers.contains(event.socket.getUUID());
+        if (isDebugWindow) {
             String message = event.message().map(Buffer::toString).orElse("");
-            if (message.isEmpty()) {
-                logger.debug("Received live reload heartbeat");
-                return;
-            }
-            elemental.json.JsonObject json = elemental.json.Json.parse(message);
-            String command = json.getString("command");
-            if ("setFeature".equals(command)) {
-                elemental.json.JsonObject data = json.getObject("data");
-                FeatureFlags.get(service.getContext()).setEnabled(data.getString("featureId"),
-                    data.getBoolean("enabled"));
-            } else if ("reportTelemetry".equals(command)) {
-                elemental.json.JsonObject data = json.getObject("data");
-                DevModeUsageStatistics.handleBrowserData(data);
-            }
+            debugWindow.onMessage(event.socket.getUUID(), message);
         } else {
             callWithUi(event, receiveCallback);
         }
@@ -304,20 +275,6 @@ public class SockJSPushHandler implements Handler<RoutingContext>, VertxVaadinLi
         } finally {
             CurrentInstance.set(RoutingContext.class, null);
         }
-    }
-
-    @Override
-    public void reload() {
-        liveReload.stream()
-            .map(connectedSocketsLocalMap::get)
-            .filter(Objects::nonNull)
-            .forEach(socket -> {
-                try {
-                    socket.write("{\"command\": \"reload\"}");
-                } catch (Exception ex) {
-                    // ignore
-                }
-            });
     }
 
     private void callWithUi(final PushEvent event, final PushEventCallback callback) {
