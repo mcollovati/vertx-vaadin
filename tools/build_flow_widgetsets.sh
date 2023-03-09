@@ -18,7 +18,7 @@ function get_vaadin_versions() {
         __versions=$(curl -s https://maven.vaadin.com/vaadin-prereleases/com/vaadin/vaadin-core/maven-metadata.xml | grep "<version>${vaadin_platform}\..*</version>" | sed -E 's/^.*<version>(.*)<\/version>.*/\1/g')
         ;;
         *)
-        __versions=$(curl -s "https://search.maven.org/solrsearch/select?q=g:com.vaadin+AND+a:vaadin-core+AND+v:${vaadin_platform}.*&rows=10&core=gav" | jq -r '.response.docs[].v')
+        __versions=$(curl -s "https://search.maven.org/solrsearch/select?q=g:com.vaadin+AND+a:vaadin-core+AND+v:${vaadin_platform}.*&rows=10&core=gav" | jq -r '.response.docs | sort_by(.v|split(".")|map(tonumber)) | reverse | .[].v')
         ;;
     esac
     echo "Found Vaadin versions:"
