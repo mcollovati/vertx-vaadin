@@ -22,16 +22,12 @@
  */
 package com.github.mcollovati.vertx.http;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.vaadin.base.devserver.AbstractDevServerRunner;
-import com.vaadin.base.devserver.ViteHandler;
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.StaticFileServer;
+import com.github.mcollovati.vertx.vaadin.devserver.VertxDevModeHandlerManager;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -45,11 +41,22 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.ViteHandler;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.StaticFileServer;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
+
 public class HttpReverseProxy {
 
-    private final static Logger logger = LoggerFactory.getLogger(HttpReverseProxy.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpReverseProxy.class);
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
+    private static final String[] FILES_IN_ROOT = new String[]{INDEX_HTML,
+            WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS};
 
 
     private WebClient client;
@@ -68,9 +75,12 @@ public class HttpReverseProxy {
         boolean isVite = devModeHandler instanceof ViteHandler;
         if (isVite) {
             return path -> {
-                if ("/index.html".equals(path)) {
-                    return "/VAADIN/index.html";
+                if (Stream.of(FILES_IN_ROOT).anyMatch(file -> path.equals("/" + file))) {
+                    return "/VAADIN" + path;
                 }
+                //if ("/index.html".equals(path)) {
+                //    return "/VAADIN/index.html";
+                //}
                 return path;
             };
         }
@@ -79,17 +89,17 @@ public class HttpReverseProxy {
 
 
     public static HttpReverseProxy create(Vertx vertx, DevModeHandler devModeHandler) {
-        CompletableFuture<WebClient> webClientFuture = getDevModeHandlerFuture(devModeHandler)
-            .thenApply(port -> {
-                logger.debug("Starting DevMode proxy on port {}", port);
-                WebClientOptions options = new WebClientOptions()
-                    .setLogActivity(true)
-                    .setConnectTimeout(DEFAULT_TIMEOUT)
-                    .setIdleTimeout(DEFAULT_TIMEOUT)
-                    .setDefaultHost("localhost")
-                    .setDefaultPort(port);
-                return WebClient.create(vertx, options);
-            });
+        CompletableFuture<WebClient> webClientFuture = VertxDevModeHandlerManager.getDevModeHandlerFuture(devModeHandler)
+                .thenApply(port -> {
+                    logger.debug("Starting DevMode proxy on port {}", port);
+                    WebClientOptions options = new WebClientOptions()
+                            .setLogActivity(true)
+                            .setConnectTimeout(DEFAULT_TIMEOUT)
+                            .setIdleTimeout(DEFAULT_TIMEOUT)
+                            .setDefaultHost("localhost")
+                            .setDefaultPort(port);
+                    return WebClient.create(vertx, options);
+                });
         return new HttpReverseProxy(webClientFuture, createUriCustomizer(devModeHandler));
     }
 
@@ -113,7 +123,7 @@ public class HttpReverseProxy {
             logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
 
             String devServerRequestPath = UrlUtil.encodeURI(requestURI) +
-                ((serverRequest.query() != null) ? "?" + serverRequest.query() : "");
+                    ((serverRequest.query() != null) ? "?" + serverRequest.query() : "");
 
 
             HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), devServerRequestPath);
@@ -149,24 +159,6 @@ public class HttpReverseProxy {
                     routingContext.next();
                 }
             });
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private static CompletableFuture<Integer> getDevModeHandlerFuture(DevModeHandler devModeHandler) {
-
-        try {
-            // TODO: find a way to remove explicit cast on DevModeHandlerImpl
-            Field devServerStartFuture = AbstractDevServerRunner.class.getDeclaredField("devServerStartFuture");
-            devServerStartFuture.setAccessible(true);
-            return ((CompletableFuture<Void>) devServerStartFuture.get(devModeHandler))
-                .thenApply(unused -> ((AbstractDevServerRunner) devModeHandler).getPort());
-        } catch (Exception ex) {
-            logger.error("Cannot get DevModHandler future", ex);
-            CompletableFuture<Integer> future = new CompletableFuture<>();
-            future.completeExceptionally(ex);
-            return future;
         }
     }
 

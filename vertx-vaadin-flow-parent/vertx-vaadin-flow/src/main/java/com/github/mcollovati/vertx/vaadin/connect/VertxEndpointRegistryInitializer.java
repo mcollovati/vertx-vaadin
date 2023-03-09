@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.github.mcollovati.vertx.support.FusionWorkAround;
+import com.github.mcollovati.vertx.support.HillaWorkAround;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
@@ -43,7 +43,7 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
         if (set == null || !Boolean.parseBoolean(vaadinServletContext.getContextParameter("hilla.enabled"))) {
             return;
         }
-        FusionWorkAround.install();
+        HillaWorkAround.install();
         ClassFinder finder = new ClassFinder.DefaultClassFinder(set);
         Set<Class<?>> endpoints = finder.getAnnotatedClasses(Endpoint.class);
 

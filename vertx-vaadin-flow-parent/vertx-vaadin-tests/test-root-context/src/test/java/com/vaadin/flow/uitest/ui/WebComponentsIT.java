@@ -34,11 +34,6 @@ public class WebComponentsIT extends ChromeBrowserTest {
     public void testPolyfillLoaded() {
         open();
 
-        if (BrowserUtil.isIE(getDesiredCapabilities())) {
-            // Console logs are not available from IE11
-            return;
-        }
-
         LogEntries logs = driver.manage().logs().get("browser");
         if (logs != null) {
             Optional<LogEntry> anyError = StreamSupport

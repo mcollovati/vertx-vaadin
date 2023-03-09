@@ -6,8 +6,17 @@ package.json
 package-lock.json
 webpack.config.js
 webpack.generated.js
+vite.*.ts
 pnpmfile.js
 pnpm-lock.yaml
+tsconfig.json
+types.d.ts
+**/error-screenshots/
+
+vertx-vaadin-flow-parent/vertx-vaadin-flow/frontend/
+vertx-vaadin-flow-parent/vertx-vaadin-quarkus-extension/integration-tests/development/frontend/
+vertx-vaadin-flow-parent/vertx-vaadin-quarkus-extension/integration-tests/production/frontend/
+vertx-vaadin-flow-parent/vertx-vaadin-tests/test-scalability/frontend/
 
 
 

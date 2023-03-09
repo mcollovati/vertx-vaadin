@@ -31,7 +31,7 @@ public class VerifyBrowserVersionIT extends ChromeBrowserTest {
                     getDesiredCapabilities()) + System.getProperty("uitest.firefox-version", "58");
         } else {
             browserIdentifier = getExpectedUserAgentString(desiredCapabilities)
-                    + desiredCapabilities.getVersion();
+                    + desiredCapabilities.getBrowserVersion();
         }
 
 
@@ -39,10 +39,7 @@ public class VerifyBrowserVersionIT extends ChromeBrowserTest {
     }
 
     private String getExpectedUserAgentString(DesiredCapabilities dCap) {
-        if (BrowserUtil.isIE(dCap)) {
-            // IE11
-            return "Trident/7.0; rv:";
-        } else if (BrowserUtil.isFirefox(dCap)) {
+        if (BrowserUtil.isFirefox(dCap)) {
             return "Firefox/";
         } else if (BrowserUtil.isChrome(dCap)) {
             return "Chrome/";

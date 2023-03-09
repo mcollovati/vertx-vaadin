@@ -1068,7 +1068,7 @@ public class VertxVaadinConnectEndpointServiceTest {
 
         when(explicitNullableTypeChecker.checkValueForAnnotatedElement(
                 eq(NullCheckerTestClass.OK_RESPONSE),
-                argThat(getIsStringReturnType())))
+                argThat(getIsStringReturnType()), anyBoolean()))
                 .thenReturn(null);
 
         String testOkMethod = "testOkMethod";
@@ -1081,7 +1081,7 @@ public class VertxVaadinConnectEndpointServiceTest {
 
         verify(explicitNullableTypeChecker).checkValueForAnnotatedElement(
                 NullCheckerTestClass.OK_RESPONSE,
-                NullCheckerTestClass.class.getMethod(testOkMethod));
+                NullCheckerTestClass.class.getMethod(testOkMethod), true);
 
         assertEquals(EndpointServiceContext.OK, response.getStatusCode());
         assertEquals("\"" + NullCheckerTestClass.OK_RESPONSE + "\"",
@@ -1100,7 +1100,7 @@ public class VertxVaadinConnectEndpointServiceTest {
         Method testNullMethod = NullCheckerTestClass.class
                 .getMethod(testNullMethodName);
         when(explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
-                testNullMethod))
+                testNullMethod, true))
                 .thenReturn(errorMessage);
 
         VaadinConnectResponse response = createVaadinEndpointService(
@@ -1110,7 +1110,7 @@ public class VertxVaadinConnectEndpointServiceTest {
                 testNullMethodName, createRequestContext(createRequestParameters("{}"), routingContextMock));
 
         verify(explicitNullableTypeChecker).checkValueForAnnotatedElement(null,
-                testNullMethod);
+                testNullMethod, true);
 
         assertEquals(EndpointServiceContext.INTERNAL_SERVER_ERROR, response.getStatusCode());
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
@@ -1193,7 +1193,7 @@ public class VertxVaadinConnectEndpointServiceTest {
         if (explicitNullableTypeChecker == null) {
             explicitNullableTypeChecker = mock(
                     ExplicitNullableTypeChecker.class);
-            when(explicitNullableTypeChecker.checkValueForAnnotatedElement(any(), any()))
+            when(explicitNullableTypeChecker.checkValueForAnnotatedElement(any(), any(), anyBoolean()))
                     .thenReturn(null);
         }
 
