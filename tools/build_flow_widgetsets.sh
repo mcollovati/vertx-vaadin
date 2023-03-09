@@ -9,7 +9,7 @@ _current_version=$($_mvn -Prelease-flow -pl :vaadin-flow-sockjs help:evaluate -q
 
 function get_vaadin_versions() {
     local __result=$1
-    local vaadin_platform_full=$($_mvn -N help:evaluate -q -Dexpression='vaadin.platform2.version' -DforceStdout=true)
+    local vaadin_platform_full=$($_mvn -N help:evaluate -q -Dexpression='vaadin.platform.version' -DforceStdout=true)
     local vaadin_platform=$(echo $vaadin_platform_full | cut -d '.' -f 1)
     local __versions
     echo "Fetch Vaadin versions for ${vaadin_platform}..."
