@@ -285,7 +285,7 @@ public class VertxVaadin {
         vaadinRouter.route().handler(BodyHandler.create());
 
         // Disable SessionHandler for /VAADIN/ static resources
-        vaadinRouter.routeWithRegex("^(?!/(VAADIN(?!/dynamic)|frontend|frontend-es6|webjars|webroot)/).*$")
+        vaadinRouter.routeWithRegex("^(?!/(VAADIN(?!/(dynamic|push))|frontend|frontend-es6|webjars|webroot)/).*$")
                 .handler(sessionHandler);
 
         String pushJavascript = String.format(
@@ -300,7 +300,7 @@ public class VertxVaadin {
             logger.info("Starting DevModeHandler proxy");
             HttpReverseProxy proxy = HttpReverseProxy.create(vertx, devModeHandler);
             vaadinRouter.routeWithRegex("^/themes\\/[\\s\\S]+?\\/").handler(proxy::forward);
-            vaadinRouter.routeWithRegex("/VAADIN(?!/dynamic)/.*").handler(proxy::forward);
+            vaadinRouter.routeWithRegex("/VAADIN(?!/(dynamic|push))/.*").handler(proxy::forward);
             vaadinRouter.routeWithRegex("/.*\\.js").handler(proxy::forward);
             vaadinRouter.routeWithRegex("/(index|web-component)\\.html").handler(proxy::forward);
 
