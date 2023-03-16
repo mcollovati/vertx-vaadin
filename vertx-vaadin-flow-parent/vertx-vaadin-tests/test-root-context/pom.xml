@@ -227,6 +227,12 @@
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>**/ChromeBrowserTest.*</excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

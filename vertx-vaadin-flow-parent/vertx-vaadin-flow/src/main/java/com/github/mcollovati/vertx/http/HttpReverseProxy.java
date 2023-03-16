@@ -105,7 +105,7 @@ public class HttpReverseProxy {
 
     public void forward(RoutingContext routingContext) {
         HttpServerRequest serverRequest = routingContext.request();
-        String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
+        String requestURI = serverRequest.uri();
         if (client == null) {
             logger.debug("DevMode serve not yet started");
             routingContext.next();
@@ -120,7 +120,7 @@ public class HttpReverseProxy {
             }
             requestURI = uriCustomizer.apply(requestURI);
 
-            logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
+            logger.debug("Forwarding {} to dev-server as {}", serverRequest.uri(), requestURI);
 
             String devServerRequestPath = UrlUtil.encodeURI(requestURI) +
                     ((serverRequest.query() != null) ? "?" + serverRequest.query() : "");
@@ -139,23 +139,23 @@ public class HttpReverseProxy {
                     int statusCode = clientResponse.statusCode();
                     HttpServerResponse serverResponse = routingContext.response();
                     if (statusCode == HttpResponseStatus.OK.code()) {
-                        logger.debug("Served resource by webpack: {} {}", clientResponse.statusCode(), devServerRequestPath);
+                        logger.debug("Served resource by dev-server: {} {}", clientResponse.statusCode(), devServerRequestPath);
                         serverResponse.setStatusCode(statusCode).setChunked(true);
                         serverResponse.headers().setAll(clientResponse.headers());
                         serverResponse.end(clientResponse.body());
                     } else if (statusCode == HttpResponseStatus.NOT_FOUND.code()) {
-                        logger.debug("Resource not served by webpack {}", devServerRequestPath);
+                        logger.debug("Resource not served by dev-server {}", devServerRequestPath);
                         routingContext.next();
                     } else if (statusCode < 400) {
-                        logger.debug("Webpack response {} for resource {}", statusCode, devServerRequestPath);
+                        logger.debug("dev-server response {} for resource {}", statusCode, devServerRequestPath);
                         serverResponse.headers().setAll(clientResponse.headers());
                         serverResponse.setStatusCode(statusCode).end();
                     } else {
-                        logger.debug("Webpack failed with status {} for resource {}", statusCode, devServerRequestPath);
+                        logger.debug("dev-server failed with status {} for resource {}", statusCode, devServerRequestPath);
                         routingContext.fail(statusCode);
                     }
                 } else {
-                    logger.warn("Request to webpack failed: {}", devServerRequestPath, ar.cause());
+                    logger.warn("Request to dev-server failed: {}", devServerRequestPath, ar.cause());
                     routingContext.next();
                 }
             });

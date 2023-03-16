@@ -5,15 +5,22 @@ import java.util.concurrent.CompletableFuture;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bind.annotation.This;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 
 public class VertxDevModeHandlerManager /* extends DevModeHandlerManagerImpl */ {
 
@@ -24,8 +31,8 @@ public class VertxDevModeHandlerManager /* extends DevModeHandlerManagerImpl */ 
         ByteBuddyAgent.install();
         new ByteBuddy().redefine(ViteHandler.class)
                 .method(ElementMatchers.named("getPathToVaadin"))
-                .intercept(FixedValue.value("/VAADIN/"))
-                        //MethodDelegation.to(Target.class))
+                .intercept(//FixedValue.value("/VAADIN/"))
+                        MethodDelegation.to(Target.class))
                 .make()
                 .load(
                         ViteHandler.class.getClassLoader(),
@@ -34,7 +41,9 @@ public class VertxDevModeHandlerManager /* extends DevModeHandlerManagerImpl */ 
 
     public static final class Target {
         public static String getPathToVaadin() {
-            return "/VAADIN/";
+            return FrontendUtils.getFrontendServletPath(null)
+                    + "/" + VAADIN_MAPPING;
+
         }
     }
 
