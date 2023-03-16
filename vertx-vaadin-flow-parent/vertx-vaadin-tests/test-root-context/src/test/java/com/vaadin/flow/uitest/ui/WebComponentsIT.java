@@ -46,6 +46,8 @@ public class WebComponentsIT extends ChromeBrowserTest {
                             .contains("sockjs-node"))
                     .filter(entry -> !entry.getMessage()
                             .contains("[WDS] Disconnected!"))
+                    .filter(entry -> !entry.getMessage()
+                            .contains("Lit is in dev mode. Not recommended for production"))
                     .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }

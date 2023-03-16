@@ -59,6 +59,8 @@ public class EmptyListsIT extends ChromeBrowserTest {
                 // Tools live-reload server.
                 .filter(entry -> !entry.getMessage()
                     .contains("WebSocket connection to 'ws://"))
+                .filter(entry -> !entry.getMessage()
+                            .contains("Lit is in dev mode. Not recommended for production"))
                 .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }
