@@ -37,7 +37,15 @@ public abstract class AbstractChromeIT extends ChromeBrowserTest {
     public void beforeTest() throws Exception {
         ChromeBrowserTest.setChromeDriverPath();
         setup();
-        checkIfServerAvailable();
+        waitUntil(driver -> {
+            try {
+                checkIfServerAvailable();
+                return true;
+            } catch (IllegalStateException ex) {
+                // server not yet ready
+            }
+            return false;
+        });
     }
 
     @Override
