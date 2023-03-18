@@ -41,7 +41,8 @@ public class VertxDevModeHandlerManager /* extends DevModeHandlerManagerImpl */ 
 
     public static final class Target {
         public static String getPathToVaadin() {
-            return FrontendUtils.getFrontendServletPath(null)
+            String path = FrontendUtils.getFrontendServletPath(null);
+            return path.replaceFirst("/$", "")
                     + "/" + VAADIN_MAPPING;
 
         }
