@@ -7,19 +7,19 @@ import org.junit.Test;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-import static com.github.mcollovati.vertx.support.FusionWorkAround.SPRINGFRAMEWORK_CLASS_UTILS;
+import static com.github.mcollovati.vertx.support.HillaWorkAround.SPRINGFRAMEWORK_CLASS_UTILS;
 
 
-public class FusionWorkAroundUT {
+public class HillaWorkAroundUT {
 
     @Test
     public void testFusionWorkAround() throws Throwable {
-        FusionWorkAround.install();
+        HillaWorkAround.install();
         Class<?> classUtils = Class.forName(SPRINGFRAMEWORK_CLASS_UTILS);
 
         assertThat(classUtils).as("class loaded").isNotNull();
 
-        Class<?> testClass = FusionWorkAround.class;
+        Class<?> testClass = HillaWorkAround.class;
         Class<?> result = invokeGetUserClass(classUtils, testClass);
         assertThat(result).isEqualTo(testClass);
     }

@@ -6,7 +6,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
 @Tag("hello-world")
-@NpmPackage(value = "@axa-ch/input-text", version = "4.3.11")
+@NpmPackage(value = "@axa-ch/input-text", version = "6.1.0")
 @JsModule("./src/hello-world.ts")
 public class HelloWorld extends Component {
 

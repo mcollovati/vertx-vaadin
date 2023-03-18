@@ -22,16 +22,12 @@
  */
 package com.github.mcollovati.vertx.http;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.vaadin.base.devserver.AbstractDevServerRunner;
-import com.vaadin.base.devserver.ViteHandler;
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.StaticFileServer;
+import com.github.mcollovati.vertx.vaadin.devserver.VertxDevModeHandlerManager;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -45,11 +41,22 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.ViteHandler;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.StaticFileServer;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
+
 public class HttpReverseProxy {
 
-    private final static Logger logger = LoggerFactory.getLogger(HttpReverseProxy.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpReverseProxy.class);
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
+    private static final String[] FILES_IN_ROOT = new String[]{INDEX_HTML,
+            WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS};
 
 
     private WebClient client;
@@ -68,9 +75,12 @@ public class HttpReverseProxy {
         boolean isVite = devModeHandler instanceof ViteHandler;
         if (isVite) {
             return path -> {
-                if ("/index.html".equals(path)) {
-                    return "/VAADIN/index.html";
+                if (Stream.of(FILES_IN_ROOT).anyMatch(file -> path.equals("/" + file))) {
+                    return "/VAADIN" + path;
                 }
+                //if ("/index.html".equals(path)) {
+                //    return "/VAADIN/index.html";
+                //}
                 return path;
             };
         }
@@ -79,23 +89,23 @@ public class HttpReverseProxy {
 
 
     public static HttpReverseProxy create(Vertx vertx, DevModeHandler devModeHandler) {
-        CompletableFuture<WebClient> webClientFuture = getDevModeHandlerFuture(devModeHandler)
-            .thenApply(port -> {
-                logger.debug("Starting DevMode proxy on port {}", port);
-                WebClientOptions options = new WebClientOptions()
-                    .setLogActivity(true)
-                    .setConnectTimeout(DEFAULT_TIMEOUT)
-                    .setIdleTimeout(DEFAULT_TIMEOUT)
-                    .setDefaultHost("localhost")
-                    .setDefaultPort(port);
-                return WebClient.create(vertx, options);
-            });
+        CompletableFuture<WebClient> webClientFuture = VertxDevModeHandlerManager.getDevModeHandlerFuture(devModeHandler)
+                .thenApply(port -> {
+                    logger.debug("Starting DevMode proxy on port {}", port);
+                    WebClientOptions options = new WebClientOptions()
+                            .setLogActivity(true)
+                            .setConnectTimeout(DEFAULT_TIMEOUT)
+                            .setIdleTimeout(DEFAULT_TIMEOUT)
+                            .setDefaultHost("localhost")
+                            .setDefaultPort(port);
+                    return WebClient.create(vertx, options);
+                });
         return new HttpReverseProxy(webClientFuture, createUriCustomizer(devModeHandler));
     }
 
     public void forward(RoutingContext routingContext) {
         HttpServerRequest serverRequest = routingContext.request();
-        String requestURI = serverRequest.uri().substring(VertxVaadinRequest.extractContextPath(routingContext).length());
+        String requestURI = serverRequest.uri();
         if (client == null) {
             logger.debug("DevMode serve not yet started");
             routingContext.next();
@@ -110,10 +120,10 @@ public class HttpReverseProxy {
             }
             requestURI = uriCustomizer.apply(requestURI);
 
-            logger.debug("Forwarding {} to webpack as {}", requestURI, serverRequest.uri());
+            logger.debug("Forwarding {} to dev-server as {}", serverRequest.uri(), requestURI);
 
             String devServerRequestPath = UrlUtil.encodeURI(requestURI) +
-                ((serverRequest.query() != null) ? "?" + serverRequest.query() : "");
+                    ((serverRequest.query() != null) ? "?" + serverRequest.query() : "");
 
 
             HttpRequest<Buffer> clientRequest = client.request(serverRequest.method(), devServerRequestPath);
@@ -129,44 +139,26 @@ public class HttpReverseProxy {
                     int statusCode = clientResponse.statusCode();
                     HttpServerResponse serverResponse = routingContext.response();
                     if (statusCode == HttpResponseStatus.OK.code()) {
-                        logger.debug("Served resource by webpack: {} {}", clientResponse.statusCode(), devServerRequestPath);
+                        logger.debug("Served resource by dev-server: {} {}", clientResponse.statusCode(), devServerRequestPath);
                         serverResponse.setStatusCode(statusCode).setChunked(true);
                         serverResponse.headers().setAll(clientResponse.headers());
                         serverResponse.end(clientResponse.body());
                     } else if (statusCode == HttpResponseStatus.NOT_FOUND.code()) {
-                        logger.debug("Resource not served by webpack {}", devServerRequestPath);
+                        logger.debug("Resource not served by dev-server {}", devServerRequestPath);
                         routingContext.next();
                     } else if (statusCode < 400) {
-                        logger.debug("Webpack response {} for resource {}", statusCode, devServerRequestPath);
+                        logger.debug("dev-server response {} for resource {}", statusCode, devServerRequestPath);
                         serverResponse.headers().setAll(clientResponse.headers());
                         serverResponse.setStatusCode(statusCode).end();
                     } else {
-                        logger.debug("Webpack failed with status {} for resource {}", statusCode, devServerRequestPath);
+                        logger.debug("dev-server failed with status {} for resource {}", statusCode, devServerRequestPath);
                         routingContext.fail(statusCode);
                     }
                 } else {
-                    logger.warn("Request to webpack failed: {}", devServerRequestPath, ar.cause());
+                    logger.warn("Request to dev-server failed: {}", devServerRequestPath, ar.cause());
                     routingContext.next();
                 }
             });
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private static CompletableFuture<Integer> getDevModeHandlerFuture(DevModeHandler devModeHandler) {
-
-        try {
-            // TODO: find a way to remove explicit cast on DevModeHandlerImpl
-            Field devServerStartFuture = AbstractDevServerRunner.class.getDeclaredField("devServerStartFuture");
-            devServerStartFuture.setAccessible(true);
-            return ((CompletableFuture<Void>) devServerStartFuture.get(devModeHandler))
-                .thenApply(unused -> ((AbstractDevServerRunner) devModeHandler).getPort());
-        } catch (Exception ex) {
-            logger.error("Cannot get DevModHandler future", ex);
-            CompletableFuture<Integer> future = new CompletableFuture<>();
-            future.completeExceptionally(ex);
-            return future;
         }
     }
 

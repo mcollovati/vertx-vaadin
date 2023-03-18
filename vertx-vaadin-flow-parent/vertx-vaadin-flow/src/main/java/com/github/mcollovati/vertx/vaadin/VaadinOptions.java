@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
 import io.vertx.core.Vertx;
@@ -38,7 +40,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PUSH_URL;
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public final class VaadinOptions {
@@ -80,7 +81,8 @@ public final class VaadinOptions {
     }
 
     public String pushURL() {
-        String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
+        //String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
+        String pushURL = "/" + Constants.PUSH_MAPPING;
         String mountPoint = mountPoint();
         if (pushURL.startsWith(mountPoint)) {
             return "/" + pushURL.substring(mountPoint().length()).replaceFirst("^/", "");
@@ -124,7 +126,6 @@ public final class VaadinOptions {
     void disableHilla() {
         config.put("hilla.enabled", false);
     }
-
     void update(Properties properties) {
         properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
     }

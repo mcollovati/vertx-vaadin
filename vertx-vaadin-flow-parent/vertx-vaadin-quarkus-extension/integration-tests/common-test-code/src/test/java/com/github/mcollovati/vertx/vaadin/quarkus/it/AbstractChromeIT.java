@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
@@ -36,7 +37,20 @@ public abstract class AbstractChromeIT extends ChromeBrowserTest {
     public void beforeTest() throws Exception {
         ChromeBrowserTest.setChromeDriverPath();
         setup();
-        checkIfServerAvailable();
+        waitUntil(driver -> {
+            try {
+                checkIfServerAvailable();
+                return true;
+            } catch (IllegalStateException ex) {
+                // server not yet ready
+            }
+            return false;
+        });
+    }
+
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        chromeOptions.addArguments("--remote-allow-origins=*");
     }
 
     @Override

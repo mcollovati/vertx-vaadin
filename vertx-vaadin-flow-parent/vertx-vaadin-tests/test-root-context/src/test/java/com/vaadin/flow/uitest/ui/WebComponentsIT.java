@@ -34,11 +34,6 @@ public class WebComponentsIT extends ChromeBrowserTest {
     public void testPolyfillLoaded() {
         open();
 
-        if (BrowserUtil.isIE(getDesiredCapabilities())) {
-            // Console logs are not available from IE11
-            return;
-        }
-
         LogEntries logs = driver.manage().logs().get("browser");
         if (logs != null) {
             Optional<LogEntry> anyError = StreamSupport
@@ -51,6 +46,8 @@ public class WebComponentsIT extends ChromeBrowserTest {
                             .contains("sockjs-node"))
                     .filter(entry -> !entry.getMessage()
                             .contains("[WDS] Disconnected!"))
+                    .filter(entry -> !entry.getMessage()
+                            .contains("Lit is in dev mode. Not recommended for production"))
                     .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }

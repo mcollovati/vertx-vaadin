@@ -89,10 +89,12 @@
         </dependency>
 
 
+        <!--
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>fusion-endpoint</artifactId>
         </dependency>
+        -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
@@ -224,6 +226,12 @@
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>**/ChromeBrowserTest.*</excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

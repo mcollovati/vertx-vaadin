@@ -18,7 +18,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <vertx-maven-plugin.version>1.0.22</vertx-maven-plugin.version>
         <vertx-vaadin-flow.version>${project.version}</vertx-vaadin-flow.version>
-        <testbench.version>8.0.0</testbench.version>
+        <testbench.version>8.2.0</testbench.version>
 
         <driver.binary.downloader.maven.plugin.version>1.0.17</driver.binary.downloader.maven.plugin.version>
         <skipVertxRun>false</skipVertxRun>

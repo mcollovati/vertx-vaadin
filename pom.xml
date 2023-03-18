@@ -57,12 +57,24 @@
         <repository>
             <id>vaadin-prereleases</id>
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
             <id>vaadin-prereleases</id>
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
     <properties>
@@ -94,12 +106,13 @@
 
         <vertx.version>4.3.0</vertx.version>
         <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>23.1.1</vaadin.platform.version>
-        <vaadin.flow.version>23.1.1</vaadin.flow.version>
+        <vaadin.platform.version>23.3.6</vaadin.platform.version>
+        <vaadin.flow.version>23.3.4</vaadin.flow.version>
+        <hilla.version>1.2-SNAPSHOT</hilla.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
-        <lombok.version>1.18.4</lombok.version>
+        <lombok.version>1.18.26</lombok.version>
         <junit.version>4.13.1</junit.version>
         <mockito.version>1.10.19</mockito.version>
         <assertj.version>3.11.1</assertj.version>
@@ -116,7 +129,14 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
-                <version>${vaadin.version}</version>
+                <version>${vaadin.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>dev.hilla</groupId>
+                <artifactId>hilla-bom</artifactId>
+                <version>${hilla.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

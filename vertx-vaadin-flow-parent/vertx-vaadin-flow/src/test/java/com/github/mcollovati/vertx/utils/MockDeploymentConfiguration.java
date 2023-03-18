@@ -145,11 +145,6 @@ public class MockDeploymentConfiguration
         this.pushMode = pushMode;
     }
 
-    @Override
-    public String getPushURL() {
-        return pushURL;
-    }
-
     public void setPushURL(String pushURL) {
         this.pushURL = pushURL;
     }
