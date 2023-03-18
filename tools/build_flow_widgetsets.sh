@@ -63,7 +63,7 @@ for version in ${versions}; do
         _mvn_target="clean $_action"
     fi
 
-    echo $_mvn -B --fail-never -ntp -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
+    $_mvn -B --fail-never -ntp -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
     _last_built=${flow_client_version}
   fi
 
