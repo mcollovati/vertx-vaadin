@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-quarkus-integration-tests</artifactId>
-        <version>23.1.2-SNAPSHOT</version>
+        <version>23.3.0</version>
     </parent>
 
     <artifactId>vertx-vaadin-quarkus-production-tests</artifactId>
