@@ -81,7 +81,6 @@ public final class VaadinOptions {
     }
 
     public String pushURL() {
-        //String pushURL = config.getString(SERVLET_PARAMETER_PUSH_URL, "");
         String pushURL = "/" + Constants.PUSH_MAPPING;
         String mountPoint = mountPoint();
         if (pushURL.startsWith(mountPoint)) {

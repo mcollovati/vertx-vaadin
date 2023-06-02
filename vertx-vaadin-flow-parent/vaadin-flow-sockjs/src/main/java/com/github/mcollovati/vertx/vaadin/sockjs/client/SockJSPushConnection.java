@@ -39,8 +39,10 @@ import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.PushConnection;
 import com.vaadin.client.communication.PushConnectionFactory;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
+
 import elemental.json.JsonObject;
 
 public class SockJSPushConnection implements PushConnection {
@@ -70,7 +72,7 @@ public class SockJSPushConnection implements PushConnection {
         registry.getUILifecycle().addHandler(event -> {
             if (event.getUiLifecycle().isTerminated()) {
                 if (state == State.CLOSING
-                    || state == State.CLOSED) {
+                        || state == State.CLOSED) {
                     return;
                 }
 
@@ -84,7 +86,7 @@ public class SockJSPushConnection implements PushConnection {
 
         getPushConfiguration().getParameters().forEach((value, key) -> {
             if (value.equalsIgnoreCase("true")
-                || value.equalsIgnoreCase("false")) {
+                    || value.equalsIgnoreCase("false")) {
                 config.setBooleanValue(key, value.equalsIgnoreCase("true"));
             } else {
                 config.setStringValue(key, value);
@@ -92,13 +94,26 @@ public class SockJSPushConnection implements PushConnection {
 
         });
         config.mapTransports();
-        if (getPushConfiguration().getPushUrl() != null) {
-            url = getPushConfiguration().getPushUrl();
+        String pushMapping = getPushConfiguration().getPushServletMapping();
+        if (pushMapping == null || pushMapping.trim().isEmpty() || "/".equals(pushMapping)) {
+            url = Constants.PUSH_MAPPING;
+            String serviceUrl = registry.getApplicationConfiguration().getServiceUrl();
+            if (!".".equals(serviceUrl)) {
+                if (!serviceUrl.endsWith("/")) {
+                    serviceUrl += "/";
+                }
+            }
+            url = serviceUrl + url;
         } else {
-            url = registry.getApplicationConfiguration().getServiceUrl();
+            String contextRootUrl = registry.getApplicationConfiguration()
+                    .getContextRootUrl();
+            if (contextRootUrl.endsWith("/")  && pushMapping.startsWith("/")) {
+                pushMapping = pushMapping.substring(1);
+            }
+            url = contextRootUrl + pushMapping + Constants.PUSH_MAPPING;
         }
         runWhenSockJSLoaded(
-            () -> Scheduler.get().scheduleDeferred(this::connect));
+                () -> Scheduler.get().scheduleDeferred(this::connect));
     }
 
     private PushConfiguration getPushConfiguration() {
@@ -109,12 +124,12 @@ public class SockJSPushConnection implements PushConnection {
     public void push(JsonObject message) {
         if (!isBidirectional()) {
             throw new IllegalStateException(
-                "This server to client push connection should not be used to send client to server messages");
+                    "This server to client push connection should not be used to send client to server messages");
         }
         if (state == State.OPEN) {
             String messageJson = WidgetUtil.stringify(message);
             getLogger().info("Sending push (" + transport
-                + ") message to server: " + messageJson);
+                    + ") message to server: " + messageJson);
 
             doPush(socket, messageJson);
             return;
@@ -178,16 +193,16 @@ public class SockJSPushConnection implements PushConnection {
     private void connect() {
         String pushUrl = registry.getURIResolver().resolveVaadinUri(url);
         pushUrl = SharedUtil.addGetParameter(pushUrl,
-            ApplicationConstants.REQUEST_TYPE_PARAMETER,
-            ApplicationConstants.REQUEST_TYPE_PUSH);
+                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_PUSH);
         pushUrl = SharedUtil.addGetParameter(pushUrl,
-            ApplicationConstants.UI_ID_PARAMETER,
-            registry.getApplicationConfiguration().getUIId());
+                ApplicationConstants.UI_ID_PARAMETER,
+                registry.getApplicationConfiguration().getUIId());
 
         String pushId = registry.getMessageHandler().getPushId();
         if (pushId != null) {
             pushUrl = SharedUtil.addGetParameter(pushUrl,
-                ApplicationConstants.PUSH_ID_PARAMETER, pushId);
+                    ApplicationConstants.PUSH_ID_PARAMETER, pushId);
         }
 
         Console.log("Establishing push connection");
@@ -253,7 +268,7 @@ public class SockJSPushConnection implements PushConnection {
 
     protected void onOpen(JavaScriptObject event) {
         getLogger().info(
-            "Push connection established using " + socket.getTransport());
+                "Push connection established using " + socket.getTransport());
         onConnect(socket);
     }
 
@@ -309,8 +324,8 @@ public class SockJSPushConnection implements PushConnection {
                 break;
             default:
                 throw new IllegalStateException(
-                    "Got onOpen event when conncetion state is " + state
-                        + ". This should never happen.");
+                        "Got onOpen event when conncetion state is " + state
+                                + ". This should never happen.");
         }
     }
 
@@ -353,7 +368,7 @@ public class SockJSPushConnection implements PushConnection {
             Console.log("Loading sockJS " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
-                .getContextRootUrl() + pushJs;
+                    .getContextRootUrl() + pushJs;
 
             ResourceLoader.ResourceLoadListener loadListener = new ResourceLoader.ResourceLoadListener() {
                 @Override
@@ -373,7 +388,7 @@ public class SockJSPushConnection implements PushConnection {
                 @Override
                 public void onError(ResourceLoader.ResourceLoadEvent event) {
                     getConnectionStateHandler().pushScriptLoadError(
-                        event.getResourceData());
+                            event.getResourceData());
                 }
             };
             loader.loadScript(pushScriptUrl, loadListener);

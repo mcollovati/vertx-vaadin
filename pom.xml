@@ -106,8 +106,8 @@
 
         <vertx.version>4.3.0</vertx.version>
         <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>23.3.6</vaadin.platform.version>
-        <vaadin.flow.version>23.3.4</vaadin.flow.version>
+        <vaadin.platform.version>23.3.12</vaadin.platform.version>
+        <vaadin.flow.version>23.3.9</vaadin.flow.version>
         <hilla.version>1.2-SNAPSHOT</hilla.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>

@@ -35,7 +35,6 @@ public abstract class AbstractChromeIT extends ChromeBrowserTest {
 
     @BeforeEach
     public void beforeTest() throws Exception {
-        ChromeBrowserTest.setChromeDriverPath();
         setup();
         waitUntil(driver -> {
             try {
