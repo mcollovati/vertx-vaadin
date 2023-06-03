@@ -59,6 +59,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.github.mcollovati.vertx.vaadin.devserver.VertxDevModeHandlerManager;
 import dev.hilla.startup.EndpointsValidator;
 import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import io.vertx.core.AbstractVerticle;
@@ -248,7 +249,8 @@ public class VaadinVerticle extends AbstractVerticle {
                 boolean haSockJS = scanResult.getClassInfo("com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection") != null;
                 vaadinOpts.sockJSSupport(haSockJS);
 
-                boolean hasHilla = scanResult.getClassInfo("dev.hilla.EndpointRegistry") != null;
+                ClassInfo hillaClassInfo = scanResult.getClassInfo("dev.hilla.EndpointRegistry");
+                boolean hasHilla = hillaClassInfo != null && !hillaClassInfo.isExternalClass();
                 if (!hasHilla) {
                     vaadinOpts.disableHilla();
                 }
