@@ -38,6 +38,8 @@ public class VertxIndexHtmlRequestHandler extends IndexHtmlRequestHandler {
                 String pushUrl = BootstrapHandlerHelper.getPushURL(session, request)
                     .replaceFirst("/$", "")
                     + "/websocket";
+                // dirty hack
+                pushUrl = pushUrl.replaceFirst("/nullVAADIN/", "/VAADIN/");
                 String output = wrapper.replaceGizmoUrl(pushUrl);
                 response.getOutputStream()
                     .write(output.getBytes(UTF_8));
