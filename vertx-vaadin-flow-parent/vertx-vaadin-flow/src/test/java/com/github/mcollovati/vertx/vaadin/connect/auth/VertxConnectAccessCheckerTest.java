@@ -42,8 +42,8 @@ import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,8 +79,8 @@ public class VertxConnectAccessCheckerTest {
             .thenReturn("Vaadin CCDM");
         when(user.isAuthorized(anyString(), any()))
             .then(i -> {
-                boolean inRole = "ROLE_USER".equals(i.getArgumentAt(0, String.class));
-                i.getArgumentAt(1, Handler.class).handle(Future.succeededFuture(inRole));
+                boolean inRole = "ROLE_USER".equals(i.getArgument(0, String.class));
+                i.getArgument(1, Handler.class).handle(Future.succeededFuture(inRole));
                 return user;
             });
     }

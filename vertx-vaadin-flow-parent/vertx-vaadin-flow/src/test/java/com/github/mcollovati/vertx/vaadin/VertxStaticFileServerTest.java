@@ -50,13 +50,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.mockito.hamcrest.MockitoHamcrest;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.matches;
 
 public class VertxStaticFileServerTest implements Serializable {
 
@@ -120,7 +124,7 @@ public class VertxStaticFileServerTest implements Serializable {
         request = Mockito.mock(HttpServerRequest.class);
         response = Mockito.mock(HttpServerResponse.class);
         // No header == getDateHeader returns -1 (Mockito default is 0)
-        Mockito.when(request.getHeader(Matchers.argThat(isDateHeader))).thenReturn("-1");
+        Mockito.when(request.getHeader(MockitoHamcrest.argThat(isDateHeader))).thenReturn("-1");
 
         responseCode = new AtomicInteger(-1);
         responseContentLength = new AtomicLong(-1L);
@@ -129,41 +133,41 @@ public class VertxStaticFileServerTest implements Serializable {
 
 
         Mockito.doAnswer(invocation -> {
-            headers.put(invocation.getArgumentAt(0, CharSequence.class).toString(),
-                    invocation.getArgumentAt(1, CharSequence.class).toString());
+            headers.put(invocation.getArgument(0, CharSequence.class).toString(),
+                    invocation.getArgument(1, CharSequence.class).toString());
             return null;
-        }).when(response).putHeader(Matchers.any(CharSequence.class), Matchers.any(CharSequence.class));
+        }).when(response).putHeader(any(CharSequence.class), any(CharSequence.class));
         Mockito.doAnswer(invocation -> {
-            dateHeaders.put(invocation.getArgumentAt(0, CharSequence.class).toString(),
-                    HttpUtils.parseDateHeader(invocation.getArgumentAt(1, CharSequence.class).toString()));
+            dateHeaders.put(invocation.getArgument(0, CharSequence.class).toString(),
+                    HttpUtils.parseDateHeader(invocation.getArgument(1, CharSequence.class).toString()));
             return null;
-        }).when(response).putHeader(Matchers.argThat(isDateHeader), Matchers.any(CharSequence.class));
-        Mockito.doAnswer(invocation -> {
-            responseCode.set((int) invocation.getArguments()[0]);
-            return null;
-        }).when(response).setStatusCode(Matchers.anyInt());
+        }).when(response).putHeader(MockitoHamcrest.argThat(isDateHeader), any(CharSequence.class));
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
-        }).when(response).setStatusCode(Matchers.anyInt());
+        }).when(response).setStatusCode(anyInt());
+        Mockito.doAnswer(invocation -> {
+            responseCode.set((int) invocation.getArguments()[0]);
+            return null;
+        }).when(response).setStatusCode(anyInt());
         Mockito.doAnswer(invocation -> {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
-        }).when(response).putHeader(Matchers.matches("(?i)Content-Length"), Matchers.matches("\\d+"));
+        }).when(response).putHeader(matches("(?i)Content-Length"), matches("\\d+"));
 
         responseOutput = Buffer.buffer();
         Mockito.doAnswer(i -> {
-            responseOutput.appendBuffer(i.getArgumentAt(0, Buffer.class));
+            responseOutput.appendBuffer(i.getArgument(0, Buffer.class));
             return null;
-        }).when(response).write(Matchers.any(Buffer.class));
+        }).when(response).write(any(Buffer.class));
         Mockito.doAnswer(i -> {
-            responseOutput.appendString(i.getArgumentAt(0, String.class));
+            responseOutput.appendString(i.getArgument(0, String.class));
             return null;
-        }).when(response).write(Matchers.anyString());
+        }).when(response).write(anyString());
         Mockito.doAnswer(i -> {
-            responseOutput.appendString(i.getArgumentAt(0, String.class), i.getArgumentAt(1, String.class));
+            responseOutput.appendString(i.getArgument(0, String.class), i.getArgument(1, String.class));
             return null;
-        }).when(response).write(Matchers.anyString(), Matchers.anyString());
+        }).when(response).write(anyString(), anyString());
 
 
         configuration = Mockito.mock(DeploymentConfiguration.class);

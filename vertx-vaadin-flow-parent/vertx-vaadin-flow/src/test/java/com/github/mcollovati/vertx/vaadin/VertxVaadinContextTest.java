@@ -33,8 +33,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,12 +55,12 @@ public class VertxVaadinContextTest {
         Vertx vertx = mock(Vertx.class);
         Context vertxContext = mock(Context.class);
         when(vertx.getOrCreateContext()).thenReturn(vertxContext);
-        doAnswer(i -> attributeMap.put(i.getArgumentAt(0, String.class), i.getArguments()[1]))
+        doAnswer(i -> attributeMap.put(i.getArgument(0, String.class), i.getArguments()[1]))
             .when(vertxContext).putLocal(anyString(), any());
-        doAnswer(i -> attributeMap.remove(i.getArgumentAt(0, String.class)) != null)
+        doAnswer(i -> attributeMap.remove(i.getArgument(0, String.class)) != null)
             .when(vertxContext).removeLocal(anyString());
         when(vertxContext.getLocal(anyString()))
-            .thenAnswer(i -> attributeMap.get(i.getArgumentAt(0, String.class)));
+            .thenAnswer(i -> attributeMap.get(i.getArgument(0, String.class)));
         context = new VertxVaadinContext(vertx);
     }
 

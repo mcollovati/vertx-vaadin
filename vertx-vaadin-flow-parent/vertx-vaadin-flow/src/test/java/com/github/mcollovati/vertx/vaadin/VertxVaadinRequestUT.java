@@ -29,10 +29,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,13 +45,13 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.impl.SocketAddressImpl;
 import io.vertx.ext.auth.User;
-import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.impl.ParsableLanguageValue;
@@ -73,10 +71,9 @@ import static java.util.Collections.singletonList;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Matchers.isA;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -354,8 +351,8 @@ public class VertxVaadinRequestUT {
     public void shouldDelegateIsUserInRole() {
         User user = mock(User.class);
         doAnswer(invocation -> {
-            String role = invocation.getArgumentAt(0, String.class);
-            Handler<AsyncResult<Boolean>> handler = invocation.getArgumentAt(1, Handler.class);
+            String role = invocation.getArgument(0, String.class);
+            Handler<AsyncResult<Boolean>> handler = invocation.getArgument(1, Handler.class);
             handler.handle(Future.succeededFuture("USER".equals(role)));
             return user;
         }).when(user).isAuthorized(isA(String.class), isA(Handler.class));

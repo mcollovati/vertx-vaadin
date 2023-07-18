@@ -94,10 +94,10 @@
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
         <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <sonar-maven-plugin.version>3.7.0.1746</sonar-maven-plugin.version>
         <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
@@ -111,10 +111,10 @@
         <hilla.version>1.2-SNAPSHOT</hilla.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
-        <junit-quickcheck.version>0.8.1</junit-quickcheck.version>
+        <junit-quickcheck.version>1.0</junit-quickcheck.version>
         <lombok.version>1.18.26</lombok.version>
         <junit.version>4.13.1</junit.version>
-        <mockito.version>1.10.19</mockito.version>
+        <mockito.version>4.11.0</mockito.version>
         <assertj.version>3.11.1</assertj.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.21</slf4j.version>

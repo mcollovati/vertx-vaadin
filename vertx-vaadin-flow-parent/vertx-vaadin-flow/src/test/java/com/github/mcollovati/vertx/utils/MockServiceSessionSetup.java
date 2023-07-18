@@ -34,9 +34,20 @@ import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import com.github.mcollovati.vertx.vaadin.VertxVaadin;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.SharedData;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
@@ -53,18 +64,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.SharedData;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class MockServiceSessionSetup {
 
@@ -101,7 +102,7 @@ public class MockServiceSessionSetup {
         MockitoAnnotations.initMocks(this);
         SharedData sharedData = Mockito.mock(SharedData.class);
         Mockito.when(vertx.sharedData()).thenReturn(sharedData);
-        Mockito.when(sharedData.getLocalMap(Matchers.anyString())).thenReturn(Mockito.mock(LocalMap.class));
+        Mockito.when(sharedData.getLocalMap(anyString())).thenReturn(Mockito.mock(LocalMap.class));
         Mockito.when(vertx.eventBus()).thenReturn(Mockito.mock(EventBus.class));
         Mockito.when(vertx.fileSystem()).thenReturn(fileSystem);
         Mockito.when(vertx.getOrCreateContext()).thenReturn(context);

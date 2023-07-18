@@ -52,9 +52,9 @@ import org.mockito.junit.MockitoRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -235,7 +235,7 @@ public class VertxVaadinResponseUT {
         return Mockito.argThat(new CaseInsensitiveEquals(arg));
     }
 
-    private static class CaseInsensitiveEquals extends ArgumentMatcher<String> {
+    private static class CaseInsensitiveEquals implements ArgumentMatcher<String> {
 
         public CaseInsensitiveEquals(String value) {
             this.value = value;
@@ -244,7 +244,7 @@ public class VertxVaadinResponseUT {
         private final String value;
 
         @Override
-        public boolean matches(Object argument) {
+        public boolean matches(String argument) {
             return argument instanceof String && value.equalsIgnoreCase((String) argument);
         }
     }

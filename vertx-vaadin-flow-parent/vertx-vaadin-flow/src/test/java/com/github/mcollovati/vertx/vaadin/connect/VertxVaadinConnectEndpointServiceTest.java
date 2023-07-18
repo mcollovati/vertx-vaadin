@@ -77,8 +77,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 /**
@@ -221,7 +221,7 @@ public class VertxVaadinConnectEndpointServiceTest {
     private void mockDenyAll() {
         when(principal.isAuthorized(anyString(), any()))
                 .then(i -> {
-                    i.getArgumentAt(1, Handler.class).handle(Future.succeededFuture(false));
+                    i.getArgument(1, Handler.class).handle(Future.succeededFuture(false));
                     return principal;
                 });
     }
@@ -423,8 +423,8 @@ public class VertxVaadinConnectEndpointServiceTest {
         reset(principal);
         when(principal.isAuthorized(anyString(), any()))
                 .then(i -> {
-                    boolean inRole = "FOO_ROLE".equals(i.getArgumentAt(0, String.class));
-                    i.getArgumentAt(1, Handler.class).handle(Future.succeededFuture(inRole));
+                    boolean inRole = "FOO_ROLE".equals(i.getArgument(0, String.class));
+                    i.getArgument(1, Handler.class).handle(Future.succeededFuture(inRole));
                     return principal;
                 });
 
@@ -1230,7 +1230,7 @@ public class VertxVaadinConnectEndpointServiceTest {
     private ArgumentMatcher<AnnotatedElement> getIsStringReturnType() {
         return new ArgumentMatcher<AnnotatedElement>() {
             @Override
-            public boolean matches(Object argument) {
+            public boolean matches(AnnotatedElement argument) {
                 return argument instanceof Method && String.class.equals(((Method) argument).getGenericReturnType());
             }
         };
