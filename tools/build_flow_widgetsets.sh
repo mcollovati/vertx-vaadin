@@ -16,11 +16,6 @@ _action=${1:-package}
 _kind=${2:-release}
 _mvn="$_base_dir/mvnw -f $_base_dir/pom.xml"
 
-if [[ -z $GITHUB_TOKEN ]]; then
-  echo "GITHUB_TOKEN environment variable not provided"
-  exit 1
-fi
-
 _current_version=$($_mvn -Prelease-flow -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout=true)
 
 declare -ga versions
