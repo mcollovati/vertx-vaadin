@@ -39,8 +39,11 @@ jobs:
 
             sudo service docker restart
       - run:
-          name: remove java 17
-          command: sudo apt remove openjdk-17-j*
+          name: remove java 17 and install Java 11
+          command: |
+            sudo apt update
+            sudo apt remove openjdk-17-j*
+            sudo apt install openjdk-11-jdk
       - restore_cache:
           keys:
             - v2-dependencies-{{ checksum "pom.xml" }}
@@ -125,8 +128,11 @@ jobs:
 
             sudo service docker restart
       - run:
-          name: remove java 17
-          command: sudo apt remove openjdk-17-j*
+          name: remove java 17 and install Java 11
+          command: |
+            sudo apt update
+            sudo apt remove openjdk-17-j*
+            sudo apt install openjdk-11-jdk
       - restore_cache:
           keys:
             - ui-tests-dependencies-{{ checksum "pom.xml" }}
