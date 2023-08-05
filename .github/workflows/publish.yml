@@ -21,7 +21,7 @@ jobs:
       - name: Publish to Maven Central
         run: |
           ./mvnw -N -ntp install
-          ./mvnw -ntp -Prelease,release-flow,release-ossrh -pl :vaadin-flow-sockjs,:vertx-vaadin-flow -Dvertx-vaadin.release.gpg -DskipTests clean deploy
+          ./mvnw -ntp -Prelease,release-flow,release-ossrh -pl :vaadin-flow-sockjs,:vertx-vaadin-flow:vertx-vaadin-flow-jandex,:vertx-vaadin-quarkus-extension-parent,:vertx-vaadin-quarkus-extension,:vertx-vaadin-quarkus-extension-deployment -Dvertx-vaadin.release.gpg -DskipTests clean deploy
         env:
           MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
