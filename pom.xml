@@ -258,6 +258,7 @@
                             <include>**/*UT.java</include>
                             <include>**/*Test.java</include>
                         </includes>
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                     </configuration>
                 </plugin>
                 <plugin>
