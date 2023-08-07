@@ -22,6 +22,7 @@
 
         <driver.binary.downloader.maven.plugin.version>1.0.17</driver.binary.downloader.maven.plugin.version>
         <skipVertxRun>false</skipVertxRun>
+        <test.vertx.jvmArgs></test.vertx.jvmArgs>
     </properties>
 
     <dependencyManagement>
@@ -127,6 +128,9 @@
                             <configuration>
                                 <!-- <starMode>exploded</starMode> -->
                                 <skip>${skipVertxRun}</skip>
+                                <jvmArgs combine.children="append">
+                                    <jvmArg>${test.vertx.jvmArgs}</jvmArg>
+                                </jvmArgs>
                             </configuration>
                         </execution>
                         <execution>
@@ -138,6 +142,9 @@
                             <configuration>
                                 <!-- <starMode>exploded</starMode> -->
                                 <skip>${skipVertxRun}</skip>
+                                <jvmArgs combine.children="append">
+                                    <jvmArg>${test.vertx.jvmArgs}</jvmArg>
+                                </jvmArgs>
                             </configuration>
                         </execution>
                     </executions>
@@ -175,7 +182,9 @@
     <modules>
         <module>test-common</module>
         <module>test-resources</module>
+        <module>test-lumo</module>
         <module>test-root-context</module>
         <module>test-scalability</module>
+        <module>test-frontend</module>
     </modules>
 </project>
