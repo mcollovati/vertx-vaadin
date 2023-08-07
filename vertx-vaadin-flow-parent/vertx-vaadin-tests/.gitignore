@@ -2,6 +2,7 @@ selenium_standalone_zips/
 driver/
 driver_zips/
 **/error-screenshots
+**/frontend/generated/
 
 bower_components
 node

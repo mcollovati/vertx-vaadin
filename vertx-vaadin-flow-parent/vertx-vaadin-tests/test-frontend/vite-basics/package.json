@@ -1,0 +1,93 @@
+{
+  "name": "no-name",
+  "license": "UNLICENSED",
+  "scripts": {
+    "postinstall": "node -e \"fs.writeFileSync('target/classes/main.postinstall', 'hello')\""
+  },
+  "dependencies": {
+    "@polymer/polymer": "3.5.1",
+    "@testscope/all": "../vite-test-assets/packages/@testscope/all",
+    "@testscope/button": "../vite-test-assets/packages/@testscope/button",
+    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
+    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
+    "@vaadin/common-frontend": "0.0.18",
+    "@vaadin/polymer-legacy-adapter": "23.1.1",
+    "@vaadin/router": "1.7.5",
+    "@vaadin/vaadin-lumo-styles": "23.1.1",
+    "@vaadin/vaadin-text-field": "23.1.1",
+    "@vaadin/vaadin-themable-mixin": "23.1.1",
+    "construct-style-sheets-polyfill": "3.1.0",
+    "copy-to-clipboard": "^3.3.1",
+    "lit": "2.6.1",
+    "package-outside-npm": "file:package-outside-npm",
+    "package2-outside-npm": "./package2-outside-npm"
+  },
+  "devDependencies": {
+    "@rollup/plugin-replace": "3.1.0",
+    "@rollup/pluginutils": "4.1.0",
+    "async": "3.2.2",
+    "glob": "7.2.3",
+    "mkdirp": "1.0.4",
+    "rollup-plugin-brotli": "3.1.0",
+    "strip-css-comments": "5.0.0",
+    "transform-ast": "2.4.4",
+    "typescript": "4.9.5",
+    "vite": "3.2.6",
+    "vite-plugin-checker": "0.5.4",
+    "workbox-build": "6.5.4",
+    "workbox-core": "6.5.4",
+    "workbox-precaching": "6.5.4"
+  },
+  "overrides": {
+    "@testscope/all": "$@testscope/all",
+    "@testscope/button": "$@testscope/button",
+    "@vaadin/bundles": "$@vaadin/bundles",
+    "copy-to-clipboard": "$copy-to-clipboard",
+    "package-outside-npm": "$package-outside-npm",
+    "package2-outside-npm": "$package2-outside-npm",
+    "glob": "$glob",
+    "typescript": "$typescript",
+    "workbox-core": "$workbox-core",
+    "workbox-precaching": "$workbox-precaching",
+    "@testscope/map": "$@testscope/map",
+    "@vaadin/common-frontend": "$@vaadin/common-frontend",
+    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
+    "lit": "$lit",
+    "@vaadin/router": "$@vaadin/router",
+    "@polymer/polymer": "$@polymer/polymer",
+    "@vaadin/polymer-legacy-adapter": "$@vaadin/polymer-legacy-adapter",
+    "@vaadin/vaadin-text-field": "$@vaadin/vaadin-text-field",
+    "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
+    "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles"
+  },
+  "vaadin": {
+    "dependencies": {
+      "@polymer/polymer": "3.5.1",
+      "@vaadin/common-frontend": "0.0.18",
+      "@vaadin/polymer-legacy-adapter": "23.1.1",
+      "@vaadin/router": "1.7.5",
+      "@vaadin/vaadin-lumo-styles": "23.1.1",
+      "@vaadin/vaadin-text-field": "23.1.1",
+      "@vaadin/vaadin-themable-mixin": "23.1.1",
+      "construct-style-sheets-polyfill": "3.1.0",
+      "lit": "2.6.1"
+    },
+    "devDependencies": {
+      "@rollup/plugin-replace": "3.1.0",
+      "@rollup/pluginutils": "4.1.0",
+      "async": "3.2.2",
+      "glob": "7.2.3",
+      "mkdirp": "1.0.4",
+      "rollup-plugin-brotli": "3.1.0",
+      "strip-css-comments": "5.0.0",
+      "transform-ast": "2.4.4",
+      "typescript": "4.9.5",
+      "vite": "3.2.6",
+      "vite-plugin-checker": "0.5.4",
+      "workbox-build": "6.5.4",
+      "workbox-core": "6.5.4",
+      "workbox-precaching": "6.5.4"
+    },
+    "hash": "a18c57cac1ac877bb0752a788f6b4b084f9831548dd13ac638b385be11d11bc2"
+  }
+}
