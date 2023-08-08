@@ -9,25 +9,28 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
-        branch: [ {name: "master", java: 8}, {name: "vaadin-14.2", java: 8}, { name: "development", java: 11} ]
+        branch: [ "development" ]
 
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ matrix.branch.name }}
+          ref: ${{ matrix.branch }}
           fetch-depth: 0
       - name: Checkout latest tag
         run: git checkout $(git describe --abbrev=0 --tags --match="flow-*")
       - name: Set up Java
         uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
-          java-version: ${{ matrix.branch.java }}
           distribution: 'temurin'
-          server-id: jfrog-vertx-vaadin # Value of the distributionManagement/repository/id field of the pom.xml
-          server-username: JFROG_USERNAME # env variable for username in deploy
-          server-password: JFROG_TOKEN # env variable for token in deploy
+          java-version: '11'
+          server-id: github-vertx-vaadin # Value of the distributionManagement/repository/id field of the pom.xml
+          #server-username: mcollovati # env variable for username in deploy
+          #server-password: ${{ secrets.GH_PKG_DEPLOY_TOKEN }} # env variable for token in deploy
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Deploy classifiers
@@ -35,8 +38,9 @@ jobs:
           ./mvnw -N -ntp install
           PRJ_VERSION=$(./mvnw -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout)
           KIND=$( [[ "${PRJ_VERSION}" =~ "-SNAPSHOT"$ ]] && echo "snapshot" || echo "release" )
-          DEPLOY_OPTS="-Ddistribution.id=jfrog-vertx-vaadin -Dvertx-vaadin.release.gpg" ./tools/build_flow_widgetsets.sh deploy ${KIND}
+          DEPLOY_OPTS="-Ddistribution.id=github-vertx-vaadin -Dvertx-vaadin.release.gpg" ./tools/build_flow_widgetsets.sh deploy ${KIND}
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JFROG_USERNAME: mcollovati@gmail.com
           JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
