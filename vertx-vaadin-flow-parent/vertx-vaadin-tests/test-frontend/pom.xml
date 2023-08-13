@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
@@ -18,12 +19,46 @@
     </modules>
 
     <properties>
-        <verticleStartTimeout>300000</verticleStartTimeout>
+        <verticleStartTimeout>120000</verticleStartTimeout>
     </properties>
 
     <dependencies>
     </dependencies>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>se.thinkcode.wait</groupId>
+                    <artifactId>http</artifactId>
+                    <version>1.1.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>wait</goal>
+                            </goals>
+                            <configuration>
+                                <url>http://localhost:8888/__check-start</url>
+                                <timeout>${verticleStartTimeout}</timeout>
+                                <skip>${skipTests}</skip>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>io.reactiverse</groupId>
+                    <artifactId>vertx-maven-plugin</artifactId>
+                    <configuration>
+                        <config>${project.basedir}/src/test/conf/vertx-vaadin-test.conf</config>
+                        <verticle>com.vaadin.flow.uitest.vertx.TestBootVerticle</verticle>
+                        <jvmArgs>
+                            <jvmArg>-Dvaadin.project.basedir=${project.basedir}</jvmArg>
+                        </jvmArgs>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
     <profiles>
         <profile>
             <id>run-tests</id>
@@ -35,8 +70,8 @@
             <modules>
                 <!-- test modules -->
                 <module>vite-basics</module>
-                <!--
                 <module>vite-production</module>
+                <!--
                 <module>vite-production-custom-frontend</module>
                 <module>vite-context-path/pom-production.xml</module>
                 <module>vite-context-path</module>

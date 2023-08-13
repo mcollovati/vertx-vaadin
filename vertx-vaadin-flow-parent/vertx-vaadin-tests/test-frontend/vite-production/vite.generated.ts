@@ -5,11 +5,11 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync, existsSync, writeFileSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import * as net from 'net';
 
-import { processThemeResources } from './target/plugins/application-theme-plugin/theme-handle';
-import { rewriteCssUrls } from './target/plugins/theme-loader/theme-loader-utils';
+import { processThemeResources } from './target/plugins/application-theme-plugin/theme-handle.js';
+import { rewriteCssUrls } from './target/plugins/theme-loader/theme-loader-utils.js';
 import settings from './target/vaadin-dev-server-settings.json';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { getManifest } from 'workbox-build';
@@ -24,10 +24,13 @@ const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
+const statsFolder = path.resolve(__dirname, settings.statsOutput);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
-const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
+const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
+const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlowImportsFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
-const statsFile = path.resolve(frontendBundleFolder, '..', 'config', 'stats.json');
+
+const statsFile = path.resolve(statsFolder, 'stats.json');
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -40,7 +43,7 @@ const themeProjectFolders = projectStaticAssetsFolders.map((folder) => path.reso
 
 const themeOptions = {
   devMode: false,
-  // The following matches folder 'target/flow-frontend/themes/'
+  // The following matches folder 'frontend/generated/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
@@ -182,6 +185,7 @@ function statsExtracterPlugin(): PluginOption {
         .sort()
         .filter((value, index, self) => self.indexOf(value) === index);
 
+      mkdirSync(path.dirname(statsFile), { recursive: true });
       writeFileSync(statsFile, JSON.stringify({ npmModules }, null, 1));
     }
   };
@@ -313,7 +317,8 @@ function vaadinBundlesPlugin(): PluginOption {
             exclude: [
               // Vaadin bundle
               '@vaadin/bundles',
-              ...Object.keys(vaadinBundleJson.packages)
+              ...Object.keys(vaadinBundleJson.packages),
+                '@vaadin/vaadin-material-styles'
             ]
           }
         },
@@ -460,8 +465,7 @@ let spaMiddlewareForceRemoved = false;
 
 const allowedFrontendFolders = [
   frontendFolder,
-  addonFrontendFolder,
-  path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
+  path.resolve(generatedFlowImportsFolder), // Contains only generated-flow-imports
   path.resolve(__dirname, 'node_modules')
 ];
 
@@ -500,6 +504,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     base: '',
     resolve: {
       alias: {
+        '@vaadin/flow-frontend': jarResourcesFolder,
         Frontend: frontendFolder
       },
       preserveSymlinks: true
@@ -563,14 +568,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
         ]
       }),
       {
-        name: 'vaadin:force-remove-spa-middleware',
+        name: 'vaadin:force-remove-html-middleware',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { server }) {
             if (server && !spaMiddlewareForceRemoved) {
               server.middlewares.stack = server.middlewares.stack.filter((mw) => {
                 const handleName = '' + mw.handle;
-                return !handleName.includes('viteSpaFallbackMiddleware');
+                return !handleName.includes('viteHtmlFallbackMiddleware');
               });
               spaMiddlewareForceRemoved = true;
             }
