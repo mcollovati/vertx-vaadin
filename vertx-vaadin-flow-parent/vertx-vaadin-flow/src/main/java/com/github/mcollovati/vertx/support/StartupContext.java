@@ -51,7 +51,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinConfig;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
 import io.github.classgraph.ClassGraph;
@@ -67,6 +70,7 @@ import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.FileResolverFactory;
 import io.vertx.core.spi.file.FileResolver;
 import org.slf4j.Logger;
@@ -79,6 +83,8 @@ public final class StartupContext implements VaadinConfig {
     private final Context context;
     private final Vertx vertx;
     private final VaadinOptions vaadinOptions;
+
+    private DeploymentConfiguration deploymentConfiguration;
 
     private StartupContext(Vertx vertx, Set<String> resources, VaadinOptions vaadinOptions) {
         this.resources = new HashSet<>(resources);
@@ -96,6 +102,15 @@ public final class StartupContext implements VaadinConfig {
         return resources.stream()
             .filter(r -> normalized.equals(r) || r.replaceFirst("^META-INF/resources/", "").equals(normalized))
             .findFirst();
+    }
+
+    public DeploymentConfiguration deploymentConfiguration() {
+        if (deploymentConfiguration == null) {
+            VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), getVaadinContext());
+            deploymentConfiguration = new DeploymentConfigurationFactory()
+                .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
+        }
+        return deploymentConfiguration;
     }
 
     @Override

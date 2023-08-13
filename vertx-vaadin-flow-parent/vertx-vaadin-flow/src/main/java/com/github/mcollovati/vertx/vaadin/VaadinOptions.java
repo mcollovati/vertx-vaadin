@@ -70,7 +70,9 @@ public final class VaadinOptions {
     public boolean hillaEnabled() {
         return getBooleanProperty("hilla.enabled", false);
     }
-
+    public boolean devServerEnabled() {
+        return getBooleanProperty("devserver.enabled", true);
+    }
     public String hillaEndpoint() {
         return config.getString("endpoint.prefix", "/connect");
     }
@@ -124,6 +126,10 @@ public final class VaadinOptions {
 
     void disableHilla() {
         config.put("hilla.enabled", false);
+    }
+
+    void disableDevServer() {
+        config.put("devserver.enabled", false);
     }
     void update(Properties properties) {
         properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));

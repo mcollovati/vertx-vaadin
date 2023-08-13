@@ -111,8 +111,6 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             resourceUrl = vaadinService.getClassLoader()
                 .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
                     + filenameWithPath.replaceFirst("^/", ""));
-            getLogger().info("======================== IS {} A THEME ASSET ? search for {}VAADIN/static/{}: {}",
-                filenameWithPath, VAADIN_WEBAPP_RESOURCES, filenameWithPath.replaceFirst("^/", ""), resourceUrl);
 
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler

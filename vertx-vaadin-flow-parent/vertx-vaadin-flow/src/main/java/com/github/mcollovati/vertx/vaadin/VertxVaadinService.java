@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 
 import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
 import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
@@ -40,12 +41,14 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceContextUriResolver;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -53,6 +56,7 @@ import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import io.vertx.core.Context;
@@ -87,6 +91,19 @@ public class VertxVaadinService extends VaadinService {
 
     public Vertx getVertx() {
         return vertxVaadin.vertx();
+    }
+
+    @Override
+    public void init() throws ServiceException {
+        DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
+        Properties initParameters = deploymentConfiguration.getInitParameters();
+        Object object = initParameters
+            .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
+        if (object instanceof FallbackChunk) {
+            VaadinContext context = getContext();
+            context.setAttribute(object);
+        }
+        super.init();
     }
 
     public VaadinOptions getVaadinOptions() {
