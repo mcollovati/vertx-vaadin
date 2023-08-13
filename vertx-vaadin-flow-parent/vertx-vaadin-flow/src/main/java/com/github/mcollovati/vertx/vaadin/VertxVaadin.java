@@ -53,6 +53,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.WrappedSession;
@@ -367,7 +368,8 @@ public class VertxVaadin {
     }
 
     protected DeploymentConfiguration createDeploymentConfiguration() {
-        return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(startupContext.getVaadinContext()), getClass(), config.asProperties());
+        return startupContext.deploymentConfiguration();
+        //return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(startupContext.getVaadinContext()), getClass(), config.asProperties());
     }
 
     public static VertxVaadin create(Vertx vertx, ExtendedSessionStore sessionStore, StartupContext startupContext) {
