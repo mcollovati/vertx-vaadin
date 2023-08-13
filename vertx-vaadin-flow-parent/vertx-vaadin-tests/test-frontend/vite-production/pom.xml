@@ -2,36 +2,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Vaadin project from https://start.vaadin.com/project/null -->
     <parent>
-        <groupId>com.vaadin</groupId>
+        <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>test-frontend</artifactId>
-        <version>23.3-SNAPSHOT</version>
+        <version>23.3.3-SNAPSHOT</version>
     </parent>
     <artifactId>vite-production</artifactId>
     <name>Vite production mode functionality</name>
-    <packaging>war</packaging>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>com.vaadin</groupId>
+            <groupId>com.github.mcollovati.vertx.tests</groupId>
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.vaadin</groupId>
+            <groupId>com.github.mcollovati.vertx.tests</groupId>
             <artifactId>vite-test-assets</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -41,7 +28,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.vaadin</groupId>
+            <groupId>com.github.mcollovati.vertx.tests</groupId>
             <artifactId>vite-test-assets</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -56,11 +43,10 @@
     </dependencies>
 
     <build>
-        <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
+                <artifactId>vaadin-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <goals>
@@ -74,14 +60,21 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <groupId>io.reactiverse</groupId>
+                <artifactId>vertx-maven-plugin</artifactId>
+                <configuration>
+                    <runMode>jar</runMode>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>se.thinkcode.wait</groupId>
+                <artifactId>http</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <dependenciesToScan>com.vaadin:vite-test-assets</dependenciesToScan>
+                    <dependenciesToScan>com.github.mcollovati.vertx.tests:vite-test-assets</dependenciesToScan>
                 </configuration>
             </plugin>
         </plugins>

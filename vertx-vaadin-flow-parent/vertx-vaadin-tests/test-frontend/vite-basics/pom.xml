@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Vaadin project from https://start.vaadin.com/project/null -->
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>test-frontend</artifactId>
@@ -59,33 +58,13 @@
                 <groupId>io.reactiverse</groupId>
                 <artifactId>vertx-maven-plugin</artifactId>
                 <configuration>
-                    <config>${project.basedir}/src/test/conf/vertx-vaadin-test.conf</config>
-                    <verticle>com.vaadin.flow.uitest.vertx.TestBootVerticle</verticle>
-                    <jvmArgs>
-                        <jvmArg>-Dvaadin.project.basedir=${project.basedir}</jvmArg>
-                        <jvmArg>-Dorg.slf4j.simpleLogger.log.com.github.mcollovati=debug</jvmArg>
-                    </jvmArgs>
                     <runMode>exploded</runMode>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>se.thinkcode.wait</groupId>
                 <artifactId>http</artifactId>
-                <version>1.1.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>wait</goal>
-                        </goals>
-                        <configuration>
-                            <url>http://localhost:8888/__check-start</url>
-                            <timeout>${verticleStartTimeout}</timeout>
-                            <skip>${skipTests}</skip>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
-
         </plugins>
     </build>
 
