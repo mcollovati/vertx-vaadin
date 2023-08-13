@@ -36,7 +36,7 @@ function get_vaadin_versions() {
     esac
     __versions=$(curl -s ${__metadata_base_url}/com/vaadin/vaadin-core/maven-metadata.xml | \
       grep "<version>${vaadin_platform}\..*</version>" | sed -E 's/^.*<version>(.*)<\/version>.*/\1/g' | \
-      sort -V -r | head -n 100
+      sort -V -r | head -n 10
     )
     echo "Found Vaadin versions:"
     echo "${__versions}"
