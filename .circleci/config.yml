@@ -168,21 +168,13 @@ jobs:
             find . -type f -regex ".*/target/failsafe-reports/.*xml" -exec cp {} ~/junit-uitests/ \;
             find . -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/junit-uitests/ \;
             find . -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/junit-uitests/ \;
+            for i in `find . -type d -name error-screenshots`; do n=$(basename $(dirname $i)); mkdir --parents ~/junit-uitests/$n; cp -r $i/* ~/junit-uitests/$n/; done
             cp /tmp/verticle.log ~/junit-uitests/
           when: always
       - store_test_results:
           path: ~/junit-uitests
       - store_artifacts:
           path: ~/junit-uitests
-      - store_artifacts:
-          path: ~/repo/vertx-vaadin-flow-parent/vertx-vaadin-tests/test-root-context/error-screenshots
-          destination: error-screenshots
-      - store_artifacts:
-          path: ~/repo/vertx-vaadin-flow-parent/vertx-vaadin-tests/test-frontend/vite-basics/error-screenshots
-          destination: vite-error-screenshots
-      - store_artifacts:
-          path: ~/repo/vertx-vaadin-flow-parent/vertx-vaadin-tests/test-frontend/vite-basics/target/
-          destination: vite-error-screenshots
       - store_artifacts:
           path: ~/.npm/_logs/
           destination: npm-logs
