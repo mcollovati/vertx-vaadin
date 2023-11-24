@@ -135,7 +135,7 @@ public final class VaadinOptions {
         properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
     }
 
-    VaadinConfig asVaadinConfig(VaadinContext context) {
+    public VaadinConfig asVaadinConfig(VaadinContext context) {
         return new VertxVaadinConfig(config, context);
     }
 

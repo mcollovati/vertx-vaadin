@@ -24,18 +24,21 @@ package com.github.mcollovati.vertx.vaadin;
 
 import javax.servlet.ServletException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.mcollovati.failures.lookup.FakeLookupInitializer;
+
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.InitParameters;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.impl.IsolatingClassLoader;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.Router;
-import net.bytebuddy.ByteBuddy;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,6 +95,42 @@ public class VaadinVerticleUT {
         ));
     }
 
+    @Test
+    public void shouldFindI18NSupport(TestContext context) {
+        TestVerticle verticle = new TestVerticle() {
+            @Override
+            public JsonObject config() {
+                JsonObject config = super.config();
+                if (!config.containsKey("vaadin")) {
+                    config.put("vaadin", new JsonObject());
+                }
+                JsonObject vaadin = config.getJsonObject("vaadin");
+                vaadin.put("flowBasePackages", new JsonArray().add(getClass().getPackage().getName()));
+                if (!vaadin.containsKey(InitParameters.I18N_PROVIDER)) {
+                    vaadin.put(InitParameters.I18N_PROVIDER, TestI18nProvider.class.getName());
+                }
+
+                return config;
+            }
+        };
+        DeploymentOptions opts = new DeploymentOptions();
+        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev ->
+                context.assertTrue(verticle.service.getInstantiator().getI18NProvider() instanceof TestI18nProvider)
+        ));
+    }
+
+    public static class TestI18nProvider implements I18NProvider {
+
+        @Override
+        public List<Locale> getProvidedLocales() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getTranslation(String key, Locale locale, Object... params) {
+            return "HELLO";
+        }
+    }
     private JsonObject testConfig() {
         return new JsonObject()
             .put("server", new JsonObject().put("port", 0))

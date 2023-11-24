@@ -106,7 +106,7 @@ public final class StartupContext implements VaadinConfig {
 
     public DeploymentConfiguration deploymentConfiguration() {
         if (deploymentConfiguration == null) {
-            VaadinConfig vaadinConfig = new VertxVaadinConfig(new JsonObject(), getVaadinContext());
+            VaadinConfig vaadinConfig = vaadinOptions.asVaadinConfig(getVaadinContext());
             deploymentConfiguration = new DeploymentConfigurationFactory()
                 .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
         }
