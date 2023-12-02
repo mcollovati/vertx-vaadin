@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>test-frontend</artifactId>
-        <version>23.3.4</version>
+        <version>23.3.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
