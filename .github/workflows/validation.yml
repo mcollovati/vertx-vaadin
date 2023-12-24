@@ -73,7 +73,7 @@ jobs:
           mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
       - name: Test
         env:
-          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PROKEY }}
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false
@@ -117,7 +117,7 @@ jobs:
           echo "CHROME_VERSION=${CHROME_VERSION}" >> "$GITHUB_ENV"
       - name: UI Test
         env:
-          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PROKEY }}
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests
