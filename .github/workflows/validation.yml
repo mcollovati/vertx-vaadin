@@ -45,8 +45,8 @@ jobs:
           filters: |
             validate:
               - '!(README.md|LICENSE|.gitignore|tools/**)'
-  build-and-test:
-    name: Build and test
+  build:
+    name: Build
     needs: [changes]
     if: ${{ needs.changes.outputs.validation-required == 'true' }}
     timeout-minutes: 30
@@ -68,6 +68,52 @@ jobs:
         with:
           chrome-version: stable
       - name: Build
+        run: |
+          set -x -e -o pipefail
+          VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
+          echo "VERTX_VAADIN_VERSION=${VERTX_VAADIN_VERSION}" >> "$GITHUB_ENV"
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
+      - name: Save workspace
+        run: |
+          tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/github/mcollovati/vertx/*/$VERTX_VAADIN_VERSION)
+          tar rf workspace.tar $(find . -d -name target)
+      - uses: actions/upload-artifact@v3
+        with:
+          name: saved-workspace
+          path: workspace.tar
+  test:
+    name: Build and test
+    needs: [build]
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      - uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+        if: ${{ !vars.QH_DISABLE_CHROME_INSTALL }}
+        with:
+          chrome-version: stable
+      - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          set -x
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Build
+        if: ${{ github.run_attempt > 1 }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
@@ -87,7 +133,7 @@ jobs:
           path: tests-report-*.tgz
   ui-tests:
     name: UI tests
-    needs: [changes]
+    needs: [build]
     if: ${{ needs.changes.outputs.validation-required == 'true' }}
     timeout-minutes: 30
     runs-on: ubuntu-latest
@@ -107,14 +153,25 @@ jobs:
         if: ${{ !vars.QH_DISABLE_CHROME_INSTALL }}
         with:
           chrome-version: stable
-      - name: Build
-        run: |
-          set -x -e -o pipefail
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
       - name: Set Chrome Version
         run: |
           CHROME_VERSION=$(google-chrome --version | sed 's/^Google Chrome //' | cut -d. -f1)
           echo "CHROME_VERSION=${CHROME_VERSION}" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          set -x
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Build
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
       - name: UI Test
         env:
           VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
@@ -122,6 +179,7 @@ jobs:
           set -x -e -o pipefail
           cd vertx-vaadin-tests
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false \
+            -Dwebdriver.chrome.driver=$(which chromedriver) \
             -Duitest.chrome-version=$CHROME_VERSION \
             -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
       - name: Package test output files
