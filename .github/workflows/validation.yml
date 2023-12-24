@@ -1,0 +1,156 @@
+name: vertx-vaadin validation
+on:
+  push:
+    branches: [development]
+  workflow_dispatch:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  check-permissions:
+    name: Check User Permissions
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
+      - uses: actions-cool/check-user-permission@main
+        id: checkUser
+        with:
+          username: ${{github.triggering_actor}}
+          require: 'write'
+      - name: Fail on workflow triggered by external contributor
+        if: ${{ steps.checkUser.outputs.require-result != 'true' && github.actor != 'dependabot[bot]' && github.actor != 'vertx-vaadin-bot[bot]' }}
+        run: |
+          echo "🚫 **${{ github.actor }}** is an external contributor, a **${{ github.repository }}** team member has to review this changes and re-run this build" \
+            | tee -a $GITHUB_STEP_SUMMARY && exit 1
+  changes:
+    name: Compute changes
+    needs: [check-permissions]
+    runs-on: ubuntu-latest
+    outputs:
+      validation-required: ${{ steps.filter.outputs.validate }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            validate:
+              - '!(README.md|LICENSE|.gitignore|tools/**)'
+  build-and-test:
+    name: Build and test
+    needs: [changes]
+    if: ${{ needs.changes.outputs.validation-required == 'true' }}
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      - uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+        if: ${{ !vars.QH_DISABLE_CHROME_INSTALL }}
+        with:
+          chrome-version: stable
+      - name: Build
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
+      - name: Test
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false
+      - name: Package test output files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports | tar -czf tests-report-main.tgz -T -
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() || success() }}
+        with:
+          name: tests-output
+          path: tests-report-*.tgz
+  ui-tests:
+    name: UI tests
+    needs: [changes]
+    if: ${{ needs.changes.outputs.validation-required == 'true' }}
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      - uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+        if: ${{ !vars.QH_DISABLE_CHROME_INSTALL }}
+        with:
+          chrome-version: stable
+      - name: Build
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
+      - name: UI Test
+        run: |
+          set -x -e -o pipefail
+          cd vertx-vaadin-tests
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false \ 
+            -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
+      - name: Package test output files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-ui.tgz -T -
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() || success() }}
+        with:
+          name: tests-output
+          path: tests-report-*.tgz
+  test-results:
+    permissions:
+      issues: read
+      checks: write
+      pull-requests: write
+    if: ${{ always() }}
+    needs: [changes, build-and-test, ui-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/download-artifact@v3
+        if: ${{ always() && needs.changes.outputs.validation-required == 'true' }}
+        with:
+          name: tests-output
+      - name: Extract downloaded files
+        if: ${{ always() && needs.changes.outputs.validation-required == 'true' }}
+        run: for i in *.tgz; do tar xvf $i; done
+      - name: Publish Unit Test Results
+        if: ${{ always() && needs.changes.outputs.validation-required == 'true' }}
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          junit_files: "**/target/*-reports/TEST*.xml"
+      - name: Set Failure Status
+        if: ${{ always() && needs.changes.outputs.validation-required == 'true' && (needs.build-and-test.result != 'success' || needs.ui-tests.result != 'success') }}
+        run: |
+          echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
+          exit 1
+      - name: Set validation skipped status
+        if: ${{ always() && needs.changes.outputs.validation-required == 'false' }}
+        run: |
+          echo "✅ Pull request only contains changes on files ignored by validation workflow" | tee -a $GITHUB_STEP_SUMMARY && exit 0
