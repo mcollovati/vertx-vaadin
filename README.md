@@ -4,7 +4,6 @@
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
 [![Gitter](https://badges.gitter.im/vertx-vaadin/community.svg)](https://gitter.im/vertx-vaadin/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin8.svg?label=vertx-vaadin8)
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow.svg?label=vertx-vaadin-flow)
 
 ## Description
@@ -12,18 +11,14 @@
 Vertx Vaadin is an adapter library that lets you run [Vaadin](https://vaadin.com/) applications on top of [Vert.x](http://vertx.io/).
 This means you can mix the simplicity and robustness of Vaadin applications with the powerful tools provided by Vert.x, such as event bus, clustering, High Availability and Fail-Over.
 
+> [!IMPORTANT]
+> Vaadin 8 is not supported anymore.
+
 ## Installation and Getting Started
 
 Vertx-vaadin binaries are available on Maven Central and Bintray.
 
 ### Maven
-
-```xml
-<dependency>
-  <groupId>com.github.mcollovati.vertx</groupId>
-  <artifactId>vertx-vaadin8</artifactId>
-  <version>${vertx-vaadin8.version}</version>
-</dependency>
 ```
 
 ```xml
@@ -35,12 +30,13 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 ```
 
 
-For snapshots:
+Snapshot are currently published on GitHub, so a [Personal Access Token](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-with-a-personal-access-token)
+is required to download the artifacts
 
 ```xml
 <repository>
 	<id>vertx-vaadin-snapshots</id>
-	<url>https://mcollovati.jfrog.io/artifactory/vertx-vaadin-snapshots</url>
+	<url>https://maven.pkg.github.com/mcollovati/vertx-vaadin</url>
     <releases>
         <enabled>false</enabled>
     </releases>
@@ -50,32 +46,13 @@ For snapshots:
 </repository>
 ```
 
-For additional vertx-vaadin artifacts not published on Maven Central (eg Vaadin client repackages):
-
+In setting.xml
 ```xml
-<repository>
-	<id>vertx-vaadin-public</id>
-	<url>https://mcollovati.jfrog.io/artifactory/vertx-vaadin-public</url>
-    <releases>
-        <enabled>true</enabled>
-    </releases>
-    <snapshots>
-        <enabled>false</enabled>
-    </snapshots>
-</repository>
-```
-
-### Gradle
-
-```
-compile 'com.github.mcollovati.vertx:vertx-vaadin8:0.4.0'
-```
-
-For snapshots:
-```
-repositories {
-	maven { url 'https://mcollovati.jfrog.io/artifactory/vertx-vaadin-snapshots' }
-}
+<server>
+    <id>vertx-vaadin-snapshots</id>
+    <username>your username</username>
+    <password>PAT with read:packages</password>
+</server>
 ```
 
 ## Compatibility matrix
@@ -103,18 +80,11 @@ repositories {
 
 ## Documentation
 
-See [vertx-vaadin-8](vertx-vaadin-8-parent/vertx-vaadin8)  or [vertx-vaadin-flow](vertx-vaadin-flow-parent/vertx-vaadin-flow) module for more information.
+See [vertx-vaadin-flow](vertx-vaadin-flow-parent/vertx-vaadin-flow) module for more information.
 
 ## Demo and samples
 
-A public demo based on Vaadin 8 archetype application example is published on heroku and is available [here](http://vertx-vaadin-example.herokuapp.com/)
-
-Bookstore demo on Vaadin Flow is published on heroku and is available at the following urls:
-
-* [vertx-vaadin-flow:14](https://vertx-vaadin14-example.herokuapp.com/)
-* [vertx-vaadin-flow:develop](https://vertx-vaadin-dev-example.herokuapp.com/)
-
-Source code and other samples can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
+Source code for sample application can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
 
 ## Issue tracking
   
