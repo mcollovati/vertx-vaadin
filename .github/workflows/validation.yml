@@ -72,7 +72,7 @@ jobs:
           set -x -e -o pipefail
           VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
           echo "VERTX_VAADIN_VERSION=${VERTX_VAADIN_VERSION}" >> "$GITHUB_ENV"
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/github/mcollovati/vertx/*/$VERTX_VAADIN_VERSION)
@@ -116,7 +116,7 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           set -x -e -o pipefail
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: Test
         env:
           VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
@@ -131,7 +131,7 @@ jobs:
         with:
           name: tests-output
           path: tests-report-*.tgz
-  ui-tests:
+  it-tests-1:
     name: UI tests
     needs: [build]
     if: ${{ needs.changes.outputs.validation-required == 'true' }}
@@ -171,13 +171,68 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           set -x -e -o pipefail
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: UI Test
         env:
           VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=-test-frontend  -DtrimStackTrace=false \
+            -Dwebdriver.chrome.driver=$(which chromedriver) \
+            -Duitest.chrome-version=$CHROME_VERSION \
+            -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
+      - name: Package test output files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-ui.tgz -T -
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() || success() }}
+        with:
+          name: tests-output
+          path: tests-report-*.tgz
+  it-tests-2:
+    name: UI tests
+    needs: [build]
+    if: ${{ needs.changes.outputs.validation-required == 'true' }}
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      - uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+        if: ${{ !vars.QH_DISABLE_CHROME_INSTALL }}
+        with:
+          chrome-version: stable
+      - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          set -x
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Build
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
+      - name: UI Test
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+        run: |
+          set -x -e -o pipefail
+          cd vertx-vaadin-tests/test-frontend
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -Duitest.chrome-version=$CHROME_VERSION \
@@ -196,7 +251,7 @@ jobs:
       checks: write
       pull-requests: write
     if: ${{ always() }}
-    needs: [changes, tests, ui-tests]
+    needs: [changes, tests, it-tests-1, it-tests-2]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
