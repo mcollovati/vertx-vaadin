@@ -115,7 +115,13 @@
                             <configuration>
                                 <skip>${skipVertxRun}</skip>
                                 <jvmArgs combine.children="append">
-                                    <jvmArg>${test.vertx.jvmArgs}</jvmArg>
+                                    <jvmArg>
+                                        -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory
+                                    </jvmArg>
+                                    <jvmArg>-Dorg.slf4j.simpleLogger.logFile=${project.build.directory}/verticle.log
+                                    </jvmArg>
+                                    <jvmArg>-Dvaadin.require.home.node=true</jvmArg>
+                                    <jvmArg>-Xmx2048M</jvmArg>
                                 </jvmArgs>
                             </configuration>
                         </execution>
