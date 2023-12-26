@@ -181,29 +181,12 @@ jobs:
           rm -rf frontend/generated 
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=:vertx-vaadin-test-root-context  -DtrimStackTrace=false \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
-            -Duitest.chrome-version=$CHROME_VERSION \
-            -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
-      - name: Dump threads
-        if: ${{ cancelled() }}
-        run: |
-          for pid in $(jps | cut -d ' ' -f 1); do
-            echo
-            echo
-            echo "========================= BEGIN THREAD DUMP $pid"
-            jps -mlvV | grep "$pid " || echo ''
-            echo
-            jstack $pid || echo "No dump for $pid"
-            echo "========================= END THREAD DUMP $pid"
-            echo
-            echo
-          done
+            -Duitest.chrome-version=$CHROME_VERSION
       - name: Package test output files
-        #if: ${{ failure() || success() }}
-        if: ${{ always() }}
+        if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-it-1.tgz -T -
       - uses: actions/upload-artifact@v3
-        #if: ${{ failure() || success() }}
-        if: ${{ always() }}
+        if: ${{ failure() || success() }}
         with:
           name: tests-output
           path: tests-report-*.tgz
@@ -250,31 +233,12 @@ jobs:
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests/
-          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
-      - name: Dump threads
-        if: ${{ cancelled() }}
-        run: |
-          for pid in $(jps | cut -d ' ' -f 1); do
-            echo
-            echo
-            echo "========================= BEGIN THREAD DUMP $pid"
-            jps -mlvV | grep "$pid " || echo ''
-            echo
-            jstack $pid || echo "No dump for $pid"
-            echo "========================= END THREAD DUMP $pid"
-            echo
-            echo
-          done
-      - name: Print verticle.log
-        if: ${{ always() }}
-        run: find . -name verticle.log -exec cat {} \;
+          mvn -V -e -B -ntp verify -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Package test output files
-        #if: ${{ failure() || success() }}
-        if: ${{ always() }}
+        if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-it-2.tgz -T -
       - uses: actions/upload-artifact@v3
-        #if: ${{ failure() || success() }}
-        if: ${{ always() }}
+        if: ${{ failure() || success() }}
         with:
           name: tests-output
           path: tests-report-*.tgz
@@ -303,7 +267,7 @@ jobs:
         with:
           junit_files: "**/target/*-reports/TEST*.xml"
       - name: Set Failure Status
-        if: ${{ always() && needs.changes.outputs.validation-required == 'true' && (needs.build-and-test.result != 'success' || needs.ui-tests.result != 'success') }}
+        if: ${{ always() && needs.changes.outputs.validation-required == 'true' && (needs.tests.result != 'success' || needs.it-tests-1.result != 'success' || needs.it-tests-2.result != 'success') }}
         run: |
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
@@ -311,3 +275,40 @@ jobs:
         if: ${{ always() && needs.changes.outputs.validation-required == 'false' }}
         run: |
           echo "✅ Pull request only contains changes on files ignored by validation workflow" | tee -a $GITHUB_STEP_SUMMARY && exit 0
+  deploy-snapshot:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/test/validation-workflow'
+    needs: [build]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with: # running setup-java again overwrites the settings.xml
+          distribution: 'temurin'
+          java-version: '11'
+          server-id: github-vertx-vaadin # Value of the distributionManagement/repository/id field of the pom.xml
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
+      - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          set -x
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Build
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
+      - name: Deploy snapshots
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests deploy
