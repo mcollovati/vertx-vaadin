@@ -134,7 +134,7 @@ jobs:
   it-tests-1:
     name: UI tests 1
     needs: [build]
-    if: ${{ needs.changes.outputs.validation-required == 'true' }}
+    if: ${{ needs.changes.outputs.validation-required == 'true' || false }}
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
@@ -251,6 +251,7 @@ jobs:
           set -x -e -o pipefail
           cd vertx-vaadin-tests/test-frontend
           find . -type d -path "*/frontend/generated" -exec rm -rf {} \; 
+          find . -type d -path "*/node_modules" -exec rm -rf {} \; 
           mvn -V -e -B -ntp clean verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Dump threads
         if: ${{ cancelled() }}
