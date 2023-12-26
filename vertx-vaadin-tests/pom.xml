@@ -145,10 +145,8 @@
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
-                        <!--
-                        <parallel>none</parallel>
-                        <threadCount>1</threadCount>
-                        -->
+                        <parallel>all</parallel>
+                        <threadCount>2</threadCount>
                         <rerunFailingTestsCount>3</rerunFailingTestsCount>
                         <systemPropertyVariables>
                             <com.vaadin.testbench.Parameters.testsInParallel>4
