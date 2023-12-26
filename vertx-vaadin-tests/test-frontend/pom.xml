@@ -51,6 +51,12 @@
                     <configuration>
                         <config>${project.basedir}/src/test/conf/vertx-vaadin-test.conf</config>
                         <verticle>com.vaadin.flow.uitest.vertx.TestBootVerticle</verticle>
+                        <jvmArgs>
+                            <jvmArg>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</jvmArg>
+                            <jvmArg>-Dorg.slf4j.simpleLogger.logFile=target/verticle.log</jvmArg>
+                            <jvmArg>-Dvaadin.require.home.node=true</jvmArg>
+                            <jvmArg>-Xmx2048M</jvmArg>
+                        </jvmArgs>
                         <!--
                         <jvmArgs>
                             <jvmArg>-Dvaadin.project.basedir=${project.basedir}</jvmArg>

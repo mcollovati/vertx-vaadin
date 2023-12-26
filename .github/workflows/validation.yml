@@ -249,9 +249,7 @@ jobs:
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests/test-frontend
-          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false \
-            -Dtest.vertx.jvmArgs='-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory' \
-            -Dwebdriver.chrome.driver=$(which chromedriver)
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Dump threads
         if: ${{ cancelled() }}
         run: |
@@ -266,6 +264,10 @@ jobs:
             echo
             echo
           done
+      - name: Print verticle.log
+        #if: ${{ failure() || success() }}
+        if: ${{ always() }}
+        run: find . -name verticle.log -exec cat {}\;
       - name: Package test output files
         #if: ${{ failure() || success() }}
         if: ${{ always() }}
