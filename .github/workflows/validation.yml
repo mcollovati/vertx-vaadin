@@ -210,7 +210,7 @@ jobs:
     name: UI tests 2
     needs: [build]
     if: ${{ needs.changes.outputs.validation-required == 'true' }}
-    timeout-minutes: 30
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
