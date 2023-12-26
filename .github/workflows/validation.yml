@@ -71,7 +71,7 @@ jobs:
         run: |
           set -x -e -o pipefail
           VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
-          echo "VERTX_VAADIN_VERSION=${VERTX_VAADIN_VERSION}" >> "$GITHUB_ENV"
+          echo "VERTX_VAADIN_VERSION=${VERTX_VAADIN_VERSION}" >> "$GITHUB_ENV"          
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true install -Pflow-ui-tests
       - name: Save workspace
         run: |
@@ -178,6 +178,7 @@ jobs:
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests
+          rm -rf frontend/generated 
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=-:vite-basics,-:vite-production  -DtrimStackTrace=false \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -Duitest.chrome-version=$CHROME_VERSION \
@@ -249,7 +250,8 @@ jobs:
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests/test-frontend
-          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -Dwebdriver.chrome.driver=$(which chromedriver)
+          find . -type d -path "*/frontend/generated" -exec rm -rf {} \; 
+          mvn -V -e -B -ntp clean verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Dump threads
         if: ${{ cancelled() }}
         run: |
