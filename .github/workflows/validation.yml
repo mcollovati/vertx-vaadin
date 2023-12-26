@@ -72,10 +72,10 @@ jobs:
           set -x -e -o pipefail
           VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
           echo "VERTX_VAADIN_VERSION=${VERTX_VAADIN_VERSION}" >> "$GITHUB_ENV"
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
+          mvn -V -e -B -ntp -DskipTests install -Pflow-ui-tests
       - name: Save workspace
         run: |
-          tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/github/mcollovati/vertx/*/$VERTX_VAADIN_VERSION)
+          tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/github/mcollovati/vertx/**/$VERTX_VAADIN_VERSION)
           tar rf workspace.tar $(find . -d -name target)
       - uses: actions/upload-artifact@v3
         with:
@@ -132,7 +132,7 @@ jobs:
           name: tests-output
           path: tests-report-*.tgz
   it-tests-1:
-    name: UI tests
+    name: UI tests 1
     needs: [build]
     if: ${{ needs.changes.outputs.validation-required == 'true' }}
     timeout-minutes: 30
@@ -191,7 +191,7 @@ jobs:
           name: tests-output
           path: tests-report-*.tgz
   it-tests-2:
-    name: UI tests
+    name: UI tests 2
     needs: [build]
     if: ${{ needs.changes.outputs.validation-required == 'true' }}
     timeout-minutes: 30
