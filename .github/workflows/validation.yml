@@ -250,7 +250,7 @@ jobs:
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests/
-          mvn -V -e -B -ntp clean verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Dump threads
         if: ${{ cancelled() }}
         run: |
@@ -265,6 +265,9 @@ jobs:
             echo
             echo
           done
+      - name: Print verticle.log
+        #if: ${{ failure() || success() }}
+        if: ${{ always() }}
       - name: Package test output files
         #if: ${{ failure() || success() }}
         if: ${{ always() }}
