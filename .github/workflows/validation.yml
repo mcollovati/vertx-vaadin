@@ -178,15 +178,31 @@ jobs:
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests
-          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=-test-frontend  -DtrimStackTrace=false \
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=-:vite-basics,-:vite-production  -DtrimStackTrace=false \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -Duitest.chrome-version=$CHROME_VERSION \
             -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
+      - name: Dump threads
+        if: ${{ cancelled() }}
+        run: |
+          for pid in $(jps | cut -d ' ' -f 1); do
+            echo
+            echo
+            echo "========================= BEGIN THREAD DUMP $pid"
+            jps -mlvV | grep "$pid "
+            echo
+            jstack $pid
+            echo "========================= END THREAD DUMP $pid"
+            echo
+            echo
+          done
       - name: Package test output files
-        if: ${{ failure() || success() }}
+        #if: ${{ failure() || success() }}
+        if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-ui.tgz -T -
       - uses: actions/upload-artifact@v3
-        if: ${{ failure() || success() }}
+        #if: ${{ failure() || success() }}
+        if: ${{ always() }}
         with:
           name: tests-output
           path: tests-report-*.tgz
@@ -237,11 +253,27 @@ jobs:
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -Duitest.chrome-version=$CHROME_VERSION \
             -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
+      - name: Dump threads
+        if: ${{ cancelled() }}
+        run: |
+          for pid in $(jps | cut -d ' ' -f 1); do
+            echo
+            echo
+            echo "========================= BEGIN THREAD DUMP $pid"
+            jps -mlvV | grep "$pid "
+            echo
+            jstack $pid
+            echo "========================= END THREAD DUMP $pid"
+            echo
+            echo
+          done
       - name: Package test output files
-        if: ${{ failure() || success() }}
+        #if: ${{ failure() || success() }}
+        if: ${{ always() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-ui.tgz -T -
       - uses: actions/upload-artifact@v3
-        if: ${{ failure() || success() }}
+        #if: ${{ failure() || success() }}
+        if: ${{ always() }}
         with:
           name: tests-output
           path: tests-report-*.tgz
