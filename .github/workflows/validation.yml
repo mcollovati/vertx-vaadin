@@ -250,8 +250,8 @@ jobs:
           set -x -e -o pipefail
           cd vertx-vaadin-tests/test-frontend
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false \
-            -Dwebdriver.chrome.driver=$(which chromedriver) \
-            -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
+            -Dtest.vertx.jvmArgs='-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory' \
+            -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Dump threads
         if: ${{ cancelled() }}
         run: |
