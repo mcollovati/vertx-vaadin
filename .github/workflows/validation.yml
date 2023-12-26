@@ -266,8 +266,8 @@ jobs:
             echo
           done
       - name: Print verticle.log
-        #if: ${{ failure() || success() }}
         if: ${{ always() }}
+        run: find . -name verticle.log -exec cat {} \;
       - name: Package test output files
         #if: ${{ failure() || success() }}
         if: ${{ always() }}
