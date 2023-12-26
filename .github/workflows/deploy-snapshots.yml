@@ -27,7 +27,7 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Deploy classifiers
         run: |
-          mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Ddistribution.id=github-vertx-vaadin -Dvertx-vaadin.release.gpg deploy
+          mvn -V -e -B -ntp -DskipVertxRun=true -Ddistribution.id=github-vertx-vaadin -Dvertx-vaadin.release.gpg deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
