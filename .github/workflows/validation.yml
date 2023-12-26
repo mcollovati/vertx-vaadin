@@ -179,7 +179,7 @@ jobs:
           set -x -e -o pipefail
           cd vertx-vaadin-tests
           rm -rf frontend/generated 
-          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=-:vite-basics,-:vite-production  -DtrimStackTrace=false \
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=:vertx-vaadin-test-root-context  -DtrimStackTrace=false \
             -Dwebdriver.chrome.driver=$(which chromedriver) \
             -Duitest.chrome-version=$CHROME_VERSION \
             -Dtest.vertx.jvmArgs="-Dorg.slf4j.simpleLogger.logFile=target/verticle.log -Dvaadin.require.home.node=true -Xmx2048M -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
@@ -249,10 +249,8 @@ jobs:
           VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
-          cd vertx-vaadin-tests/test-frontend
-          find . -type d -path "*/frontend/generated" -exec rm -rf {} \; 
-          find . -type d -path "*/node_modules" -exec rm -rf {} \; 
-          mvn -V -e -B -ntp clean verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -Dwebdriver.chrome.driver=$(which chromedriver)
+          cd vertx-vaadin-tests/
+          mvn -V -e -B -ntp clean verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Dump threads
         if: ${{ cancelled() }}
         run: |
@@ -267,10 +265,6 @@ jobs:
             echo
             echo
           done
-      - name: Print verticle.log
-        #if: ${{ failure() || success() }}
-        if: ${{ always() }}
-        run: find . -name verticle.log -exec cat {} \;
       - name: Package test output files
         #if: ${{ failure() || success() }}
         if: ${{ always() }}
