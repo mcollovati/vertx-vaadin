@@ -51,9 +51,11 @@
                     <configuration>
                         <config>${project.basedir}/src/test/conf/vertx-vaadin-test.conf</config>
                         <verticle>com.vaadin.flow.uitest.vertx.TestBootVerticle</verticle>
+                        <!--
                         <jvmArgs>
                             <jvmArg>-Dvaadin.project.basedir=${project.basedir}</jvmArg>
                         </jvmArgs>
+                        -->
                     </configuration>
                 </plugin>
             </plugins>
