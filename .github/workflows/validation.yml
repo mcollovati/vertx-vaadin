@@ -17,9 +17,6 @@ jobs:
     name: Check User Permissions
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "REF=${{ github.ref }}, HEAD_REF=${{ github.ref_name }}, NAME=${{ github.event_name }})"
-          exit 1
       - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
