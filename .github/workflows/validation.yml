@@ -275,3 +275,45 @@ jobs:
         if: ${{ always() && needs.changes.outputs.validation-required == 'false' }}
         run: |
           echo "✅ Pull request only contains changes on files ignored by validation workflow" | tee -a $GITHUB_STEP_SUMMARY && exit 0
+  deploy-snapshots:
+    runs-on: ubuntu-latest
+    needs: [test-results]
+    #if: ${{ github.event_name == 'push' && github.ref_protected }}
+    if: ${{ success() }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          server-id: github-vertx-vaadin
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
+        run: |
+          set -x
+          tar xf workspace.tar
+          tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Build
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests install
+      - name: Deploy classifiers
+        run: |
+          mvn -V -e -B -ntp -DskipVertxRun=true -Ddistribution.id=github-vertx-vaadin -Dvertx-vaadin.release.gpg deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}

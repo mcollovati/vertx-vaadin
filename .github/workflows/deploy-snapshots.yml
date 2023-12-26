@@ -6,7 +6,7 @@ on:
       - development
 
 jobs:
-  build:
+  deploy-snaphost:
 
     runs-on: ubuntu-latest
     permissions:
