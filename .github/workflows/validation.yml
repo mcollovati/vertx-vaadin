@@ -72,7 +72,7 @@ jobs:
           set -x -e -o pipefail
           VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
           echo "VERTX_VAADIN_VERSION=${VERTX_VAADIN_VERSION}" >> "$GITHUB_ENV"
-          mvn -V -e -B -ntp -DskipTests install -Pflow-ui-tests
+          mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true install -Pflow-ui-tests
       - name: Save workspace
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/github/mcollovati/vertx/**/$VERTX_VAADIN_VERSION)
@@ -116,7 +116,7 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           set -x -e -o pipefail
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
+          mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: Test
         env:
           VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
@@ -171,7 +171,7 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           set -x -e -o pipefail
-          mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
+          mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: UI Test
         env:
           VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
@@ -189,7 +189,7 @@ jobs:
             echo
             echo
             echo "========================= BEGIN THREAD DUMP $pid"
-            jps -mlvV | grep "$pid "
+            jps -mlvV | grep "$pid " || echo ''
             echo
             jstack $pid
             echo "========================= END THREAD DUMP $pid"
@@ -260,7 +260,7 @@ jobs:
             echo
             echo
             echo "========================= BEGIN THREAD DUMP $pid"
-            jps -mlvV | grep "$pid "
+            jps -mlvV | grep "$pid " || echo ''
             echo
             jstack $pid
             echo "========================= END THREAD DUMP $pid"
