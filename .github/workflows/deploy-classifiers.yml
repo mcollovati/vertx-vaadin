@@ -29,7 +29,7 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           server-id: repsy-vertx-vaadin
-          server-username: mcollovati
+          server-username: ${{ secrets.REPSY_USERNAME }}
           server-password: ${{ secrets.REPSY_PASSWORD }}
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
