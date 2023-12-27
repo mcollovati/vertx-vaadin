@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>1.0-dev</version>
+    <version>23.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin root Pom</description>
@@ -86,43 +86,42 @@
         <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
         <checkstyle.skip>true</checkstyle.skip>
 
-        <distribution.snapshots.id>github-vertx-vaadin-snapshots</distribution.snapshots.id>
-        <distribution.snapshots.url>https://maven.pkg.github.com/mcollovati/vertx-vaadin</distribution.snapshots.url>
-        <distribution.releases.id>github-vertx-vaadin-releases</distribution.releases.id>
-        <distribution.releases.url>https://maven.pkg.github.com/mcollovati/vertx-vaadin</distribution.releases.url>
+        <distribution.snapshots.id>repsy-vertx-vaadin-snapshots</distribution.snapshots.id>
+        <distribution.snapshots.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots</distribution.snapshots.url>
+        <distribution.releases.id>repsy-vertx-vaadin</distribution.releases.id>
+        <distribution.releases.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</distribution.releases.url>
 
-        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-        <license-maven-plugin.version>3.0</license-maven-plugin.version>
-        <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-failsafe-plugin.version>3.1.2</maven-failsafe-plugin.version>
-        <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
-        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <sonar-maven-plugin.version>3.7.0.1746</sonar-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+        <license-maven-plugin.version>4.3</license-maven-plugin.version>
+        <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+        <maven-failsafe-plugin.version>3.2.3</maven-failsafe-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <maven-surefire-plugin.version>3.2.3</maven-surefire-plugin.version>
+        <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
+        <sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
         <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.3.2</maven-javadoc-plugin.version>
-        <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
 
         <vertx.version>4.3.0</vertx.version>
-        <vaadin.version>8.8.5</vaadin.version>
-        <vaadin.platform.version>23.3.12</vaadin.platform.version>
-        <vaadin.flow.version>23.3.9</vaadin.flow.version>
-        <hilla.version>1.2-SNAPSHOT</hilla.version>
+        <vaadin.platform.version>23.3.30</vaadin.platform.version>
+        <vaadin.flow.version>23.3.24</vaadin.flow.version>
+        <hilla.version>1.3.30</hilla.version>
 
         <javax.servlet.version>3.1.0</javax.servlet.version>
-        <byte-buddy.version>1.12.14</byte-buddy.version>
+        <byte-buddy.version>1.14.11</byte-buddy.version>
         <junit-quickcheck.version>1.0</junit-quickcheck.version>
-        <lombok.version>1.18.26</lombok.version>
-        <junit.version>4.13.1</junit.version>
-        <mockito.version>4.11.0</mockito.version>
-        <assertj.version>3.11.1</assertj.version>
-        <logback.version>1.2.3</logback.version>
-        <slf4j.version>1.7.21</slf4j.version>
-        <checkstyle.version>8.29</checkstyle.version>
+        <lombok.version>1.18.30</lombok.version>
+        <junit.version>4.13.2</junit.version>
+        <mockito.version>5.8.0</mockito.version>
+        <assertj.version>3.24.2</assertj.version>
+        <logback.version>1.4.14</logback.version>
+        <slf4j.version>2.0.9</slf4j.version>
+        <checkstyle.version>10.12.6</checkstyle.version>
         <uber-pom-maven-plugin.version>1.0.3</uber-pom-maven-plugin.version>
-        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -425,6 +424,12 @@
         </pluginManagement>
     </build>
 
+    <modules>
+        <module>vaadin-flow-sockjs</module>
+        <module>vertx-vaadin-flow</module>
+        <module>vertx-vaadin-flow-jandex</module>
+        <module>vertx-vaadin-quarkus-extension</module>
+    </modules>
 
     <profiles>
         <profile>
@@ -461,28 +466,9 @@
             </build>
         </profile>
         <profile>
-            <id>release-vaadin8</id>
-            <modules>
-                <module>vertx-vaadin-8-parent/vaadin8-sockjs</module>
-                <module>vertx-vaadin-8-parent/vertx-vaadin8</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>release-flow</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>vertx-vaadin-flow-parent/vaadin-flow-sockjs</module>
-                <module>vertx-vaadin-flow-parent/vertx-vaadin-flow</module>
-                <module>vertx-vaadin-flow-parent/vertx-vaadin-flow-jandex</module>
-                <module>vertx-vaadin-flow-parent/vertx-vaadin-quarkus-extension</module>
-            </modules>
-        </profile>
-        <profile>
             <id>flow-ui-tests</id>
             <modules>
-                <module>vertx-vaadin-flow-parent/vertx-vaadin-tests</module>
+                <module>vertx-vaadin-tests</module>
             </modules>
         </profile>
         <profile>

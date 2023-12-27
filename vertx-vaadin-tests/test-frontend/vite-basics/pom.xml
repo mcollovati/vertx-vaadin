@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.mcollovati.vertx.tests</groupId>
+        <artifactId>test-frontend</artifactId>
+        <version>23.4.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>vite-basics</artifactId>
+    <name>Vite dev mode functionality</name>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-html-components-testbench</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.mcollovati.vertx.tests</groupId>
+            <artifactId>flow-test-lumo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.mcollovati.vertx.tests</groupId>
+            <artifactId>vite-test-assets</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.mcollovati.vertx.tests</groupId>
+            <artifactId>vite-test-assets</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <dependenciesToScan>com.github.mcollovati.vertx.tests:vite-test-assets</dependenciesToScan>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.reactiverse</groupId>
+                <artifactId>vertx-maven-plugin</artifactId>
+                <configuration>
+                    <runMode>exploded</runMode>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>se.thinkcode.wait</groupId>
+                <artifactId>http</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

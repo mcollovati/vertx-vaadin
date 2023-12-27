@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.mcollovati.vertx</groupId>
+        <artifactId>vertx-vaadin-quarkus-extension-parent</artifactId>
+        <version>23.4.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>vertx-vaadin-quarkus-integration-tests</artifactId>
+    <name>Vertx Vaadin Quarkus - Integration Tests Parent Module</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <!-- Builds the reusable theme jar -->
+        <module>reusable-theme</module>
+        <!-- Builds testing addons -->
+        <module>test-addons/addon-with-jandex</module>
+        <module>test-addons/addon-without-jandex</module>
+        <!-- only validates that code compiles -->
+        <module>common-test-code</module>
+
+        <!-- Run common-test-code in dev and prod modes -->
+        <module>production</module>
+        <module>development</module>
+    </modules>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Test dependencies -->
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-test-util</artifactId>
+                <version>${vaadin.flow.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!--
+                Guava version is pinned to avoid dependency clash between
+                quarkus bom and selenium version required by vaadin testbench
+            -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>31.0.1-jre</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

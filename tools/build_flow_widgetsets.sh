@@ -54,8 +54,8 @@ declare -A _existing_versions
 for version in "${versions[@]}"; do
 
   flag=$(
-    mvn -q dependency:get -Dartifact=com.github.mcollovati.vertx:vaadin-flow-sockjs:${_current_version}:jar:vaadin-${version} \
-      -DremoteRepositories=github-vertx-vaadin::::https://maven.pkg.github.com/mcollovati/vertx-vaadin/ -Dtransitive=false 2>&1 >/dev/null && \
+    mvn -N -q dependency:get -Dartifact=com.github.mcollovati.vertx:vaadin-flow-sockjs:${_current_version}:jar:vaadin-${version} \
+      -DremoteRepositories=repsy-vertx-vaadin::::https://repo.repsy.io/mvn/mcollovati/vertx-vaadin/ -Dtransitive=false 2>&1 >/dev/null && \
       echo 1 || echo 0
   )
   echo "  --> Searching classifier vaadin-${version} for version ${_current_version} ===> ${flag}"
@@ -89,7 +89,7 @@ for version in "${versions[@]}"; do
         _mvn_target="clean $_action"
     fi
 
-    $_mvn -B --fail-never -ntp -Prelease-flow -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
+    $_mvn -B --fail-never -ntp -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
     _last_built=${flow_client_version}
   fi
 
