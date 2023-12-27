@@ -293,7 +293,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
-          server-id: github-vertx-vaadin-snapshots
+          server-id: repsy-vertx-vaadin
+          server-username: ${{ secrets.REPSY_USERNAME }}
+          server-password: ${{ secrets.REPSY_PASSWORD }}
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - uses: actions/download-artifact@v3
@@ -313,7 +315,7 @@ jobs:
           mvn -V -e -B -ntp -DskipTests install
       - name: Deploy classifiers
         run: |
-          mvn -V -e -B -ntp -DskipVertxRun=true -Dvertx-vaadin.release=snapshot -Dvertx-vaadin.release.gpg deploy
+          mvn -V -e -B -ntp -DskipVertxRun=true -DskipTests -Dvertx-vaadin.release=snapshot -Dvertx-vaadin.release.gpg deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}

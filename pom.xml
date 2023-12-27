@@ -86,10 +86,10 @@
         <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
         <checkstyle.skip>true</checkstyle.skip>
 
-        <distribution.snapshots.id>github-vertx-vaadin-snapshots</distribution.snapshots.id>
-        <distribution.snapshots.url>https://maven.pkg.github.com/mcollovati/vertx-vaadin</distribution.snapshots.url>
-        <distribution.releases.id>github-vertx-vaadin-releases</distribution.releases.id>
-        <distribution.releases.url>https://maven.pkg.github.com/mcollovati/vertx-vaadin</distribution.releases.url>
+        <distribution.snapshots.id>repsy-vertx-vaadin</distribution.snapshots.id>
+        <distribution.snapshots.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</distribution.snapshots.url>
+        <distribution.releases.id>repsy-vertx-vaadin</distribution.releases.id>
+        <distribution.releases.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</distribution.releases.url>
 
         <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
         <license-maven-plugin.version>4.3</license-maven-plugin.version>
