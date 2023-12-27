@@ -19,7 +19,7 @@
         <checkstyle.skip>false</checkstyle.skip>
         <classgraph.version>4.8.157</classgraph.version>
         <vaadin-flow-sockjs.version>${project.version}</vaadin-flow-sockjs.version>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.4.2</jackson.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
     </properties>
