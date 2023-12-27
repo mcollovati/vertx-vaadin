@@ -86,8 +86,8 @@
         <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
         <checkstyle.skip>true</checkstyle.skip>
 
-        <distribution.snapshots.id>repsy-vertx-vaadin</distribution.snapshots.id>
-        <distribution.snapshots.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</distribution.snapshots.url>
+        <distribution.snapshots.id>repsy-vertx-vaadin-snapshots</distribution.snapshots.id>
+        <distribution.snapshots.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots</distribution.snapshots.url>
         <distribution.releases.id>repsy-vertx-vaadin</distribution.releases.id>
         <distribution.releases.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</distribution.releases.url>
 

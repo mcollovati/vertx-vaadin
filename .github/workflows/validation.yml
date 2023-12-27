@@ -293,7 +293,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
-          server-id: repsy-vertx-vaadin
+          server-id: repsy-vertx-vaadin-snapshots
           server-username: ${{ secrets.REPSY_USERNAME }}
           server-password: ${{ secrets.REPSY_PASSWORD }}
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
