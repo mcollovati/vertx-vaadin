@@ -81,7 +81,7 @@ jobs:
           distribution: 'temurin'
       - name: Set version
         run:
-          mvn -N version:set-version -DnewVersion="${{ inputs.version }}"
+          mvn -N -ntp versions:set-version -DnewVersion="${{ inputs.version }}"
       - name: Staging artifacts
         run: |
           mvn -V -ntp -Prelease -DaltDeploymentRepository=local::file:./target/staging-deploy -DskipTests deploy
