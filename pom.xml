@@ -87,7 +87,8 @@
         <checkstyle.skip>true</checkstyle.skip>
 
         <distribution.snapshots.id>repsy-vertx-vaadin-snapshots</distribution.snapshots.id>
-        <distribution.snapshots.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots</distribution.snapshots.url>
+        <distribution.snapshots.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots
+        </distribution.snapshots.url>
         <distribution.releases.id>repsy-vertx-vaadin</distribution.releases.id>
         <distribution.releases.url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</distribution.releases.url>
 
@@ -103,6 +104,8 @@
         <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.3.2</maven-javadoc-plugin.version>
         <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
+        <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
+        <jreleaser-maven-plugin.version>1.9.0</jreleaser-maven-plugin.version>
 
         <vertx.version>4.3.0</vertx.version>
         <vaadin.platform.version>23.3.30</vaadin.platform.version>
@@ -385,6 +388,7 @@
                         <pushRemote>true</pushRemote>
                     </configuration>
                 </plugin>
+                <!--
                 <plugin>
                     <groupId>com.igormaznitsa</groupId>
                     <artifactId>uber-pom</artifactId>
@@ -415,10 +419,21 @@
                         </execution>
                     </executions>
                 </plugin>
+                -->
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <version>${nexus-staging-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jreleaser</groupId>
+                    <artifactId>jreleaser-maven-plugin</artifactId>
+                    <version>${jreleaser-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${flatten-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -434,6 +449,10 @@
     <profiles>
         <profile>
             <id>release</id>
+            <properties>
+                <jreleaser.signing.mode>MEMORY</jreleaser.signing.mode>
+                <release.mavencentral.active>ALWAYS</release.mavencentral.active>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -461,6 +480,95 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <configuration>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <updatePomFile>true</updatePomFile>
+                            <flattenMode>oss</flattenMode>
+                            <pomElements>
+                                <repositories>remove</repositories>
+                            </pomElements>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>flatten</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>flatten</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>flatten.clean</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jreleaser</groupId>
+                        <artifactId>jreleaser-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <jreleaser>
+                                <release>
+                                    <github>
+                                        <owner>mcollovati</owner>
+                                        <name>quarkus-hilla</name>
+                                        <changelog>
+                                            <formatted>ALWAYS</formatted>
+                                            <preset>conventional-commits</preset>
+                                            <skipMergeCommits>true</skipMergeCommits>
+                                            <hide>
+                                                <categories>
+                                                    <category>merge</category>
+                                                    <category>tasks</category>
+                                                    <category>build</category>
+                                                </categories>
+                                                <contributors>
+                                                    <contributor>GitHub</contributor>
+                                                    <contributor>[bot]</contributor>
+                                                </contributors>
+                                            </hide>
+                                            <contributors>
+                                                <format>- {{contributorName}}</format>
+                                            </contributors>
+                                        </changelog>
+                                        <draft>true</draft>
+                                        <tagName>flow-{{projectVersion}}</tagName>
+                                        <releaseName>Release flow-{{tagName}}</releaseName>
+                                        <prerelease>
+                                            <pattern>.*-(alpha|beta|rc)\d+</pattern>
+                                        </prerelease>
+                                    </github>
+                                </release>
+                                <deploy>
+                                    <maven>
+                                        <nexus2>
+                                            <maven-central>
+                                                <active>${release.mavencentral.active}</active>
+                                                <url>https://oss.sonatype.org/service/local</url>
+                                                <snapshotUrl>
+                                                    https://s01.oss.sonatype.org/content/repositories/snapshots/
+                                                </snapshotUrl>
+                                                <closeRepository>true</closeRepository>
+                                                <releaseRepository>true</releaseRepository>
+                                                <stagingRepositories>target/staging-deploy</stagingRepositories>
+                                            </maven-central>
+                                        </nexus2>
+                                    </maven>
+                                </deploy>
+                                <signing>
+                                    <active>ALWAYS</active>
+                                    <mode>${jreleaser.signing.mode}</mode>
+                                    <armored>true</armored>
+                                </signing>
+                            </jreleaser>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

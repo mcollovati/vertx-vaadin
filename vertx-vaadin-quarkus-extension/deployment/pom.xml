@@ -10,6 +10,7 @@
     </parent>
     <artifactId>vertx-vaadin-quarkus-extension-deployment</artifactId>
     <name>Vertx Vaadin Extension - Deployment</name>
+    <description>Vertx Vaadin Extension - Deployment</description>
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -43,16 +44,6 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.igormaznitsa</groupId>
-                <artifactId>uber-pom</artifactId>
-                <executions>
-                    <execution>
-                        <id>default</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
