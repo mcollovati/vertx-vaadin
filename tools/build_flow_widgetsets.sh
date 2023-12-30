@@ -66,10 +66,7 @@ for version in "${versions[@]}"; do
   else
     echo "Building classifier vaadin-${version} for version ${_current_version}"
     echo "Find flow-client version for vaadin ${version}..."
-    $_mvn -N -Pfind-flow-client-version dependency:list -Dvaadin.platform.version=${version} \
-            -DincludeArtifactIds=flow-client -DoutputFile=$_base_dir/target/flow-client.version
-    exit 1
-    flow_client_version=$($_mvn -N -Pfind-flow-client-version -q dependency:list -Dvaadin.platform.version=${version} \
+    flow_client_version=$($_mvn -N -ntp -Pfind-flow-client-version -q dependency:list -Dvaadin.platform.version=${version} \
         -DincludeArtifactIds=flow-client -DoutputFile=$_base_dir/target/flow-client.version && \
         cat $_base_dir/target/flow-client.version | grep 'com.vaadin:flow-client' | cut -d ':' -f 4)
 
