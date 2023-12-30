@@ -35,7 +35,7 @@ jobs:
           git checkout $TAG
       - name: Save current script
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.script-from-branch }}
-        run: git checkout ${{ github.event.ref} -- tools/build_flow_widgetsets.sh
+        run: git checkout ${{ github.event.ref }} -- tools/build_flow_widgetsets.sh
       - name: Set up Java
         uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
