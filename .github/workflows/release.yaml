@@ -19,6 +19,11 @@ on:
         required: true
         type: boolean
         default: false
+      close-repository:
+        description: "Automatically close and release Maven Central staging repository (default true)"
+        required: true
+        type: boolean
+        default: true
 jobs:
   release:
     name: Release
@@ -95,7 +100,7 @@ jobs:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
-          mvn -N -V -ntp -Prelease -Djreleaser.dry.run="${{ github.event.inputs.dry-run }}" -DskipTests jreleaser:full-release
+          mvn -N -V -ntp -Prelease -Djreleaser.dry.run="${{ github.event.inputs.dry-run }}" -Dvertx-vaadin.release.closeRepository="${{ github.event.inputs.close-repository }}" -DskipTests jreleaser:full-release
 
       - name: JReleaser release output
         if: always()
