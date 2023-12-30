@@ -452,6 +452,7 @@
             <properties>
                 <jreleaser.signing.mode>MEMORY</jreleaser.signing.mode>
                 <release.mavencentral.active>ALWAYS</release.mavencentral.active>
+                <vertx-vaadin.release.closeRepository>true</vertx-vaadin.release.closeRepository>
             </properties>
             <build>
                 <plugins>
@@ -544,6 +545,16 @@
                                         <prerelease>
                                             <pattern>.*-(alpha|beta|rc)\d+</pattern>
                                         </prerelease>
+                                        <issues>
+                                            <enabled>true</enabled>
+                                            <comment>This issue has been resolved in `{{tagName}}` ([Release Notes]({{releaseNotesUrl}}))</comment>
+                                            <applyMilestone>ALWAYS</applyMilestone>
+                                            <label>
+                                                <name>released</name>
+                                                <color>#7CFC33</color>
+                                                <description>Issue has been released</description>
+                                            </label>
+                                        </issues>
                                     </github>
                                 </release>
                                 <deploy>
@@ -555,8 +566,8 @@
                                                 <snapshotUrl>
                                                     https://s01.oss.sonatype.org/content/repositories/snapshots/
                                                 </snapshotUrl>
-                                                <closeRepository>true</closeRepository>
-                                                <releaseRepository>true</releaseRepository>
+                                                <closeRepository>${vertx-vaadin.release.closeRepository}</closeRepository>
+                                                <releaseRepository>${vertx-vaadin.release.closeRepository}</releaseRepository>
                                                 <stagingRepositories>target/staging-deploy</stagingRepositories>
                                             </maven-central>
                                         </nexus2>
