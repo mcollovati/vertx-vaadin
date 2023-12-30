@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       script-from-branch:
-        description: "Checkout build_flow_widgetsets.sh from ru"
+        description: "Checkout deploy script from dispatching branch"
         type: boolean
         default: false
   schedule:
@@ -33,9 +33,9 @@ jobs:
           VERSION=${TAG/flow-/}
           echo "vertx-vaadin-version=${VERSION}" >> "$GITHUB_OUTPUT"
           git checkout $TAG
-      - name: Save current script
+      - name: Checkout deploy script
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.script-from-branch }}
-        run: git checkout ${{ github.event.ref }} -- tools/build_flow_widgetsets.sh
+        run: git checkout $GITHUB_REF -- tools/build_flow_widgetsets.sh
       - name: Set up Java
         uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
