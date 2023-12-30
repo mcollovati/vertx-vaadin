@@ -519,7 +519,7 @@
                                 <release>
                                     <github>
                                         <owner>mcollovati</owner>
-                                        <name>quarkus-hilla</name>
+                                        <name>vertx-vaadin</name>
                                         <changelog>
                                             <formatted>ALWAYS</formatted>
                                             <preset>conventional-commits</preset>
