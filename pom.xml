@@ -551,7 +551,7 @@
                                             <applyMilestone>ALWAYS</applyMilestone>
                                             <label>
                                                 <name>released</name>
-                                                <color>#8FEB0E</color>
+                                                <color>#7CFC33</color>
                                                 <description>Issue has been released</description>
                                             </label>
                                         </issues>
