@@ -8,6 +8,7 @@
 # kind   : artifact type (snapshot, release), defaults to 'release'
 #
 #######
+set -x -e -o pipefail
 
 _base_dir="$(dirname $(realpath $0))/.."
 _action=${1:-package}

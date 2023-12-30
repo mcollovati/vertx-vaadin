@@ -21,6 +21,8 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
           fetch-depth: 0
+      - name: Save current script
+        run: cp ./tools/build_flow_widgetsets.sh /tmp/current_build_flow_widgetsets.sh
       - name: Checkout latest tag
         id: checkout-tag
         run: |
@@ -40,6 +42,8 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Set version
         run: mvn -N -ntp versions:set -DnewVersion="${{ steps.checkout-tag.outputs.vertx-vaadin-version }}"
+      - name: Restore current script
+        run: cp /tmp/current_build_flow_widgetsets.sh ./tools/build_flow_widgetsets.sh
       - name: Deploy classifiers
         run: |
           set -x -e -o pipefail
