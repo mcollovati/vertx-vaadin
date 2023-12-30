@@ -42,6 +42,7 @@ jobs:
         run: mvn -N -ntp versions:set -DnewVersion="${{ steps.checkout-tag.outputs.vertx-vaadin-version }}"
       - name: Deploy classifiers
         run: |
+          set -x -e -o pipefail
           ./mvnw -N -ntp install
           PRJ_VERSION=$(./mvnw -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout)
           KIND=$( [[ "${PRJ_VERSION}" =~ "-SNAPSHOT"$ ]] && echo "snapshot" || echo "release" )
