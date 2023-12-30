@@ -108,5 +108,4 @@ jobs:
         with:
           name: jreleaser-release
           path: |
-            target/jreleaser/trace.log
-            target/jreleaser/output.properties
+            target/jreleaser/**
