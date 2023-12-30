@@ -2,6 +2,11 @@ name: Deploy vaadin-flow-sockjs classifiers
 
 on:
   workflow_dispatch:
+    inputs:
+      script-from-branch:
+        description: "Checkout build_flow_widgetsets.sh from ru"
+        type: boolean
+        default: false
   schedule:
     - cron: '0 2 * * *'
 
@@ -21,8 +26,6 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
           fetch-depth: 0
-      - name: Save current script
-        run: cp ./tools/build_flow_widgetsets.sh /tmp/current_build_flow_widgetsets.sh
       - name: Checkout latest tag
         id: checkout-tag
         run: |
@@ -30,6 +33,9 @@ jobs:
           VERSION=${TAG/flow-/}
           echo "vertx-vaadin-version=${VERSION}" >> "$GITHUB_OUTPUT"
           git checkout $TAG
+      - name: Save current script
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.script-from-branch }}
+        run: git checkout ${{ github.event.ref} -- tools/build_flow_widgetsets.sh
       - name: Set up Java
         uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
@@ -42,8 +48,6 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Set version
         run: mvn -N -ntp versions:set -DnewVersion="${{ steps.checkout-tag.outputs.vertx-vaadin-version }}"
-      - name: Restore current script
-        run: cp /tmp/current_build_flow_widgetsets.sh ./tools/build_flow_widgetsets.sh
       - name: Deploy classifiers
         run: |
           set -x -e -o pipefail
