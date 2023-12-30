@@ -410,6 +410,7 @@
                                     <packaging>${project.packaging}</packaging>
                                     <classifier>vaadin-${vaadin.platform.version}</classifier>
                                     <generatePom>false</generatePom>
+                                    <updateReleaseInfo>true</updateReleaseInfo>
                                     <gpgArguments>
                                         <arg>--pinentry-mode</arg>
                                         <arg>loopback</arg>

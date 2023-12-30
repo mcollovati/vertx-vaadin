@@ -46,7 +46,11 @@ function get_vaadin_versions() {
 get_vaadin_versions #"versions"
 
 echo "Search for existing classifiers..."
-__existing_classifiers=$(curl -s https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots/com/github/mcollovati/vertx/vaadin-flow-sockjs/${_current_version}/maven-metadata.xml \
+__repo_name=vertx-vaadin
+if [[ "${_kind}" = "snapshot" ]]; then
+  __repo_name="${__repo_name}-snapshots"
+fi
+__existing_classifiers=$(curl -s https://repo.repsy.io/mvn/mcollovati/${__repo_name}/com/github/mcollovati/vertx/vaadin-flow-sockjs/${_current_version}/maven-metadata.xml \
     | grep "<classifier>vaadin-" | sed -E 's/^.*<classifier>vaadin-(.*)<\/classifier>.*/\1/g' | sort -r -t '.' || echo '')
 echo "Existing classifiers for version ${_current_version} ===> ${__existing_classifiers}"
 echo
@@ -55,6 +59,12 @@ declare -A _existing_versions
 for v in ${__existing_classifiers}; do
   _existing_versions[$v]=$v
 done
+
+#if [[ ${#_existing_versions[@]} -eq 0 ]]; then
+#  echo "deploy base version"
+#    $_mvn -B -ntp -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
+#    _last_built=${flow_client_version}
+#fi
 
 _last_built=""
 for version in "${versions[@]}"; do
