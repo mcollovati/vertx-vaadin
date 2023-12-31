@@ -46,12 +46,21 @@ function get_vaadin_versions() {
 get_vaadin_versions #"versions"
 
 echo "Search for existing classifiers..."
+
 __repo_name=vertx-vaadin
 if [[ "${_kind}" = "snapshot" ]]; then
   __repo_name="${__repo_name}-snapshots"
 fi
-__existing_classifiers=$(curl -s https://repo.repsy.io/mvn/mcollovati/${__repo_name}/com/github/mcollovati/vertx/vaadin-flow-sockjs/${_current_version}/maven-metadata.xml \
-    | grep "<classifier>vaadin-" | sed -E 's/^.*<classifier>vaadin-(.*)<\/classifier>.*/\1/g' | sort -r -t '.' || echo '')
+__base_url="https://repo.repsy.io/mvn/mcollovati/${__repo_name}/com/github/mcollovati/vertx/vaadin-flow-sockjs/${_current_version}"
+if [[ "$(curl -s -o /dev/null -w '%{http_code}' ${__base_url}/maven-metadata.xml)" = "200" ]]; then
+  __existing_classifiers=$(curl -s ${__base_url}/maven-metadata.xml \
+      | grep "<classifier>vaadin-" | sed -E 's/^.*<classifier>vaadin-(.*)<\/classifier>.*/\1/g' | sort -r -t '.' || echo '')
+else
+  # Extract existing versions from directory listing
+  __pattern='href="vaadin-flow-sockjs-23.4.0-alpha1-vaadin-([^"]+)\.jar\"'
+  __existing_classifiers=$(curl -s ${__base_url}/ | sed -E -e "/${__pattern}/!d" -e "s/.*${__pattern}.*/\1/g" || echo '')
+fi
+
 echo "Existing classifiers for version ${_current_version} ===> ${__existing_classifiers}"
 echo
 
