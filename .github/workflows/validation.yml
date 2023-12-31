@@ -34,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       validation-required: ${{ steps.filter.outputs.validate }}
+      deploy-required: ${{ steps.filter.outputs.deploy }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -45,6 +46,17 @@ jobs:
           filters: |
             validate:
               - '!(README.md|LICENSE|.gitignore|tools/**)'
+            deploy:
+              - 'vertx-vaadin-flow/pom.xml'
+              - 'vertx-vaadin-flow/src/**'
+              - 'vaadin-flow-sockjs/pom.xml'
+              - 'vaadin-flow-sockjs/src/**'
+              - 'vertx-vaadin-flow-jandex/pom.xml'
+              - 'vertx-vaadin-quarkus-extension/pom.xml'
+              - 'vertx-vaadin-quarkus-extension/runtime/pom.xml'
+              - 'vertx-vaadin-quarkus-extension/runtime/src/**'
+              - 'vertx-vaadin-quarkus-extension/deployment/pom.xml'
+              - 'vertx-vaadin-quarkus-extension/deployment/src/**'
   build:
     name: Build
     needs: [changes]
@@ -282,7 +294,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ success() && github.event_name == 'push' && github.ref_protected }}
+    if: ${{ success() && github.event_name == 'push' && github.ref_protected && needs.changes.outputs.deploy-required == 'true'}}
     steps:
       - uses: actions/checkout@v4
         with:
