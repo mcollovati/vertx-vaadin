@@ -47,6 +47,7 @@ jobs:
             validate:
               - '!(README.md|LICENSE|.gitignore|tools/**)'
             deploy:
+              - 'pom.xml'
               - 'vertx-vaadin-flow/pom.xml'
               - 'vertx-vaadin-flow/src/**'
               - 'vaadin-flow-sockjs/pom.xml'
