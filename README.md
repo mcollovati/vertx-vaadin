@@ -21,6 +21,8 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 
 ### Maven
 
+Stable artifacts are published on Maven Central.
+
 ```xml
 <dependency>
   <groupId>com.github.mcollovati.vertx</groupId>
@@ -29,21 +31,46 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 </dependency>
 ```
 
-
-Snapshot are currently published on [Repsy](https://repsy.io/)
+For better compatibility with Flow client, specific `vaadin-flow-sockjs` artifacts targeting exact Vaadin versions
+in use are published using the `vaadin-${vaadin.version}` classifier.
 
 ```xml
-<repository>
-	<id>vertx-vaadin-snapshots</id>
-	<url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots</url>
-    <releases>
-        <enabled>false</enabled>
-    </releases>
-    <snapshots>
-        <enabled>true</enabled>
-    </snapshots>	
-</repository>
+<dependency>
+    <groupId>com.github.mcollovati.vertx</groupId>
+    <artifactId>vaadin-flow-sockjs</artifactId>
+    <version>${vertx-vaadin-flow.version}</version>
+    <classifier>vaadin-${vaadin.version}</classifier>
+</dependency>
 ```
+
+Snapshots and `vaadin-flow-sockjs` classifiers are currently published on [Repsy](https://repsy.io/).
+
+```xml
+<repositories>
+    <repository>
+        <id>vertx-vaadin</id>
+        <url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>	
+    </repository>
+    <repository>
+    <id>vertx-vaadin-snapshots</id>
+        <url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
+
+
 
 ## Compatibility matrix
 
