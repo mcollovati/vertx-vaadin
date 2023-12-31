@@ -340,10 +340,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.igormaznitsa</groupId>
-                <artifactId>uber-pom</artifactId>
-            </plugin>
         </plugins>
     </build>
 
@@ -413,7 +409,8 @@
                                     <version>${project.version}</version>
                                     <packaging>${project.packaging}</packaging>
                                     <classifier>vaadin-${vaadin.platform.version}</classifier>
-                                    <generatePom>false</generatePom>
+                                    <generatePom>true</generatePom>
+                                    <updateReleaseInfo>true</updateReleaseInfo>
                                     <gpgArguments>
                                         <arg>--pinentry-mode</arg>
                                         <arg>loopback</arg>

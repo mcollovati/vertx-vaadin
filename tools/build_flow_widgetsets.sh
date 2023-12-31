@@ -7,10 +7,7 @@
 # action : maven goal to execute, defaults to 'package'
 # kind   : artifact type (snapshot, release), defaults to 'release'
 #
-# cat maven-metadata.xml | grep "<version>" | sed 's/^.*<version>\([^<]*\)<.*/\1/g' | sort -r
-# curl -s https://repo1.maven.org/maven2/com/vaadin/vaadin-core/maven-metadata.xml | grep "<version>23\..*</version>" | sed -E 's/^.*<version>(.*)<\/version>.*/\1/g' | sort -r -t '.'
 #######
-
 _base_dir="$(dirname $(realpath $0))/.."
 _action=${1:-package}
 _kind=${2:-release}
@@ -48,25 +45,35 @@ function get_vaadin_versions() {
 }
 get_vaadin_versions #"versions"
 
-###versions=("${versions[@]:9:3}")
 echo "Search for existing classifiers..."
-declare -A _existing_versions
-for version in "${versions[@]}"; do
 
-  flag=$(
-    mvn -N -q dependency:get -Dartifact=com.github.mcollovati.vertx:vaadin-flow-sockjs:${_current_version}:jar:vaadin-${version} \
-      -DremoteRepositories=repsy-vertx-vaadin::::https://repo.repsy.io/mvn/mcollovati/vertx-vaadin/ -Dtransitive=false 2>&1 >/dev/null && \
-      echo 1 || echo 0
-  )
-  echo "  --> Searching classifier vaadin-${version} for version ${_current_version} ===> ${flag}"
-  if [[ "${flag}" = "1" ]]; then
-    _existing_versions[$version]=$version
-  fi
+__repo_name=vertx-vaadin
+if [[ "${_kind}" = "snapshot" ]]; then
+  __repo_name="${__repo_name}-snapshots"
+fi
+__base_url="https://repo.repsy.io/mvn/mcollovati/${__repo_name}/com/github/mcollovati/vertx/vaadin-flow-sockjs/${_current_version}"
+if [[ "$(curl -s -o /dev/null -w '%{http_code}' ${__base_url}/maven-metadata.xml)" = "200" ]]; then
+  __existing_classifiers=$(curl -s ${__base_url}/maven-metadata.xml \
+      | grep "<classifier>vaadin-" | sed -E 's/^.*<classifier>vaadin-(.*)<\/classifier>.*/\1/g' | sort -r -t '.' || echo '')
+else
+  # Extract existing versions from directory listing
+  __pattern='href="vaadin-flow-sockjs-23.4.0-alpha1-vaadin-([^"]+)\.jar\"'
+  __existing_classifiers=$(curl -s ${__base_url}/ | sed -E -e "/${__pattern}/!d" -e "s/.*${__pattern}.*/\1/g" || echo '')
+fi
+
+echo "Existing classifiers for version ${_current_version} ===> ${__existing_classifiers}"
+echo
+
+declare -A _existing_versions
+for v in ${__existing_classifiers}; do
+  _existing_versions[$v]=$v
 done
 
-echo "Existing classifiers for ${_current_version}:"
-echo "${_existing_versions[@]}"
-echo
+#if [[ ${#_existing_versions[@]} -eq 0 ]]; then
+#  echo "deploy base version"
+#    $_mvn -B -ntp -pl :vaadin-flow-sockjs -Dvertx-vaadin.release=${_kind} -DskipTests -Dvaadin.platform.version=${version} -Dvaadin.flow.version=${flow_client_version} $_mvn_target ${DEPLOY_OPTS}
+#    _last_built=${flow_client_version}
+#fi
 
 _last_built=""
 for version in "${versions[@]}"; do
@@ -76,7 +83,7 @@ for version in "${versions[@]}"; do
   else
     echo "Building classifier vaadin-${version} for version ${_current_version}"
     echo "Find flow-client version for vaadin ${version}..."
-    flow_client_version=$($_mvn -Pfind-flow-client-version -q dependency:list -Dvaadin.platform.version=${version} \
+    flow_client_version=$($_mvn -N -ntp -Pfind-flow-client-version -q dependency:list -Dvaadin.platform.version=${version} \
         -DincludeArtifactIds=flow-client -DoutputFile=$_base_dir/target/flow-client.version && \
         cat $_base_dir/target/flow-client.version | grep 'com.vaadin:flow-client' | cut -d ':' -f 4)
 

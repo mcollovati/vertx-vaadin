@@ -1,6 +1,7 @@
 .vertx/
 
 uber-pom.xml
+.flattened-pom.xml
 node_modules/
 package.json
 package-lock.json

@@ -1,0 +1,111 @@
+name: Release
+run-name: "Release ${{ inputs.version }} from branch ${{ inputs.target-branch }} ${{ inputs.dry-run && '(DRY RUN)' || ''}}"
+on:
+  workflow_dispatch:
+    inputs:
+      target-branch:
+        description: "Branch to release"
+        required: true
+        type: choice
+        default: 'development'
+        options:
+        - "development"
+      version:
+        description: "Version to release (e.g. 1.1.0 or 1.2.0-alpha1)"
+        required: true
+        type: string
+      dry-run:
+        description: "Dry run (skips remote operations)"
+        required: true
+        type: boolean
+        default: false
+      close-repository:
+        description: "Automatically close and release Maven Central staging repository (default true)"
+        required: true
+        type: boolean
+        default: true
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions-cool/check-user-permission@main
+        id: checkUser
+        with:
+          username: ${{github.triggering_actor}}
+          check-contributor: true
+          require: 'write'
+      - name: Fail on workflow triggered by external contributor
+        if: ${{ steps.checkUser.outputs.require-result != 'true' }}
+        run: |
+          echo "🚫 **${{ github.actor }}** is an external contributor, only **${{ github.repository }}** team members can perform a release" \
+            | tee -a $GITHUB_STEP_SUMMARY && exit 1
+      - name: Validate Workflow branch
+        if: ${{ !github.event.inputs.dry-run }}
+        run: |
+          BRANCH_NAME=${GITHUB_REF##*/}
+          if [[ "development" != "${BRANCH_NAME}" ]]; then
+            echo "🚫 Release Workflow must be dispatched on 'development' branch." \
+             | tee -a  $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: refs/heads/${{ inputs.target-branch }}
+          fetch-depth: 0
+
+      - name: Validate version
+        run: |
+          VERSION_REGEX='^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)[0-9]+)?$'
+          if [[ ! "${{ inputs.version }}" =~ $VERSION_REGEX ]]; then
+            echo "🚫 Invalid version specified: '${{ inputs.version }}'. Please enter a valid SemVer version, like '1.2.3' or '1.0.0-alpha1'." \
+             | tee -a  $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          #if [[ "${{ inputs.target-branch }}" != "development" && ! "${{ inputs.version }}" = "${{ inputs.target-branch }}."* ]]; then
+          #  echo "🚫 Invalid version specified: '${{ inputs.version }}' does not match the release branch '${{ inputs.target-branch }}'." \
+          #   | tee -a  $GITHUB_STEP_SUMMARY
+          #  exit 1
+          #fi
+          if git rev-parse -q --verify "refs/tags/flow-${{ inputs.version }}" > /dev/null; then
+            echo "🚫 Version '${{ inputs.version }}' already exists. Please choose a different version." \
+             | tee -a  $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "Releasing version '${{ inputs.version }}' from branch '${{ inputs.target-branch }}'." | tee -a $GITHUB_STEP_SUMMARY
+          if [[ "${{ github.event.inputs.dry-run }}" == "true" ]]; then
+            echo "⚠️ dry-run execution, artifacts will not be published on Maven Central." | tee -a $GITHUB_STEP_SUMMARY
+          fi
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - name: Set version
+        run:
+          mvn -N -ntp versions:set -DnewVersion="${{ inputs.version }}"
+      - name: Staging artifacts
+        run: |
+          mvn -V -ntp -Prelease -DaltDeploymentRepository=local::file:./target/staging-deploy -DskipTests deploy
+
+      - name: Run JReleaser
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.MAVEN_GPG_PUBLIC }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: |
+          mvn -N -V -ntp -Prelease -Djreleaser.dry.run="${{ github.event.inputs.dry-run }}" -Dvertx-vaadin.release.closeRepository="${{ github.event.inputs.close-repository }}" -DskipTests jreleaser:full-release
+
+      - name: JReleaser release output
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jreleaser-release
+          path: |
+            target/jreleaser/**

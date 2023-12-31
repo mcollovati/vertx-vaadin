@@ -2,6 +2,11 @@ name: Deploy vaadin-flow-sockjs classifiers
 
 on:
   workflow_dispatch:
+    inputs:
+      script-from-branch:
+        description: "Checkout deploy script from dispatching branch"
+        type: boolean
+        default: false
   schedule:
     - cron: '0 2 * * *'
 
@@ -22,7 +27,15 @@ jobs:
           ref: ${{ matrix.branch }}
           fetch-depth: 0
       - name: Checkout latest tag
-        run: git checkout $(git describe --abbrev=0 --tags --match="flow-*")
+        id: checkout-tag
+        run: |
+          TAG=$(git describe --abbrev=0 --tags --match="flow-*")
+          VERSION=${TAG/flow-/}
+          echo "vertx-vaadin-version=${VERSION}" >> "$GITHUB_OUTPUT"
+          git checkout $TAG
+      - name: Checkout deploy script
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.script-from-branch }}
+        run: git checkout $GITHUB_WORKFLOW_SHA -- tools/build_flow_widgetsets.sh
       - name: Set up Java
         uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
@@ -33,8 +46,11 @@ jobs:
           server-password: REPSY_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
+      - name: Set version
+        run: mvn -N -ntp versions:set -DnewVersion="${{ steps.checkout-tag.outputs.vertx-vaadin-version }}"
       - name: Deploy classifiers
         run: |
+          set -x -e -o pipefail
           ./mvnw -N -ntp install
           PRJ_VERSION=$(./mvnw -pl :vaadin-flow-sockjs help:evaluate -q -Dexpression='project.version' -DforceStdout)
           KIND=$( [[ "${PRJ_VERSION}" =~ "-SNAPSHOT"$ ]] && echo "snapshot" || echo "release" )

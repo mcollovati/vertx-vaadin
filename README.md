@@ -4,6 +4,8 @@
 
 ![License](https://img.shields.io/github/license/mcollovati/vertx-vaadin.svg)
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow.svg?label=vertx-vaadin-flow)
+![Repsy Snapshots](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmcollovati%2Fvertx-vaadin-snapshots%2Fcom%2Fgithub%2Fmcollovati%2Fvertx%2Fvertx-vaadin-flow%2Fmaven-metadata.xml&label=repsy%20(snapshots))
+
 
 ## Description
 
@@ -18,7 +20,8 @@ This means you can mix the simplicity and robustness of Vaadin applications with
 Vertx-vaadin binaries are available on Maven Central and Bintray.
 
 ### Maven
-```
+
+Stable artifacts are published on Maven Central.
 
 ```xml
 <dependency>
@@ -28,38 +31,52 @@ Vertx-vaadin binaries are available on Maven Central and Bintray.
 </dependency>
 ```
 
-
-Snapshot are currently published on GitHub, so a [Personal Access Token](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-with-a-personal-access-token)
-is required to download the artifacts
+For better compatibility with Flow client, specific `vaadin-flow-sockjs` artifacts targeting exact Vaadin versions
+in use are published using the `vaadin-${vaadin.version}` classifier.
 
 ```xml
-<repository>
-	<id>vertx-vaadin-snapshots</id>
-	<url>https://maven.pkg.github.com/mcollovati/vertx-vaadin</url>
-    <releases>
-        <enabled>false</enabled>
-    </releases>
-    <snapshots>
-        <enabled>true</enabled>
-    </snapshots>	
-</repository>
+<dependency>
+    <groupId>com.github.mcollovati.vertx</groupId>
+    <artifactId>vaadin-flow-sockjs</artifactId>
+    <version>${vertx-vaadin-flow.version}</version>
+    <classifier>vaadin-${vaadin.version}</classifier>
+</dependency>
 ```
 
-In setting.xml
+Snapshots and `vaadin-flow-sockjs` classifiers are currently published on [Repsy](https://repsy.io/).
+
 ```xml
-<server>
+<repositories>
+    <repository>
+        <id>vertx-vaadin</id>
+        <url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>	
+    </repository>
+    <repository>
     <id>vertx-vaadin-snapshots</id>
-    <username>your username</username>
-    <password>PAT with read:packages</password>
-</server>
+        <url>https://repo.repsy.io/mvn/mcollovati/vertx-vaadin-snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
 ```
+
+
 
 ## Compatibility matrix
 
-| Vaadin version | Vert.x version | vertx-vaadin version     |Status|
-|----------------|--------------|--------------------------|------|
-| 23.1.1         | 4.2.3        | vertx-vaadin-flow:23.1.x |[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
-| 23.3           | 4.3          | vertx-vaadin-flow:23.3.x |[![CircleCI](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development.svg?style=svg)](https://circleci.com/gh/mcollovati/vertx-vaadin/tree/development)|
+| Vaadin version | Vert.x version | vertx-vaadin version     | Status                                                                                                                                                            |
+|----------------|--------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 23.3           | 4.3          | vertx-vaadin-flow:23.4.x | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?event=push&branch=development) |
 
 ## Documentation
 
