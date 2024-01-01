@@ -54,10 +54,8 @@ public class VertxVaadinSession extends VaadinSession {
                 getService().runPendingAccessTasks(this);
 
                 for (UI ui : getUIs()) {
-                    if (ui.getPushConfiguration()
-                        .getPushMode() == PushMode.AUTOMATIC) {
-                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
-                            .setCurrent(ui);
+                    if (ui.getPushConfiguration().getPushMode() == PushMode.AUTOMATIC) {
+                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance.setCurrent(ui);
                         try {
                             ui.push();
                         } finally {
@@ -85,6 +83,6 @@ public class VertxVaadinSession extends VaadinSession {
 
     @Override
     public VertxVaadinService getService() {
-        return (VertxVaadinService)super.getService();
+        return (VertxVaadinService) super.getService();
     }
 }

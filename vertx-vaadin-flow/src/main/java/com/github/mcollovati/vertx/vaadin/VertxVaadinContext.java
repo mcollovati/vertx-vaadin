@@ -82,5 +82,4 @@ public class VertxVaadinContext implements VaadinContext {
     public String getContextParameter(String name) {
         return null;
     }
-
 }

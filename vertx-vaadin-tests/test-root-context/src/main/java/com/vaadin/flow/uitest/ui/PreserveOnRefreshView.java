@@ -1,3 +1,25 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.vaadin.flow.uitest.ui;
 
 import java.io.ByteArrayInputStream;
@@ -17,9 +39,9 @@ import com.vaadin.flow.server.StreamResource;
 @PreserveOnRefresh
 public class PreserveOnRefreshView extends Div {
 
-    final static String COMPONENT_ID = "contents";
-    final static String NOTIFICATION_ID = "notification";
-    final static String ATTACHCOUNTER_ID = "attachcounter";
+    static final String COMPONENT_ID = "contents";
+    static final String NOTIFICATION_ID = "notification";
+    static final String ATTACHCOUNTER_ID = "attachcounter";
 
     private int attached = 0;
     private final Div attachCounter;
@@ -46,9 +68,8 @@ public class PreserveOnRefreshView extends Div {
         looseElement.setText(uniqueId);
         UI.getCurrent().getElement().insertChild(0, looseElement);
 
-        StreamResource resource = new StreamResource("filename",
-                () -> new ByteArrayInputStream(
-                        "foo".getBytes(StandardCharsets.UTF_8)));
+        StreamResource resource =
+                new StreamResource("filename", () -> new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8)));
         Anchor download = new Anchor("", "Download file");
         download.setHref(resource);
         download.setId("thelink");

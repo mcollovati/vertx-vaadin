@@ -1,22 +1,34 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.github.mcollovati.vertx.vaadin.quarkus.it;
 
 import java.io.IOException;
+
+import io.quarkus.test.junit.QuarkusIntegrationTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.By;
 
 import com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext.ApartBean;
 import com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext.AssignedBean;
@@ -35,11 +47,6 @@ import com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext.PostponeView;
 import com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext.PreserveOnRefreshBean;
 import com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext.RerouteView;
 import com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext.RootView;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
 
 @QuarkusIntegrationTest
 public class RouteContextIT extends AbstractCdiIT {
@@ -69,8 +76,7 @@ public class RouteContextIT extends AbstractCdiIT {
     }
 
     @Test
-    public void navigateFromRootToMasterReleasesRootInjectsEmptyBeans()
-            throws IOException {
+    public void navigateFromRootToMasterReleasesRootInjectsEmptyBeans() throws IOException {
         follow(RootView.MASTER);
         assertTextEquals("", MasterView.ASSIGNED_BEAN_LABEL);
 
@@ -190,8 +196,7 @@ public class RouteContextIT extends AbstractCdiIT {
     }
 
     @Test
-    public void beansWithNoOwner_preservedWithinTheSameRouteTarget_notPreservedAfterNavigation()
-            throws IOException {
+    public void beansWithNoOwner_preservedWithinTheSameRouteTarget_notPreservedAfterNavigation() throws IOException {
         follow(MainLayout.PARENT_NO_OWNER);
 
         assertConstructed(BeanNoOwner.class, 1);
@@ -208,8 +213,7 @@ public class RouteContextIT extends AbstractCdiIT {
     }
 
     @Test
-    public void beanWithNoOwner_preservedWithinTheSameRoutingChain()
-            throws IOException {
+    public void beanWithNoOwner_preservedWithinTheSameRoutingChain() throws IOException {
         follow(MainLayout.CHILD_NO_OWNER);
 
         assertConstructed(BeanNoOwner.class, 1);
@@ -221,8 +225,7 @@ public class RouteContextIT extends AbstractCdiIT {
     }
 
     @Test
-    public void routeScopedBeanIsDestroyedOnNavigationOutOfViewAfterPreserveOnRefresh()
-            throws IOException {
+    public void routeScopedBeanIsDestroyedOnNavigationOutOfViewAfterPreserveOnRefresh() throws IOException {
         follow(MainLayout.PRESERVE);
 
         assertConstructed(PreserveOnRefreshBean.class, 1);
@@ -263,13 +266,12 @@ public class RouteContextIT extends AbstractCdiIT {
         // the bean should not be destroyed with the new UI as well
         assertDestroyed(PreserveOnRefreshBean.class, 0);
 
-        Assertions.assertEquals(beanData,
-                findElement(By.id("preserve-on-refresh")).getText());
+        Assertions.assertEquals(
+                beanData, findElement(By.id("preserve-on-refresh")).getText());
     }
 
     @Test
-    public void navigateToViewWhichThrows_beansInsideErrorViewArePreservedinScope()
-            throws IOException {
+    public void navigateToViewWhichThrows_beansInsideErrorViewArePreservedinScope() throws IOException {
         follow(RootView.ERROR);
 
         assertConstructed(ErrorBean1.class, 1);
@@ -296,16 +298,11 @@ public class RouteContextIT extends AbstractCdiIT {
         assertTextEquals(uiId, MainLayout.UIID);
     }
 
-    private void assertConstructed(Class beanClass, int count)
-            throws IOException {
-        Assertions.assertEquals(count,
-                getCount(beanClass.getSimpleName() + "C" + uiId));
+    private void assertConstructed(Class beanClass, int count) throws IOException {
+        Assertions.assertEquals(count, getCount(beanClass.getSimpleName() + "C" + uiId));
     }
 
-    private void assertDestroyed(Class beanClass, int count)
-            throws IOException {
-        Assertions.assertEquals(count,
-                getCount(beanClass.getSimpleName() + "D" + uiId));
+    private void assertDestroyed(Class beanClass, int count) throws IOException {
+        Assertions.assertEquals(count, getCount(beanClass.getSimpleName() + "D" + uiId));
     }
-
 }

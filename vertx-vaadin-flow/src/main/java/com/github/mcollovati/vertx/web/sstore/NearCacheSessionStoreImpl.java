@@ -38,13 +38,11 @@ import io.vertx.ext.web.sstore.SessionStore;
 
 class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> {
 
-
     private final Vertx vertx;
     private final long reaperInterval;
     private final LocalMap<String, Session> localMap;
     private final ClusteredSessionStore clusteredSessionStore;
-    private Handler<AsyncResult<String>> expirationHandler = x -> {
-    };
+    private Handler<AsyncResult<String>> expirationHandler = x -> {};
     private long timerID = -1;
     private boolean closed;
 
@@ -90,14 +88,13 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
 
     @Override
     public Future<Session> get(String cookieValue) {
-        return clusteredSessionStore.get(cookieValue)
-                .map(session -> {
-                    Session localSession = localMap.get(cookieValue);
-                    if (localSession == null && session != null) {
-                        localMap.put(cookieValue, session);
-                    }
-                    return localMap.get(cookieValue);
-                });
+        return clusteredSessionStore.get(cookieValue).map(session -> {
+            Session localSession = localMap.get(cookieValue);
+            if (localSession == null && session != null) {
+                localMap.put(cookieValue, session);
+            }
+            return localMap.get(cookieValue);
+        });
     }
 
     @Override
@@ -108,9 +105,7 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
 
     @Override
     public Future<Void> delete(String cookieValue) {
-        return clusteredSessionStore.delete(cookieValue).onSuccess(unused ->
-                localMap.remove(cookieValue));
-
+        return clusteredSessionStore.delete(cookieValue).onSuccess(unused -> localMap.remove(cookieValue));
     }
 
     @Override
@@ -185,6 +180,4 @@ class NearCacheSessionStoreImpl implements NearCacheSessionStore, Handler<Long> 
             timerID = vertx.setTimer(reaperInterval, this);
         }
     }
-
-
 }

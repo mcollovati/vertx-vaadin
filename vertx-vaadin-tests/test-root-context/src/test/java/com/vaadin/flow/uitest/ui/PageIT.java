@@ -1,7 +1,31 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.vaadin.flow.uitest.ui;
 
 import java.util.ArrayList;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -9,9 +33,6 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
-
-import com.vaadin.flow.component.html.testbench.InputTextElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PageIT extends ChromeBrowserTest {
 
@@ -51,8 +72,7 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     private void verifyTitle(String title) {
-        Assert.assertEquals("Page title does not match", title,
-                getDriver().getTitle());
+        Assert.assertEquals("Page title does not match", title, getDriver().getTitle());
     }
 
     private void updateTitle(String title) {
@@ -78,8 +98,7 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("setLocation")).click();
-        Assert.assertThat(getDriver().getCurrentUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName()));
+        Assert.assertThat(getDriver().getCurrentUrl(), Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
     @Test
@@ -91,8 +110,7 @@ public class PageIT extends ChromeBrowserTest {
         ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
         Assert.assertThat(
                 getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName())
-        );
+                Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
     @Test
@@ -104,12 +122,11 @@ public class PageIT extends ChromeBrowserTest {
 
         waitUntil(driver -> !getIframeUrl().equals("about:blank"));
 
-        Assert.assertThat(getIframeUrl(),
-            Matchers.endsWith(BaseHrefView.class.getName()));
+        Assert.assertThat(getIframeUrl(), Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
     private String getIframeUrl() {
-        return (String) ((JavascriptExecutor) driver).executeScript(
-            "return document.getElementById('newWindow').contentWindow.location.href;");
+        return (String) ((JavascriptExecutor) driver)
+                .executeScript("return document.getElementById('newWindow').contentWindow.location.href;");
     }
 }

@@ -26,6 +26,5 @@ package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclas
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
  */
 public interface NonEndpoint {
-    default void nonEndpointMethod() {
-    }
+    default void nonEndpointMethod() {}
 }

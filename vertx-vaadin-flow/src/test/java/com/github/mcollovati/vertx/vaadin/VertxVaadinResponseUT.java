@@ -22,15 +22,14 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.http.Cookie;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import javax.servlet.http.Cookie;
 
-import com.github.mcollovati.vertx.utils.RandomStringGenerator;
 import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
@@ -49,6 +48,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import com.github.mcollovati.vertx.utils.RandomStringGenerator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -101,8 +102,9 @@ public class VertxVaadinResponseUT {
     }
 
     @Property(trials = TRIALS)
-    public void shouldDelegateSetHeader(@From(RandomStringGenerator.class) String name,
-                                        @From(RandomStringGenerator.class) String value) throws Exception {
+    public void shouldDelegateSetHeader(
+            @From(RandomStringGenerator.class) String name, @From(RandomStringGenerator.class) String value)
+            throws Exception {
         vaadinResponse.setHeader(name, value);
         verify(httpServerResponse).putHeader(name, value);
     }
@@ -130,8 +132,8 @@ public class VertxVaadinResponseUT {
     public void getOutputStreamShouldFailIfGetWriterHasBeenCalled() throws Exception {
         vaadinResponse.getWriter();
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(vaadinResponse::getOutputStream)
-            .withMessage("getWriter() has already been called for this response");
+                .isThrownBy(vaadinResponse::getOutputStream)
+                .withMessage("getWriter() has already been called for this response");
     }
 
     @Test
@@ -148,24 +150,27 @@ public class VertxVaadinResponseUT {
         verify(httpServerResponse).end(byteBufferCaptor.capture());
 
         assertThat(byteBufferCaptor.getAllValues())
-            .containsExactly(Buffer.buffer(test.getBytes()), Buffer.buffer(test.getBytes()));
+                .containsExactly(Buffer.buffer(test.getBytes()), Buffer.buffer(test.getBytes()));
     }
 
     @Test
     public void getWriterShouldFailIfGetOutputStreamHasBeenCalled() throws Exception {
         vaadinResponse.getOutputStream();
         assertThatExceptionOfType(IllegalStateException.class)
-            .isThrownBy(vaadinResponse::getWriter)
-            .withMessage("getOutputStream() has already been called for this response");
+                .isThrownBy(vaadinResponse::getWriter)
+                .withMessage("getOutputStream() has already been called for this response");
     }
-
 
     @Test
     public void shouldDelegateSetCacheTimeForNoCache() throws Exception {
         vaadinResponse.setCacheTime(-1);
         verify(httpServerResponse).putHeader(caseInsensitive(HttpHeaders.CACHE_CONTROL.toString()), eq("no-cache"));
         verify(httpServerResponse).putHeader(caseInsensitive("Pragma"), eq("no-cache"));
-        assertDateHeader(HttpHeaders.EXPIRES.toString(), LocalDateTime.of(1970, 1, 1, 0, 0, 0), "Thu, 1 Jan 1970 00:00:00", false);
+        assertDateHeader(
+                HttpHeaders.EXPIRES.toString(),
+                LocalDateTime.of(1970, 1, 1, 0, 0, 0),
+                "Thu, 1 Jan 1970 00:00:00",
+                false);
     }
 
     @Test
@@ -195,15 +200,17 @@ public class VertxVaadinResponseUT {
         cookie.setDomain("domain");
         vaadinResponse.addCookie(cookie);
 
-
-        ArgumentCaptor<io.vertx.core.http.Cookie> cookieCaptor = ArgumentCaptor.forClass(io.vertx.core.http.Cookie.class);
+        ArgumentCaptor<io.vertx.core.http.Cookie> cookieCaptor =
+                ArgumentCaptor.forClass(io.vertx.core.http.Cookie.class);
         verify(routingContext).addCookie(cookieCaptor.capture());
         String expectedCookie = io.vertx.core.http.Cookie.cookie(cookie.getName(), cookie.getValue())
-            .setMaxAge(cookie.getMaxAge()).setSecure(cookie.getSecure())
-            .setHttpOnly(cookie.isHttpOnly()).setPath(cookie.getPath())
-            .setDomain(cookie.getDomain()).encode();
+                .setMaxAge(cookie.getMaxAge())
+                .setSecure(cookie.getSecure())
+                .setHttpOnly(cookie.isHttpOnly())
+                .setPath(cookie.getPath())
+                .setDomain(cookie.getDomain())
+                .encode();
         assertThat(cookieCaptor.getValue().encode()).isEqualTo(expectedCookie);
-
     }
 
     @Test
@@ -212,16 +219,14 @@ public class VertxVaadinResponseUT {
         verify(httpServerResponse).putHeader(HttpHeaders.CONTENT_LENGTH, "1000");
     }
 
-
     private void assertDateHeader(String headerName, LocalDateTime dateTime, String expected) {
         assertDateHeader(headerName, dateTime, expected, true);
     }
 
     private void assertDateHeader(String headerName, LocalDateTime dateTime, String expected, boolean invoke) {
         long epochMilli = dateTime.atZone(ZoneId.of("GMT")).toEpochSecond() * 1000;
-        String offset = DateTimeFormatter.ofPattern(" zzz").format(
-            Instant.ofEpochMilli(epochMilli).atZone(ZoneId.of("GMT"))
-        );
+        String offset = DateTimeFormatter.ofPattern(" zzz")
+                .format(Instant.ofEpochMilli(epochMilli).atZone(ZoneId.of("GMT")));
         if (" +0000".equals(offset)) {
             offset = " GMT";
         }
@@ -248,5 +253,4 @@ public class VertxVaadinResponseUT {
             return argument instanceof String && value.equalsIgnoreCase((String) argument);
         }
     }
-
 }

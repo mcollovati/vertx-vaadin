@@ -1,6 +1,41 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.github.mcollovati.vertx.vaadin.extension.deployment;
 
 import java.util.Collection;
+
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Route;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
+import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem;
+import io.quarkus.arc.deployment.CustomScopeBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
+import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.FeatureBuildItem;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 
 import com.github.mcollovati.vertx.quarkus.QuarkusInstantiator;
 import com.github.mcollovati.vertx.quarkus.annotation.NormalRouteScoped;
@@ -15,25 +50,12 @@ import com.github.mcollovati.vertx.quarkus.context.UIContextWrapper;
 import com.github.mcollovati.vertx.quarkus.context.UIScopedContext;
 import com.github.mcollovati.vertx.quarkus.context.VaadinServiceScopedContext;
 import com.github.mcollovati.vertx.quarkus.context.VaadinSessionScopedContext;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.Route;
-import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
-import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
-import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem;
-import io.quarkus.arc.deployment.CustomScopeBuildItem;
-import io.quarkus.deployment.annotations.BuildProducer;
-import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import io.quarkus.deployment.builditem.FeatureBuildItem;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 
 class VertxVaadinExtensionProcessor {
 
     private static final String FEATURE = "vertx-vaadin-extension";
 
-    private static final DotName ROUTE_ANNOTATION = DotName
-        .createSimple(Route.class.getName());
+    private static final DotName ROUTE_ANNOTATION = DotName.createSimple(Route.class.getName());
 
     @BuildStep
     FeatureBuildItem feature() {
@@ -42,23 +64,21 @@ class VertxVaadinExtensionProcessor {
 
     @BuildStep
     public void build(
-        final BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer,
-        final BuildProducer<BeanDefiningAnnotationBuildItem> additionalBeanDefiningAnnotationRegistry) {
+            final BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer,
+            final BuildProducer<BeanDefiningAnnotationBuildItem> additionalBeanDefiningAnnotationRegistry) {
         additionalBeanProducer.produce(AdditionalBeanBuildItem.unremovableOf(QuarkusInstantiator.class.getName()));
         // Make and Route annotated Component a bean for injection
-        additionalBeanDefiningAnnotationRegistry
-            .produce(new BeanDefiningAnnotationBuildItem(ROUTE_ANNOTATION));
+        additionalBeanDefiningAnnotationRegistry.produce(new BeanDefiningAnnotationBuildItem(ROUTE_ANNOTATION));
     }
 
     @BuildStep
-    public void specifyErrorViewsBeans(CombinedIndexBuildItem item,
-                                       BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
+    public void specifyErrorViewsBeans(
+            CombinedIndexBuildItem item, BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> errors = item.getComputingIndex()
-            .getAllKnownImplementors(DotName
-                .createSimple(HasErrorParameter.class.getName()));
+                .getAllKnownImplementors(DotName.createSimple(HasErrorParameter.class.getName()));
         for (ClassInfo errorInfo : errors) {
-            additionalBeanProducer.produce(AdditionalBeanBuildItem
-                .unremovableOf(errorInfo.name().toString()));
+            additionalBeanProducer.produce(
+                    AdditionalBeanBuildItem.unremovableOf(errorInfo.name().toString()));
         }
     }
 
@@ -94,9 +114,10 @@ class VertxVaadinExtensionProcessor {
 
     @BuildStep
     ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem registerVaadinServiceScopedContext(
-        ContextRegistrationPhaseBuildItem phase) {
-        return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(
-            phase.getContext().configure(VaadinServiceScoped.class).normal()
+            ContextRegistrationPhaseBuildItem phase) {
+        return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(phase.getContext()
+                .configure(VaadinServiceScoped.class)
+                .normal()
                 .contextClass(VaadinServiceScopedContext.class));
     }
 
@@ -107,9 +128,10 @@ class VertxVaadinExtensionProcessor {
 
     @BuildStep
     ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem registerVaadinSessionScopedContext(
-        ContextRegistrationPhaseBuildItem phase) {
-        return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(
-            phase.getContext().configure(VaadinSessionScoped.class).normal()
+            ContextRegistrationPhaseBuildItem phase) {
+        return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(phase.getContext()
+                .configure(VaadinSessionScoped.class)
+                .normal()
                 .contextClass(VaadinSessionScopedContext.class));
     }
 
@@ -120,18 +142,16 @@ class VertxVaadinExtensionProcessor {
 
     @BuildStep
     ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem registerUIScopedContext(
-        ContextRegistrationPhaseBuildItem phase) {
+            ContextRegistrationPhaseBuildItem phase) {
         return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(
-            phase.getContext().configure(NormalUIScoped.class).normal()
-                .contextClass(UIScopedContext.class));
+                phase.getContext().configure(NormalUIScoped.class).normal().contextClass(UIScopedContext.class));
     }
 
     @BuildStep
     ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem registerPseudoUIScopedContext(
-        ContextRegistrationPhaseBuildItem phase) {
+            ContextRegistrationPhaseBuildItem phase) {
         return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(
-            phase.getContext().configure(UIScoped.class)
-                .contextClass(UIContextWrapper.class));
+                phase.getContext().configure(UIScoped.class).contextClass(UIContextWrapper.class));
     }
 
     @BuildStep
@@ -146,18 +166,16 @@ class VertxVaadinExtensionProcessor {
 
     @BuildStep
     ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem registerRouteScopedContext(
-        ContextRegistrationPhaseBuildItem phase) {
+            ContextRegistrationPhaseBuildItem phase) {
         return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(
-            phase.getContext().configure(NormalRouteScoped.class).normal()
-                .contextClass(RouteScopedContext.class));
+                phase.getContext().configure(NormalRouteScoped.class).normal().contextClass(RouteScopedContext.class));
     }
 
     @BuildStep
     ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem registerPseudoRouteScopedContext(
-        ContextRegistrationPhaseBuildItem phase) {
+            ContextRegistrationPhaseBuildItem phase) {
         return new ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem(
-            phase.getContext().configure(RouteScoped.class)
-                .contextClass(RouteContextWrapper.class));
+                phase.getContext().configure(RouteScoped.class).contextClass(RouteContextWrapper.class));
     }
 
     @BuildStep
@@ -235,6 +253,5 @@ class VertxVaadinExtensionProcessor {
         }
     }
      */
-
 
 }

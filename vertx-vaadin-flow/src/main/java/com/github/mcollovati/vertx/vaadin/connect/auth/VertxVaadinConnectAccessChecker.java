@@ -26,15 +26,14 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import io.vertx.ext.web.RoutingContext;
 
-public class VertxVaadinConnectAccessChecker
-    extends VaadinConnectAccessCheckerSupport<RoutingContext> {
+public class VertxVaadinConnectAccessChecker extends VaadinConnectAccessCheckerSupport<RoutingContext> {
 
     public VertxVaadinConnectAccessChecker() {
         super(new VertxAccessAnnotationChecker(), new VertxCsrfChecker());
     }
+
     public VertxVaadinConnectAccessChecker(VaadinContext vaadinContext) {
         super(new VertxAccessAnnotationChecker(), new VertxCsrfChecker());
         enableCsrf(ApplicationConfiguration.get(vaadinContext).isXsrfProtectionEnabled());
     }
-
 }

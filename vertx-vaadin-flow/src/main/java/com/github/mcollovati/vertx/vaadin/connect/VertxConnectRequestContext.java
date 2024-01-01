@@ -22,13 +22,13 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
-public class VertxConnectRequestContext extends EndpointServiceContextSupport<RoutingContext, DefaultVaadinConnectResponse> {
+public class VertxConnectRequestContext
+        extends EndpointServiceContextSupport<RoutingContext, DefaultVaadinConnectResponse> {
 
     public VertxConnectRequestContext(RoutingContext routingContext) {
         this(routingContext, extractBody(routingContext));
@@ -49,5 +49,4 @@ public class VertxConnectRequestContext extends EndpointServiceContextSupport<Ro
     public DefaultVaadinConnectResponse respondWith(int statusCode, String body) {
         return new DefaultVaadinConnectResponse(statusCode, body);
     }
-
 }

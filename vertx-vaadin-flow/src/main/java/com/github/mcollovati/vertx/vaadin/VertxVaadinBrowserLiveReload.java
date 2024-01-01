@@ -22,13 +22,14 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
-import com.github.mcollovati.vertx.vaadin.sockjs.communication.VertxVaadinLiveReload;
 import com.vaadin.base.devserver.BrowserLiveReloadAccessorImpl;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import org.atmosphere.cpr.AtmosphereResource;
+
+import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
+import com.github.mcollovati.vertx.vaadin.sockjs.communication.VertxVaadinLiveReload;
 
 class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
 
@@ -79,19 +80,22 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
 
         @Override
         public BrowserLiveReload getLiveReload(VaadinService service) {
-            service.getContext().getAttribute(
-                VertxDebugWindowConnection.class, () -> new VertxDebugWindowConnection((VertxVaadinService) service)
-            );
+            service.getContext()
+                    .getAttribute(
+                            VertxDebugWindowConnection.class,
+                            () -> new VertxDebugWindowConnection((VertxVaadinService) service));
             return super.getLiveReload(service);
         }
 
         @Override
         public BrowserLiveReload getLiveReload(VaadinContext context) {
-            VertxDebugWindowConnection connection = context.getAttribute(
-                VertxDebugWindowConnection.class, VertxDebugWindowConnection::new);
-            return context.getAttribute(Holder.class, () -> new Holder(
-                new VertxVaadinBrowserLiveReload(super.getLiveReload(context), connection)
-            )).liveReload;
+            VertxDebugWindowConnection connection =
+                    context.getAttribute(VertxDebugWindowConnection.class, VertxDebugWindowConnection::new);
+            return context.getAttribute(
+                            Holder.class,
+                            () -> new Holder(
+                                    new VertxVaadinBrowserLiveReload(super.getLiveReload(context), connection)))
+                    .liveReload;
         }
     }
 
@@ -102,5 +106,4 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
             this.liveReload = liveReload;
         }
     }
-
 }

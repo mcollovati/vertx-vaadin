@@ -69,13 +69,14 @@ public class SessionStoreAdapterIT {
 
         final Async async = context.async();
 
-        vertx.createHttpClient().request(HttpMethod.GET, PORT, "localhost", "/")
-            .flatMap(HttpClientRequest::send)
-            .flatMap(HttpClientResponse::body)
-            .onComplete(b -> {
-                context.assertTrue(b.toString().contains("Done"));
-                async.complete();
-            });
+        vertx.createHttpClient()
+                .request(HttpMethod.GET, PORT, "localhost", "/")
+                .flatMap(HttpClientRequest::send)
+                .flatMap(HttpClientResponse::body)
+                .onComplete(b -> {
+                    context.assertTrue(b.toString().contains("Done"));
+                    async.complete();
+                });
     }
 
     public static class SessionTestVerticle extends VaadinVerticle {
@@ -94,7 +95,6 @@ public class SessionStoreAdapterIT {
                 rc.response().end("Session destroyed");
             });
         }
-
     }
 
     public static class MyUi extends UI {
@@ -102,10 +102,12 @@ public class SessionStoreAdapterIT {
         @Override
         protected void init(VaadinRequest request) {
             request.getService().addSessionDestroyListener(e -> {
-                ((SessionTestVerticle) ((VertxVaadinService) e.getService()).getVertx().getOrCreateContext().get("mySelf"))
-                    .registerSessionEvent("Session destroyed");
+                ((SessionTestVerticle) ((VertxVaadinService) e.getService())
+                                .getVertx()
+                                .getOrCreateContext()
+                                .get("mySelf"))
+                        .registerSessionEvent("Session destroyed");
             });
         }
     }
-
 }

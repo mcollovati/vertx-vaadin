@@ -37,7 +37,4 @@ public interface VaadinConnectResponse {
      * Returns the body of this entity.
      */
     String getBody();
-
 }
-
-

@@ -1,31 +1,35 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.github.mcollovati.vertx.quarkus.context;
 
-import javax.enterprise.inject.spi.CDI;
-
 import java.util.Properties;
-
-import org.mockito.Mockito;
+import javax.enterprise.inject.spi.CDI;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
+import org.mockito.Mockito;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
@@ -37,23 +41,18 @@ public class SessionUnderTestContext implements UnderTestContext {
 
     private void mockSession() {
         if (serviceUnderTestContext == null) {
-            serviceUnderTestContext = new ServiceUnderTestContext(
-                    CDI.current().getBeanManager());
+            serviceUnderTestContext = new ServiceUnderTestContext(CDI.current().getBeanManager());
             serviceUnderTestContext.activate();
         }
-        session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor());
-        doCallRealMethod().when(session).setAttribute(Mockito.any(String.class),
-                Mockito.any());
-        doCallRealMethod().when(session)
-                .getAttribute(Mockito.any(String.class));
+        session = Mockito.mock(TestSession.class, Mockito.withSettings().useConstructor());
+        doCallRealMethod().when(session).setAttribute(Mockito.any(String.class), Mockito.any());
+        doCallRealMethod().when(session).getAttribute(Mockito.any(String.class));
         doCallRealMethod().when(session).getService();
 
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         when(session.hasLock()).thenReturn(true);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         when(session.getConfiguration()).thenReturn(configuration);
         Properties props = new Properties();
         when(configuration.getInitParameters()).thenReturn(props);
@@ -62,9 +61,11 @@ public class SessionUnderTestContext implements UnderTestContext {
         doCallRealMethod().when(session).getUIs();
 
         Mockito.doAnswer(invocation -> {
-            invocation.getArgument(0, Command.class).execute();
-            return null;
-        }).when(session).access(Mockito.any());
+                    invocation.getArgument(0, Command.class).execute();
+                    return null;
+                })
+                .when(session)
+                .access(Mockito.any());
     }
 
     @Override
@@ -100,6 +101,5 @@ public class SessionUnderTestContext implements UnderTestContext {
         public TestSession() {
             super(serviceUnderTestContext.getService());
         }
-
     }
 }

@@ -22,18 +22,19 @@
  */
 package com.github.mcollovati.vertx.vaadin.communication;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
@@ -51,22 +52,20 @@ public class StreamResourceHandler implements Serializable {
      * @param streamResource stream resource that handles data writer
      * @throws IOException if an IO error occurred
      */
-    public void handleRequest(VaadinSession session, VaadinRequest request,
-                              VaadinResponse response, StreamResource streamResource)
-        throws IOException {
+    public void handleRequest(
+            VaadinSession session, VaadinRequest request, VaadinResponse response, StreamResource streamResource)
+            throws IOException {
 
         StreamResourceWriter writer;
         session.lock();
         try {
 
             ServletContext context = ((VertxVaadinRequest) request).getService().getServletContext();
-            response.setContentType(streamResource.getContentTypeResolver()
-                .apply(streamResource, context));
+            response.setContentType(streamResource.getContentTypeResolver().apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
             writer = streamResource.getWriter();
             if (writer == null) {
-                throw new IOException(
-                    "Stream resource produces null input stream");
+                throw new IOException("Stream resource produces null input stream");
             }
         } catch (Exception exception) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -81,5 +80,4 @@ public class StreamResourceHandler implements Serializable {
             throw exception;
         }
     }
-
 }

@@ -1,29 +1,36 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.github.mcollovati.vertx.quarkus.context;
-
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.spi.CreationalContext;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.enterprise.context.ContextNotActiveException;
+import javax.enterprise.context.spi.CreationalContext;
 
+import com.vaadin.flow.internal.ReflectTools;
 import io.quarkus.arc.InjectableBean;
 import io.quarkus.arc.InjectableContext;
 import io.quarkus.arc.InjectableContext.ContextState;
@@ -33,8 +40,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.ReflectTools;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -42,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Basic tests for {@link InjectableContext} implementations.
- * 
+ *
  * @param <C>
  *            a context type
  */
@@ -51,10 +56,9 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
     private List<UnderTestContext> contexts;
 
     @SuppressWarnings("unchecked")
-    final CreationalContext<TestBean> creationalContext = Mockito
-            .mock(CreationalContext.class);
-    final InjectableBean<TestBean> contextual = Mockito
-            .mock(InjectableBean.class);
+    final CreationalContext<TestBean> creationalContext = Mockito.mock(CreationalContext.class);
+
+    final InjectableBean<TestBean> contextual = Mockito.mock(InjectableBean.class);
 
     private C context;
 
@@ -68,14 +72,14 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
         contexts = new ArrayList<>();
         destroyedBeans.clear();
 
-        Mockito.doAnswer(invocation -> createBean()).when(contextual)
-                .create(creationalContext);
+        Mockito.doAnswer(invocation -> createBean()).when(contextual).create(creationalContext);
 
         Mockito.doAnswer(invocation -> {
-            destroyedBeans.add(invocation.getArgument(0));
-            return null;
-        }).when(contextual).destroy(Mockito.any(),
-                Mockito.eq(creationalContext));
+                    destroyedBeans.add(invocation.getArgument(0));
+                    return null;
+                })
+                .when(contextual)
+                .destroy(Mockito.any(), Mockito.eq(creationalContext));
 
         context = createQuarkusContext();
     }
@@ -167,8 +171,7 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
 
         ContextState state = context.getState();
 
-        Map<InjectableBean<?>, Object> instances = state
-                .getContextualInstances();
+        Map<InjectableBean<?>, Object> instances = state.getContextualInstances();
         assertNotNull(instances);
         assertSame(reference, instances.get(contextual));
     }
@@ -188,8 +191,7 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
 
     protected abstract Class<C> getContextType();
 
-    protected void destroyContext_beanExistsInContext_beanDestroyed(
-            boolean bothContextDestroyed) {
+    protected void destroyContext_beanExistsInContext_beanDestroyed(boolean bothContextDestroyed) {
         UnderTestContext contextUnderTestA = createContext();
         contextUnderTestA.activate();
         TestBean referenceA = context.get(contextual, creationalContext);
@@ -229,8 +231,7 @@ public abstract class InjectableContextTest<C extends InjectableContext> {
     }
 
     private C createQuarkusContext() {
-        return getContextType()
-                .cast(ReflectTools.createInstance(getContextType()));
+        return getContextType().cast(ReflectTools.createInstance(getContextType()));
     }
 
     private TestBean createBean() {

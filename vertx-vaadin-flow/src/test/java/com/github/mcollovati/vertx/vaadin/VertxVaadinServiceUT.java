@@ -25,7 +25,6 @@ package com.github.mcollovati.vertx.vaadin;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.github.mcollovati.vertx.utils.MockServiceSessionSetup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import io.vertx.core.http.HttpServerRequest;
@@ -37,12 +36,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.github.mcollovati.vertx.utils.MockServiceSessionSetup;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class VertxVaadinServiceUT {
 
-    private final String[] es5es6 = new String[]{"es5", "es6"};
+    private final String[] es5es6 = new String[] {"es5", "es6"};
     private MockServiceSessionSetup mocks;
     private MockServiceSessionSetup.TestVertxVaadinService service;
 
@@ -83,8 +84,8 @@ public class VertxVaadinServiceUT {
     public void should_report_flow_bootstrapHandler() {
         mocks.getDeploymentConfiguration().useDeprecatedV14Bootstrapping(true);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
-            e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));
+        Assert.assertTrue(UsageStatistics.getEntries()
+                .anyMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));
     }
 
     private String testLocation(String base, String contextPath, String pathInfo) throws Exception {
@@ -92,14 +93,12 @@ public class VertxVaadinServiceUT {
         RoutingContext routingContext = createRequest(base, contextPath, pathInfo);
 
         VertxVaadinService service = mock(VertxVaadinService.class);
-        Mockito.doCallRealMethod().when(service)
-            .getContextRootRelativePath(Mockito.any());
+        Mockito.doCallRealMethod().when(service).getContextRootRelativePath(Mockito.any());
 
         VertxVaadinRequest request = new VertxVaadinRequest(service, routingContext);
         String location = service.getContextRootRelativePath(request);
         return location;
     }
-
 
     /**
      * Creates a HttpServletRequest mock using the supplied parameters.
@@ -113,7 +112,8 @@ public class VertxVaadinServiceUT {
      * @return A mock HttpServletRequest object useful for testing
      * @throws MalformedURLException
      */
-    private RoutingContext createRequest(String base, String contextPath, String pathInfo) throws MalformedURLException {
+    private RoutingContext createRequest(String base, String contextPath, String pathInfo)
+            throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
         RoutingContext routingContext = mock(RoutingContext.class);
         HttpServerRequest request = mock(HttpServerRequest.class);
@@ -128,5 +128,4 @@ public class VertxVaadinServiceUT {
 
         return routingContext;
     }
-
 }

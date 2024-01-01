@@ -89,7 +89,6 @@ public class SockJSPushConnection implements PushConnection {
         return data;
     }
 
-
     @Override
     public void disconnect() {
         assert isConnected();
@@ -101,9 +100,9 @@ public class SockJSPushConnection implements PushConnection {
         }
 
         Optional.of(outgoingMessage)
-            .orElseGet(() -> CompletableFuture.completedFuture(null))
-            .thenCompose(unused -> socket.close())
-            .thenRun(this::connectionLost);
+                .orElseGet(() -> CompletableFuture.completedFuture(null))
+                .thenCompose(unused -> socket.close())
+                .thenRun(this::connectionLost);
     }
 
     @Override
@@ -123,13 +122,11 @@ public class SockJSPushConnection implements PushConnection {
         State oldState = state;
         state = State.CONNECTED;
 
-        if (oldState == State.PUSH_PENDING
-            || oldState == State.RESPONSE_PENDING) {
+        if (oldState == State.PUSH_PENDING || oldState == State.RESPONSE_PENDING) {
             // Sending a "response" message (async=false) also takes care of a
             // pending push, but not vice versa
             push(oldState == State.PUSH_PENDING);
         }
-
     }
 
     void connectionLost() {
@@ -170,7 +167,5 @@ public class SockJSPushConnection implements PushConnection {
          * Connected. Messages can be sent through the connection.
          */
         CONNECTED
-
     }
-
 }

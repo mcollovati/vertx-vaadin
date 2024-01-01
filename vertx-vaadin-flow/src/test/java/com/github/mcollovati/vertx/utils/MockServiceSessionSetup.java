@@ -30,23 +30,6 @@ import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 
-import com.github.mcollovati.vertx.support.StartupContext;
-import com.github.mcollovati.vertx.vaadin.VaadinOptions;
-import com.github.mcollovati.vertx.vaadin.VertxVaadin;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.SharedData;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -65,6 +48,23 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.SharedData;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.vaadin.VaadinOptions;
+import com.github.mcollovati.vertx.vaadin.VertxVaadin;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -72,23 +72,29 @@ public class MockServiceSessionSetup {
 
     @Mock
     private FileSystem fileSystem;
+
     private Vertx vertx;
+
     @Mock
     private VaadinRequest request;
+
     @Mock
     private VaadinSession session;
+
     @Mock
     private WebBrowser browser;
+
     @Mock
     private ContextInternal context;
+
     @Mock
     private Lookup lookup;
-    //@Mock
-    //private WrappedHttpSession wrappedSession;
-    //@Mock
-    //private HttpSession httpSession;
-    //@Mock
-    //private ServletConfig servletConfig;
+    // @Mock
+    // private WrappedHttpSession wrappedSession;
+    // @Mock
+    // private HttpSession httpSession;
+    // @Mock
+    // private ServletConfig servletConfig;
     private TestVertxVaadin vertxVaadin;
     private TestVertxVaadinService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
@@ -97,8 +103,7 @@ public class MockServiceSessionSetup {
         this(true);
     }
 
-    public MockServiceSessionSetup(boolean sessionAvailable)
-        throws Exception {
+    public MockServiceSessionSetup(boolean sessionAvailable) throws Exception {
         vertx = Mockito.mock(VertxInternal.class);
         MockitoAnnotations.initMocks(this);
         SharedData sharedData = Mockito.mock(SharedData.class);
@@ -116,44 +121,38 @@ public class MockServiceSessionSetup {
         Mockito.when(context.config()).thenReturn(config);
         Mockito.when(context.duplicate()).thenReturn(context);
 
-
         deploymentConfiguration.setXsrfProtectionEnabled(false);
 
         vertxVaadin = new TestVertxVaadin(vertx);
 
-
-        //Mockito.when(servletConfig.getServletContext())
+        // Mockito.when(servletConfig.getServletContext())
         //        .thenReturn(servletContext);
 
-
         if (sessionAvailable) {
-            Mockito.when(session.getConfiguration())
-                .thenReturn(deploymentConfiguration);
+            Mockito.when(session.getConfiguration()).thenReturn(deploymentConfiguration);
 
             Mockito.when(session.getBrowser()).thenReturn(browser);
             Mockito.when(session.getPushId()).thenReturn("fake push id");
             Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
 
-            //Mockito.when(wrappedSession.getHttpSession())
+            // Mockito.when(wrappedSession.getHttpSession())
             //        .thenReturn(httpSession);
 
             Mockito.when(session.getService()).thenAnswer(i -> service);
             Mockito.when(session.hasLock()).thenReturn(true);
-            Mockito.when(session.getPendingAccessQueue())
-                .thenReturn(new LinkedBlockingDeque<>());
-            //Mockito.when(request.getWrappedSession())
+            Mockito.when(session.getPendingAccessQueue()).thenReturn(new LinkedBlockingDeque<>());
+            // Mockito.when(request.getWrappedSession())
             //        .thenReturn(wrappedSession);
         } else {
             session = null;
         }
-        //servlet.init(servletConfig);
+        // servlet.init(servletConfig);
 
         CurrentInstance.set(VaadinRequest.class, request);
         CurrentInstance.set(VaadinService.class, service);
         if (sessionAvailable) {
             CurrentInstance.set(VaadinSession.class, session);
         }
-
     }
 
     public TestVertxVaadinService getService() {
@@ -237,8 +236,7 @@ public class MockServiceSessionSetup {
             return super.getDependencyFilters();
         }
 
-        public void setDependencyFilters(
-            List<DependencyFilter> dependencyFilters) {
+        public void setDependencyFilters(List<DependencyFilter> dependencyFilters) {
             dependencyFilterOverride = dependencyFilters;
         }
 
@@ -272,8 +270,7 @@ public class MockServiceSessionSetup {
 
         @Override
         public void modifyBootstrapPage(BootstrapPageResponse response) {
-            bootstrapListeners.forEach(
-                listener -> listener.modifyBootstrapPage(response));
+            bootstrapListeners.forEach(listener -> listener.modifyBootstrapPage(response));
 
             super.modifyBootstrapPage(response);
         }
@@ -300,7 +297,6 @@ public class MockServiceSessionSetup {
                 throw new RuntimeException(e);
             }
         }
-
     }
 
     public class TestVertxVaadin extends VertxVaadin {
@@ -321,26 +317,23 @@ public class MockServiceSessionSetup {
 
         /*
 
-            @Override
-            public ServletContext getServletContext() {
-                return servletContext;
-            }
-    */
-        public void setResolveOverride(
-            Function<String, String> resolveOverride) {
+                @Override
+                public ServletContext getServletContext() {
+                    return servletContext;
+                }
+        */
+        public void setResolveOverride(Function<String, String> resolveOverride) {
             this.resolveOverride = resolveOverride;
         }
 
-        public void setResourceFoundOverride(
-            Function<String, Boolean> resourceFoundOverride) {
+        public void setResourceFoundOverride(Function<String, Boolean> resourceFoundOverride) {
             this.resourceFoundOverride = resourceFoundOverride;
         }
 
-        public void setResourceAsStreamOverride(
-            Function<String, InputStream> resourceAsStreamOverride) {
+        public void setResourceAsStreamOverride(Function<String, InputStream> resourceAsStreamOverride) {
             this.resourceAsStreamOverride = resourceAsStreamOverride;
         }
-/*
+        /*
         @Override
         public InputStream getResourceAsStream(String path) {
             if (resourceAsStreamOverride != null) {
@@ -385,9 +378,9 @@ public class MockServiceSessionSetup {
                 relativePath = relativePath.substring(1);
             }
             Mockito.when(fileSystem.existsBlocking(relativePath)).thenReturn(true);
-            //Mockito.when(fileSystem.r)        .thenReturn(url);
+            // Mockito.when(fileSystem.r)        .thenReturn(url);
             Mockito.when(fileSystem.readFileBlocking(relativePath))
-                .thenAnswer(i -> Buffer.buffer(contents.getBytes(StandardCharsets.UTF_8)));
+                    .thenAnswer(i -> Buffer.buffer(contents.getBytes(StandardCharsets.UTF_8)));
         }
 
         public void addWebJarResource(String webjarPath) {
@@ -397,11 +390,11 @@ public class MockServiceSessionSetup {
         }
 
         /*
-        public void verifyServletContextResourceLoadedOnce(String resource) {
-            Mockito.verify(servlet.getServletContext())
-                    .getResourceAsStream(resource);
+                public void verifyServletContextResourceLoadedOnce(String resource) {
+                    Mockito.verify(servlet.getServletContext())
+                            .getResourceAsStream(resource);
 
-        }
-*/
+                }
+        */
     }
 }

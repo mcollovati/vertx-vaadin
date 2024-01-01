@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.web.sstore;
 
-import com.github.mcollovati.vertx.web.ExtendedSession;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
@@ -30,6 +29,8 @@ import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.web.sstore.SessionStore;
 import io.vertx.ext.web.sstore.impl.SharedDataSessionImpl;
 import org.junit.Test;
+
+import com.github.mcollovati.vertx.web.ExtendedSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +42,8 @@ public class ExtendedSessionUT {
     @Test
     public void extendeSessionShouldBeClusterSerializable() throws InterruptedException {
         Vertx vertx = Vertx.vertx();
-        SharedDataSessionImpl delegate = new SharedDataSessionImpl(new PRNG(vertx), 3000, SessionStore.DEFAULT_SESSIONID_LENGTH);
+        SharedDataSessionImpl delegate =
+                new SharedDataSessionImpl(new PRNG(vertx), 3000, SessionStore.DEFAULT_SESSIONID_LENGTH);
         ExtendedSession extendedSession = ExtendedSession.adapt(delegate);
         assertThat(extendedSession).isInstanceOf(ClusterSerializable.class);
         long createdAt = extendedSession.createdAt();
@@ -54,13 +56,11 @@ public class ExtendedSessionUT {
         assertThat(buffer.length() > 0);
 
         ExtendedSession fromBuffer = ExtendedSession.adapt(
-            new SharedDataSessionImpl(new PRNG(vertx), 0, SessionStore.DEFAULT_SESSIONID_LENGTH)
-        );
+                new SharedDataSessionImpl(new PRNG(vertx), 0, SessionStore.DEFAULT_SESSIONID_LENGTH));
         ((ClusterSerializable) fromBuffer).readFromBuffer(0, buffer);
         assertThat(fromBuffer.createdAt()).isEqualTo(createdAt);
         assertThat(fromBuffer.id()).isEqualTo(delegate.id());
         assertThat(fromBuffer.timeout()).isEqualTo(delegate.timeout());
         assertThat(fromBuffer.data()).isEqualTo(delegate.data());
-
     }
 }

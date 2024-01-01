@@ -1,16 +1,36 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.github.mcollovati.vertx.quarkus;
 
+import java.util.Optional;
+import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.AmbiguousResolutionException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import java.util.Optional;
-import java.util.Set;
 
-import com.github.mcollovati.vertx.vaadin.VertxVaadin;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
@@ -33,12 +53,16 @@ import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mcollovati.vertx.vaadin.VertxVaadin;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+
 public class QuarkusVertxVaadinService extends VertxVaadinService {
 
     private final BeanManager beanManager;
     private final UIEventListener uiEventListener;
 
-    public QuarkusVertxVaadinService(VertxVaadin vertxVaadin, DeploymentConfiguration deploymentConfiguration, BeanManager beanManager) {
+    public QuarkusVertxVaadinService(
+            VertxVaadin vertxVaadin, DeploymentConfiguration deploymentConfiguration, BeanManager beanManager) {
         super(vertxVaadin, deploymentConfiguration);
         this.beanManager = beanManager;
         uiEventListener = new UIEventListener(beanManager);
@@ -47,8 +71,7 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
     @Override
     public void init() throws ServiceException {
         addEventListeners();
-        lookup(SystemMessagesProvider.class)
-            .ifPresent(this::setSystemMessagesProvider);
+        lookup(SystemMessagesProvider.class).ifPresent(this::setSystemMessagesProvider);
         super.init();
     }
 
@@ -60,11 +83,9 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
 
     @Override
     public Optional<Instantiator> loadInstantiators() throws ServiceException {
-        final Set<Bean<?>> beans = beanManager.getBeans(Instantiator.class,
-            BeanLookup.SERVICE);
+        final Set<Bean<?>> beans = beanManager.getBeans(Instantiator.class, BeanLookup.SERVICE);
         if (beans == null || beans.isEmpty()) {
-            throw new ServiceException("Cannot init VaadinService "
-                + "because no CDI instantiator bean found.");
+            throw new ServiceException("Cannot init VaadinService " + "because no CDI instantiator bean found.");
         }
         final Bean<Instantiator> bean;
         try {
@@ -72,24 +93,21 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
             bean = (Bean<Instantiator>) beanManager.resolve(beans);
         } catch (final AmbiguousResolutionException e) {
             throw new ServiceException(
-                "There are multiple eligible CDI "
-                    + Instantiator.class.getSimpleName() + " beans.",
-                e);
+                    "There are multiple eligible CDI " + Instantiator.class.getSimpleName() + " beans.", e);
         }
 
         // Return the contextual instance (rather than CDI proxy) as it will be
         // stored inside VaadinService. Not relying on the proxy allows
         // accessing VaadinService::getInstantiator even when
         // VaadinServiceScopedContext is not active
-        final CreationalContext<Instantiator> creationalContext = beanManager
-            .createCreationalContext(bean);
+        final CreationalContext<Instantiator> creationalContext = beanManager.createCreationalContext(bean);
         final Context context = beanManager.getContext(ApplicationScoped.class); // VaadinServiceScoped
         final Instantiator instantiator = context.get(bean, creationalContext);
 
         if (!instantiator.init(this)) {
             throw new ServiceException("Cannot init VaadinService because "
-                + instantiator.getClass().getName() + " CDI bean init()"
-                + " returned false.");
+                    + instantiator.getClass().getName() + " CDI bean init()"
+                    + " returned false.");
         }
         return Optional.of(instantiator);
     }
@@ -101,8 +119,7 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
         addSessionDestroyListener(this::sessionDestroy);
     }
 
-    private void sessionInit(SessionInitEvent sessionInitEvent)
-        throws ServiceException {
+    private void sessionInit(SessionInitEvent sessionInitEvent) throws ServiceException {
         VaadinSession session = sessionInitEvent.getSession();
         lookup(ErrorHandler.class).ifPresent(session::setErrorHandler);
         getBeanManager().fireEvent(sessionInitEvent);
@@ -119,8 +136,7 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
             // During application shutdown on TomEE 7,
             // beans are lost at this point.
             // Does not throw an exception, but catch anything just to be sure.
-            getLogger().warn("Error at destroy event distribution with CDI.",
-                e);
+            getLogger().warn("Error at destroy event distribution with CDI.", e);
         }
     }
 
@@ -144,12 +160,10 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
      */
     public <T> Optional<T> lookup(Class<T> type) throws ServiceException {
         try {
-            T instance = new BeanLookup<>(getBeanManager(), type,
-                BeanLookup.SERVICE).lookup();
+            T instance = new BeanLookup<>(getBeanManager(), type, BeanLookup.SERVICE).lookup();
             return Optional.ofNullable(instance);
         } catch (AmbiguousResolutionException e) {
-            throw new ServiceException("There are multiple eligible CDI "
-                + type.getSimpleName() + " beans.", e);
+            throw new ServiceException("There are multiple eligible CDI " + type.getSimpleName() + " beans.", e);
         }
     }
 
@@ -166,8 +180,10 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
      */
     @ListenerPriority(-100) // navigation event listeners are last by default
     private static class UIEventListener
-        implements AfterNavigationListener, BeforeEnterListener,
-        BeforeLeaveListener, ComponentEventListener<PollEvent> {
+            implements AfterNavigationListener,
+                    BeforeEnterListener,
+                    BeforeLeaveListener,
+                    ComponentEventListener<PollEvent> {
 
         private BeanManager beanManager;
 
@@ -199,5 +215,4 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
             return beanManager;
         }
     }
-
 }

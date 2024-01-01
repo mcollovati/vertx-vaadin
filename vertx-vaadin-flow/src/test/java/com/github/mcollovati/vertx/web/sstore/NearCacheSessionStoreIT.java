@@ -25,8 +25,6 @@ package com.github.mcollovati.vertx.web.sstore;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.github.mcollovati.vertx.Sync;
-import com.github.mcollovati.vertx.web.ExtendedSession;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -49,6 +47,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.github.mcollovati.vertx.Sync;
+import com.github.mcollovati.vertx.web.ExtendedSession;
+
 import static io.vertx.ext.web.sstore.SessionStore.DEFAULT_SESSIONID_LENGTH;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,10 +57,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class NearCacheSessionStoreIT {
 
     public static final int DEFAULT_TIMEOUT = 30 * 60 * 1000;
+
     @Rule
-    public RunTestOnContext rule = new RunTestOnContext(() -> Sync.await(completer -> Vertx.clusteredVertx(
-        new VertxOptions().setClusterManager(new HazelcastClusterManager()), completer
-    )));
+    public RunTestOnContext rule = new RunTestOnContext(() -> Sync.await(completer ->
+            Vertx.clusteredVertx(new VertxOptions().setClusterManager(new HazelcastClusterManager()), completer)));
+
     private LocalMap<String, Session> localMap;
     private AsyncMap<String, Session> remoteMap;
 
@@ -69,17 +71,18 @@ public class NearCacheSessionStoreIT {
         localMap = getLocalMap();
     }
 
-
     private void getRemoteMap(TestContext context, Handler<AsyncResult<AsyncMap<String, Session>>> resultHandler) {
         if (remoteMap == null) {
-            rule.vertx().sharedData().<String, Session>getClusterWideMap(NearCacheSessionStore.DEFAULT_SESSION_MAP_NAME, res -> {
-                if (res.succeeded()) {
-                    remoteMap = res.result();
-                    resultHandler.handle(Future.succeededFuture(res.result()));
-                } else {
-                    resultHandler.handle(res);
-                }
-            });
+            rule.vertx()
+                    .sharedData()
+                    .<String, Session>getClusterWideMap(NearCacheSessionStore.DEFAULT_SESSION_MAP_NAME, res -> {
+                        if (res.succeeded()) {
+                            remoteMap = res.result();
+                            resultHandler.handle(Future.succeededFuture(res.result()));
+                        } else {
+                            resultHandler.handle(res);
+                        }
+                    });
         } else {
             resultHandler.handle(Future.succeededFuture(remoteMap));
         }
@@ -102,7 +105,6 @@ public class NearCacheSessionStoreIT {
         return rule.vertx().sharedData().getLocalMap(NearCacheSessionStore.DEFAULT_SESSION_MAP_NAME);
     }
 
-
     @Test
     public void createSession(TestContext context) {
 
@@ -114,7 +116,6 @@ public class NearCacheSessionStoreIT {
         assertThat(session.timeout()).isEqualTo(3600);
         assertThat(session.lastAccessed()).isCloseTo(beforeCreationTime, Offset.offset(100L));
         assertThat(session.isDestroyed()).isFalse();
-
     }
 
     @Test(timeout = 3000)
@@ -128,15 +129,16 @@ public class NearCacheSessionStoreIT {
 
         SessionStore sessionStore = NearCacheSessionStore.create(vertx);
         sessionStore.put(session, context.asyncAssertSuccess(b -> {
-            doWithRemoteSession(context, session, context.asyncAssertSuccess(s ->
-                context.verify(unused -> assertSessionProperties(session, s))
-            ));
-            doWithLocalSession(context, session, context.asyncAssertSuccess(s ->
-                context.verify(unused -> {
-                    assertSessionProperties(session, s);
-
-                })
-            ));
+            doWithRemoteSession(
+                    context,
+                    session,
+                    context.asyncAssertSuccess(s -> context.verify(unused -> assertSessionProperties(session, s))));
+            doWithLocalSession(
+                    context,
+                    session,
+                    context.asyncAssertSuccess(s -> context.verify(unused -> {
+                        assertSessionProperties(session, s);
+                    })));
         }));
     }
 
@@ -155,8 +157,6 @@ public class NearCacheSessionStoreIT {
                 sessionStore.put(freshSession, context.asyncAssertSuccess());
             }));
         }));
-
-
     }
 
     @Test(timeout = 5000)
@@ -231,10 +231,8 @@ public class NearCacheSessionStoreIT {
 
         sessionStore.clear(context.asyncAssertSuccess(u -> {
             context.assertTrue(localMap.isEmpty(), "Local map should be empty");
-            remoteMap.size(context.asyncAssertSuccess(size ->
-                context.assertTrue(size == 0, "Remote map should be empty")
-            ));
-
+            remoteMap.size(
+                    context.asyncAssertSuccess(size -> context.assertTrue(size == 0, "Remote map should be empty")));
         }));
     }
 
@@ -246,15 +244,16 @@ public class NearCacheSessionStoreIT {
         Session session = sessionStore.createSession(3000);
         sessionStore.put(session, context.asyncAssertSuccess());
 
-
         vertx.setTimer(5000, unused -> {
             sessionStore.get("XY", context.asyncAssertSuccess(u -> {
-                doWithRemoteSession(context, session, context.asyncAssertSuccess(s ->
-                    context.assertNull(s, "Remote session should not be present")
-                ));
-                doWithLocalSession(context, session, context.asyncAssertSuccess(s ->
-                    context.assertNull(s, "Local session should not be present")
-                ));
+                doWithRemoteSession(
+                        context,
+                        session,
+                        context.asyncAssertSuccess(s -> context.assertNull(s, "Remote session should not be present")));
+                doWithLocalSession(
+                        context,
+                        session,
+                        context.asyncAssertSuccess(s -> context.assertNull(s, "Local session should not be present")));
             }));
             async.complete();
         });
@@ -272,7 +271,6 @@ public class NearCacheSessionStoreIT {
 
         Session session2 = sessionStore.createSession(3000);
         sessionStore.put(session2, context.asyncAssertSuccess());
-
     }
 
     private ExtendedSession createSession(Vertx vertx) {
@@ -285,7 +283,6 @@ public class NearCacheSessionStoreIT {
         assertThat(rs.isDestroyed()).isEqualTo(session.isDestroyed());
         assertThat(rs.timeout()).isEqualTo(session.timeout());
     }
-
 
     private static class TestObject implements Serializable {
         private final String name;
@@ -300,8 +297,7 @@ public class NearCacheSessionStoreIT {
             if (this == o) return true;
             if (!(o instanceof TestObject)) return false;
             TestObject that = (TestObject) o;
-            return counter == that.counter &&
-                Objects.equals(name, that.name);
+            return counter == that.counter && Objects.equals(name, that.name);
         }
 
         @Override

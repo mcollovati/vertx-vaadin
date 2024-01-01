@@ -1,18 +1,38 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.InputTextElement;
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public abstract class AbstractBasicElementComponentIT
-        extends ChromeBrowserTest {
+public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest {
 
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {
@@ -33,9 +53,7 @@ public abstract class AbstractBasicElementComponentIT
 
         String buttonText = getThankYouElements().get(0).getText();
         String expected = "Thank you for clicking \"Click me\" at \\((\\d+),(\\d+)\\)! The field value is abc";
-        Assert.assertTrue(
-                "Expected '" + expected + "', was '" + buttonText + "'",
-                buttonText.matches(expected));
+        Assert.assertTrue("Expected '" + expected + "', was '" + buttonText + "'", buttonText.matches(expected));
 
         // Clicking removes the element
         getThankYouElements().get(0).click();
@@ -63,5 +81,4 @@ public abstract class AbstractBasicElementComponentIT
     protected List<WebElement> getThankYouElements() {
         return findElements(By.cssSelector(".thankYou"));
     }
-
 }

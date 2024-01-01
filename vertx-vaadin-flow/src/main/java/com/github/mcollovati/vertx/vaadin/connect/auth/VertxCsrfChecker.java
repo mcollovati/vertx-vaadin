@@ -22,14 +22,14 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
 import com.vaadin.flow.server.VaadinService;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 public class VertxCsrfChecker implements CsrfChecker<RoutingContext> {
 
@@ -49,17 +49,17 @@ public class VertxCsrfChecker implements CsrfChecker<RoutingContext> {
         String csrfTokenInSession = session.get(VaadinService.getCsrfTokenAttributeName());
         if (csrfTokenInSession == null) {
             if (getLogger().isInfoEnabled()) {
-                getLogger().info(
-                        "Unable to verify CSRF token for endpoint request, got null token in session");
+                getLogger().info("Unable to verify CSRF token for endpoint request, got null token in session");
             }
 
             return false;
         }
 
         String csrfTokenInRequest = request.request().getHeader("X-CSRF-Token");
-        if (csrfTokenInRequest == null || !MessageDigest.isEqual(
-                csrfTokenInSession.getBytes(StandardCharsets.UTF_8),
-                csrfTokenInRequest.getBytes(StandardCharsets.UTF_8))) {
+        if (csrfTokenInRequest == null
+                || !MessageDigest.isEqual(
+                        csrfTokenInSession.getBytes(StandardCharsets.UTF_8),
+                        csrfTokenInRequest.getBytes(StandardCharsets.UTF_8))) {
             if (getLogger().isInfoEnabled()) {
                 getLogger().info("Invalid CSRF token in endpoint request");
             }

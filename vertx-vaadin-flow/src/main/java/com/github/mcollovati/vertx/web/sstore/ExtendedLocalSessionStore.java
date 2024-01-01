@@ -24,7 +24,6 @@ package com.github.mcollovati.vertx.web.sstore;
 
 import io.vertx.core.Vertx;
 
-
 /**
  * A session store that extends {@link io.vertx.ext.web.sstore.LocalSessionStore}
  * with support for expiration handler
@@ -73,5 +72,4 @@ public interface ExtendedLocalSessionStore extends ExtendedSessionStore {
     static ExtendedLocalSessionStore create(Vertx vertx, String sessionMapName, long reaperInterval) {
         return new ExtendedLocalSessionStoreImpl(vertx, sessionMapName, reaperInterval);
     }
-
 }

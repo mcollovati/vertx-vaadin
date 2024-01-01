@@ -1,27 +1,29 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.github.mcollovati.vertx.vaadin.quarkus.it;
 
 import java.io.IOException;
 
-import com.github.mcollovati.vertx.vaadin.quarkus.it.service.BootstrapCustomizer;
-import com.github.mcollovati.vertx.vaadin.quarkus.it.service.ServiceView;
-import com.github.mcollovati.vertx.vaadin.quarkus.it.service.TestErrorHandler;
-import com.github.mcollovati.vertx.vaadin.quarkus.it.service.TestSystemMessagesProvider;
 import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.UIInitEvent;
@@ -31,6 +33,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.github.mcollovati.vertx.vaadin.quarkus.it.service.BootstrapCustomizer;
+import com.github.mcollovati.vertx.vaadin.quarkus.it.service.ServiceView;
+import com.github.mcollovati.vertx.vaadin.quarkus.it.service.TestErrorHandler;
+import com.github.mcollovati.vertx.vaadin.quarkus.it.service.TestSystemMessagesProvider;
 
 @QuarkusIntegrationTest
 public class ServiceIT extends AbstractCdiIT {
@@ -50,8 +57,7 @@ public class ServiceIT extends AbstractCdiIT {
         getDriver().get(getRootURL() + "/bootstrap");
         waitForDevServer();
 
-        assertTextEquals(BootstrapCustomizer.APPENDED_TXT,
-                BootstrapCustomizer.APPENDED_ID);
+        assertTextEquals(BootstrapCustomizer.APPENDED_TXT, BootstrapCustomizer.APPENDED_ID);
     }
 
     @Test
@@ -63,9 +69,9 @@ public class ServiceIT extends AbstractCdiIT {
         // open another UI
         open();
 
-        Assertions.assertTrue(id.endsWith("-1"),
-                "The number of created beans must be 1 but it's "
-                        + id.substring(id.indexOf("-") + 1));
+        Assertions.assertTrue(
+                id.endsWith("-1"),
+                "The number of created beans must be 1 but it's " + id.substring(id.indexOf("-") + 1));
         Assertions.assertEquals(id, getText("service-id"));
     }
 
@@ -114,9 +120,7 @@ public class ServiceIT extends AbstractCdiIT {
     }
 
     private void assertSystemMessageEquals(String expected) {
-        WebElement message = findElement(
-                By.cssSelector("div.v-system-error div.message"));
+        WebElement message = findElement(By.cssSelector("div.v-system-error div.message"));
         Assertions.assertEquals(expected, message.getText());
     }
-
 }

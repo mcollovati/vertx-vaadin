@@ -201,5 +201,4 @@ class ShareableSockJsSocket implements SockJSSocket, Shareable {
     public boolean writeQueueFull() {
         return socket.writeQueueFull();
     }
-
 }

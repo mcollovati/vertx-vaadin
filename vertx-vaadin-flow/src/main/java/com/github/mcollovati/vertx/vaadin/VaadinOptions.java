@@ -31,10 +31,8 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -43,7 +41,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_SESSION_TIMEOUT;
 
 public final class VaadinOptions {
-
 
     private final JsonObject config;
 
@@ -70,9 +67,11 @@ public final class VaadinOptions {
     public boolean hillaEnabled() {
         return getBooleanProperty("hilla.enabled", false);
     }
+
     public boolean devServerEnabled() {
         return getBooleanProperty("devserver.enabled", true);
     }
+
     public String hillaEndpoint() {
         return config.getString("endpoint.prefix", "/connect");
     }
@@ -104,9 +103,10 @@ public final class VaadinOptions {
     }
 
     public List<String> flowBasePackages() {
-        return config.getJsonArray("flowBasePackages", new JsonArray())
-            .stream().filter(String.class::isInstance).map(String.class::cast)
-            .collect(Collectors.toList());
+        return config.getJsonArray("flowBasePackages", new JsonArray()).stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
@@ -131,6 +131,7 @@ public final class VaadinOptions {
     void disableDevServer() {
         config.put("devserver.enabled", false);
     }
+
     void update(Properties properties) {
         properties.stringPropertyNames().forEach(key -> config.put(key, properties.getProperty(key)));
     }
@@ -161,9 +162,8 @@ public final class VaadinOptions {
     @SuppressWarnings("unchecked")
     private static Object adaptJson(Object object) {
         if (object instanceof Collection) {
-            return ((Collection<?>) object).stream()
-                .map(VaadinOptions::adaptJson)
-                .collect(Collectors.toList());
+            return ((Collection<?>) object)
+                    .stream().map(VaadinOptions::adaptJson).collect(Collectors.toList());
         } else if (object instanceof Map) {
             LinkedHashMap<String, Object> map = new LinkedHashMap<>((Map<String, Object>) object);
             map.replaceAll((k, v) -> adaptJson(v));
@@ -179,5 +179,4 @@ public final class VaadinOptions {
         }
         return null;
     }
-
 }

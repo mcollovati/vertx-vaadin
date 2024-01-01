@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -52,12 +59,9 @@ public class AttachListenerView extends AbstractDivView {
         add(group);
 
         group = new Div();
-        createRadioButton(group, "attachListenerToFirst", "listener",
-                "Attach listener to first");
-        createRadioButton(group, "attachListenerToMiddle", "listener",
-                "Attach listener to middle");
-        createRadioButton(group, "attachListenerToLast", "listener",
-                "Attach listener to last");
+        createRadioButton(group, "attachListenerToFirst", "listener", "Attach listener to first");
+        createRadioButton(group, "attachListenerToMiddle", "listener", "Attach listener to middle");
+        createRadioButton(group, "attachListenerToLast", "listener", "Attach listener to last");
         add(group);
 
         /*
@@ -122,8 +126,7 @@ public class AttachListenerView extends AbstractDivView {
         return listener;
     }
 
-    private void configureAttachPermutation(Span host, Span child,
-            Span listener) {
+    private void configureAttachPermutation(Span host, Span child, Span listener) {
         listener.addAttachListener(event -> {
             /*
              * The isInitialAttach check is needed to prevent stackoverflow
@@ -135,12 +138,13 @@ public class AttachListenerView extends AbstractDivView {
         });
     }
 
-    private Input createRadioButton(HasComponents parent, String id,
-            String group, String text) {
+    private Input createRadioButton(HasComponents parent, String id, String group, String text) {
 
         Input input = new Input();
-        input.getElement().setAttribute("type", "radio")
-                .setAttribute("name", group).setAttribute("value", text)
+        input.getElement()
+                .setAttribute("type", "radio")
+                .setAttribute("name", group)
+                .setAttribute("value", text)
                 .addPropertyChangeListener("checked", "change", event -> {});
         input.setId(id);
         radioButtons.put(id, input);
@@ -154,7 +158,6 @@ public class AttachListenerView extends AbstractDivView {
     }
 
     private boolean isChecked(String inputId) {
-        return radioButtons.get(inputId).getElement()
-                .getProperty("checked") != null;
+        return radioButtons.get(inputId).getElement().getProperty("checked") != null;
     }
 }

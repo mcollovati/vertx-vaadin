@@ -22,16 +22,15 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
-import dev.hilla.EndpointExposed;
-
 import java.util.Optional;
+
+import dev.hilla.EndpointExposed;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
  */
 @EndpointExposed
-public class ReadOnlyEndpoint<T, ID> extends NonEndpointImpl
-        implements NonEndpoint {
+public class ReadOnlyEndpoint<T, ID> extends NonEndpointImpl implements NonEndpoint {
     public Optional<T> get(ID id) {
         return Optional.ofNullable(null);
     }

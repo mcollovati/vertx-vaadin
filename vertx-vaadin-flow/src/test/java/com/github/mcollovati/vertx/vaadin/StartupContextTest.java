@@ -25,11 +25,12 @@ package com.github.mcollovati.vertx.vaadin;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import com.github.mcollovati.vertx.support.StartupContext;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.github.mcollovati.vertx.support.StartupContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,27 +49,24 @@ public class StartupContextTest {
     @Test
     public void testGetResourcePaths() {
         Set<String> resourcePaths = startupContext.servletContext().getResourcePaths("/");
-        assertThat(resourcePaths).isNotEmpty()
-            .allMatch(isChildOf(""));
+        assertThat(resourcePaths).isNotEmpty().allMatch(isChildOf(""));
         System.out.println(resourcePaths);
 
         resourcePaths = startupContext.servletContext().getResourcePaths("");
-        assertThat(resourcePaths).isNotEmpty()
-            .allMatch(isChildOf(""));
+        assertThat(resourcePaths).isNotEmpty().allMatch(isChildOf(""));
         System.out.println(resourcePaths);
 
         resourcePaths = startupContext.servletContext().getResourcePaths("webjars");
-        assertThat(resourcePaths).isNotEmpty()
-            .allMatch(isChildOf("webjars/"));
+        assertThat(resourcePaths).isNotEmpty().allMatch(isChildOf("webjars/"));
         System.out.println(resourcePaths);
     }
 
     @Test
     public void testResolveResource() {
         assertThat(startupContext.resolveResource("VAADIN/static/push/vaadinPushSockJS.js.gz"))
-            .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
+                .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
         assertThat(startupContext.resolveResource("/VAADIN/static/push/vaadinPushSockJS.js.gz"))
-            .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
+                .hasValue("META-INF/resources/VAADIN/static/push/vaadinPushSockJS.js.gz");
     }
 
     private Predicate<String> isChildOf(String parent) {

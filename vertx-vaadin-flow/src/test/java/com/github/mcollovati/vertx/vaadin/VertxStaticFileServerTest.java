@@ -1,12 +1,27 @@
 /*
- * Adapted from Vaadin source code
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,6 +47,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -78,28 +96,23 @@ public class VertxStaticFileServerTest implements Serializable {
 
     private static final String WEBAPP_RESOURCE_PREFIX = "META-INF/VAADIN/webapp";
 
-    private static URL createFileURLWithDataAndLength(String name, byte[] data)
-            throws MalformedURLException {
+    private static URL createFileURLWithDataAndLength(String name, byte[] data) throws MalformedURLException {
         return createFileURLWithDataAndLength(name, data, -1);
     }
 
-    private static URL createFileURLWithDataAndLength(String name, byte[] data,
-                                                      long lastModificationTime) throws MalformedURLException {
+    private static URL createFileURLWithDataAndLength(String name, byte[] data, long lastModificationTime)
+            throws MalformedURLException {
         return new URL("file", "", -1, name, new URLStreamHandler() {
 
             @Override
             protected URLConnection openConnection(URL u) throws IOException {
                 URLConnection connection = Mockito.mock(URLConnection.class);
-                Mockito.when(connection.getInputStream())
-                        .thenReturn(new ByteArrayInputStream(data));
-                Mockito.when(connection.getContentLengthLong())
-                        .thenReturn((long) data.length);
-                Mockito.when(connection.getLastModified())
-                        .thenReturn(lastModificationTime);
+                Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(data));
+                Mockito.when(connection.getContentLengthLong()).thenReturn((long) data.length);
+                Mockito.when(connection.getLastModified()).thenReturn(lastModificationTime);
                 return connection;
             }
         });
-
     }
 
     @BeforeClass
@@ -110,16 +123,17 @@ public class VertxStaticFileServerTest implements Serializable {
 
     @Before
     public void setUp() throws IOException {
-        Set<String> expectedDateHeaders = Stream.of(HttpHeaders.IF_MODIFIED_SINCE, HttpHeaders.DATE, HttpHeaders.LAST_MODIFIED)
+        Set<String> expectedDateHeaders = Stream.of(
+                        HttpHeaders.IF_MODIFIED_SINCE, HttpHeaders.DATE, HttpHeaders.LAST_MODIFIED)
                 .map(name -> name.toString().toLowerCase())
                 .collect(Collectors.toSet());
         Matcher<CharSequence> isDateHeader = new CustomMatcher<CharSequence>("Date header") {
             @Override
             public boolean matches(Object item) {
-                return item instanceof CharSequence && expectedDateHeaders.contains(item.toString().toLowerCase());
+                return item instanceof CharSequence
+                        && expectedDateHeaders.contains(item.toString().toLowerCase());
             }
         };
-
 
         request = Mockito.mock(HttpServerRequest.class);
         response = Mockito.mock(HttpServerResponse.class);
@@ -131,53 +145,72 @@ public class VertxStaticFileServerTest implements Serializable {
         headers = new HashMap<>();
         dateHeaders = new HashMap<>();
 
-
         Mockito.doAnswer(invocation -> {
-            headers.put(invocation.getArgument(0, CharSequence.class).toString(),
-                    invocation.getArgument(1, CharSequence.class).toString());
-            return null;
-        }).when(response).putHeader(any(CharSequence.class), any(CharSequence.class));
+                    headers.put(
+                            invocation.getArgument(0, CharSequence.class).toString(),
+                            invocation.getArgument(1, CharSequence.class).toString());
+                    return null;
+                })
+                .when(response)
+                .putHeader(any(CharSequence.class), any(CharSequence.class));
         Mockito.doAnswer(invocation -> {
-            dateHeaders.put(invocation.getArgument(0, CharSequence.class).toString(),
-                    HttpUtils.parseDateHeader(invocation.getArgument(1, CharSequence.class).toString()));
-            return null;
-        }).when(response).putHeader(MockitoHamcrest.argThat(isDateHeader), any(CharSequence.class));
+                    dateHeaders.put(
+                            invocation.getArgument(0, CharSequence.class).toString(),
+                            HttpUtils.parseDateHeader(invocation
+                                    .getArgument(1, CharSequence.class)
+                                    .toString()));
+                    return null;
+                })
+                .when(response)
+                .putHeader(MockitoHamcrest.argThat(isDateHeader), any(CharSequence.class));
         Mockito.doAnswer(invocation -> {
-            responseCode.set((int) invocation.getArguments()[0]);
-            return null;
-        }).when(response).setStatusCode(anyInt());
+                    responseCode.set((int) invocation.getArguments()[0]);
+                    return null;
+                })
+                .when(response)
+                .setStatusCode(anyInt());
         Mockito.doAnswer(invocation -> {
-            responseCode.set((int) invocation.getArguments()[0]);
-            return null;
-        }).when(response).setStatusCode(anyInt());
+                    responseCode.set((int) invocation.getArguments()[0]);
+                    return null;
+                })
+                .when(response)
+                .setStatusCode(anyInt());
         Mockito.doAnswer(invocation -> {
-            responseContentLength.set((long) invocation.getArguments()[0]);
-            return null;
-        }).when(response).putHeader(matches("(?i)Content-Length"), matches("\\d+"));
+                    responseContentLength.set((long) invocation.getArguments()[0]);
+                    return null;
+                })
+                .when(response)
+                .putHeader(matches("(?i)Content-Length"), matches("\\d+"));
 
         responseOutput = Buffer.buffer();
         Mockito.doAnswer(i -> {
-            responseOutput.appendBuffer(i.getArgument(0, Buffer.class));
-            return null;
-        }).when(response).write(any(Buffer.class));
+                    responseOutput.appendBuffer(i.getArgument(0, Buffer.class));
+                    return null;
+                })
+                .when(response)
+                .write(any(Buffer.class));
         Mockito.doAnswer(i -> {
-            responseOutput.appendString(i.getArgument(0, String.class));
-            return null;
-        }).when(response).write(anyString());
+                    responseOutput.appendString(i.getArgument(0, String.class));
+                    return null;
+                })
+                .when(response)
+                .write(anyString());
         Mockito.doAnswer(i -> {
-            responseOutput.appendString(i.getArgument(0, String.class), i.getArgument(1, String.class));
-            return null;
-        }).when(response).write(anyString(), anyString());
-
+                    responseOutput.appendString(i.getArgument(0, String.class), i.getArgument(1, String.class));
+                    return null;
+                })
+                .when(response)
+                .write(anyString(), anyString());
 
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(configuration);
 
         // Use test class loader to enable reading `manifest.json` resource
-        Mockito.doAnswer(invocationOnMock -> getClass().getClassLoader()).when(vaadinService).getClassLoader();
+        Mockito.doAnswer(invocationOnMock -> getClass().getClassLoader())
+                .when(vaadinService)
+                .getClassLoader();
 
         routingContext = Mockito.mock(RoutingContext.class);
         Mockito.when(routingContext.request()).thenReturn(request);
@@ -186,8 +219,8 @@ public class VertxStaticFileServerTest implements Serializable {
         fileServer = new OverrideableStaticFileServer(vaadinService, configuration);
 
         // Required by the ResponseWriter
-        /////servletContext = Mockito.mock(ServletContext.class);
-        /////Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        ///// servletContext = Mockito.mock(ServletContext.class);
+        ///// Mockito.when(request.getServletContext()).thenReturn(servletContext);
     }
 
     @After
@@ -198,29 +231,21 @@ public class VertxStaticFileServerTest implements Serializable {
     @Test
     public void getRequestFilename() {
         // Context path should not affect the filename in any way
-        for (String contextPath : new String[]{"", "/foo", "/foo/bar"}) {
+        for (String contextPath : new String[] {"", "/foo", "/foo/bar"}) {
             // /* servlet
             Assert.assertEquals("", getRequestFilename(contextPath, null));
-            Assert.assertEquals("/bar.js",
-                    getRequestFilename(contextPath, "/bar.js"));
-            Assert.assertEquals("/foo/bar.js",
-                    getRequestFilename(contextPath, "/foo/bar.js"));
+            Assert.assertEquals("/bar.js", getRequestFilename(contextPath, "/bar.js"));
+            Assert.assertEquals("/foo/bar.js", getRequestFilename(contextPath, "/foo/bar.js"));
 
             // /foo servlet
-            Assert.assertEquals("/foo",
-                    getRequestFilename(contextPath, "/foo"));
-            Assert.assertEquals("/foo/bar.js",
-                    getRequestFilename(contextPath, "/foo/bar.js"));
-            Assert.assertEquals("/foo/bar/baz.js",
-                    getRequestFilename(contextPath, "/foo/bar/baz.js"));
+            Assert.assertEquals("/foo", getRequestFilename(contextPath, "/foo"));
+            Assert.assertEquals("/foo/bar.js", getRequestFilename(contextPath, "/foo/bar.js"));
+            Assert.assertEquals("/foo/bar/baz.js", getRequestFilename(contextPath, "/foo/bar/baz.js"));
 
             // /foo/bar servlet
-            Assert.assertEquals("/foo/bar",
-                    getRequestFilename(contextPath, "/foo/bar"));
-            Assert.assertEquals("/foo/bar/baz.js",
-                    getRequestFilename(contextPath, "/foo/bar/baz.js"));
-            Assert.assertEquals("/foo/bar/baz/baz.js",
-                    getRequestFilename(contextPath, "/foo/bar/baz/baz.js"));
+            Assert.assertEquals("/foo/bar", getRequestFilename(contextPath, "/foo/bar"));
+            Assert.assertEquals("/foo/bar/baz.js", getRequestFilename(contextPath, "/foo/bar/baz.js"));
+            Assert.assertEquals("/foo/bar/baz/baz.js", getRequestFilename(contextPath, "/foo/bar/baz/baz.js"));
         }
     }
 
@@ -231,10 +256,8 @@ public class VertxStaticFileServerTest implements Serializable {
 
     private void setupRequestURI(String encodedContextPath, String pathInfo) {
         assert !encodedContextPath.equals("/") : "root context is always \"\"";
-        assert encodedContextPath.equals("") || encodedContextPath
-                .startsWith("/") : "context always starts with /";
-        assert !encodedContextPath.endsWith(
-                "/") : "context path should start with / but not end with /";
+        assert encodedContextPath.equals("") || encodedContextPath.startsWith("/") : "context always starts with /";
+        assert !encodedContextPath.endsWith("/") : "context path should start with / but not end with /";
         assert pathInfo == null || pathInfo.startsWith("/");
 
         String requestURI = "";
@@ -284,23 +307,19 @@ public class VertxStaticFileServerTest implements Serializable {
         setupRequestURI("", "/frontend");
         // generate URL so it is not ending with / so that we test the correct
         // method
-        String rootAbsolutePath = folder.getRoot().getAbsolutePath()
-                .replaceAll("\\\\", "/");
+        String rootAbsolutePath = folder.getRoot().getAbsolutePath().replaceAll("\\\\", "/");
         if (rootAbsolutePath.endsWith("/")) {
-            rootAbsolutePath = rootAbsolutePath.substring(0,
-                    rootAbsolutePath.length() - 1);
+            rootAbsolutePath = rootAbsolutePath.substring(0, rootAbsolutePath.length() - 1);
         }
         final URL folderPath = new URL("file:///" + rootAbsolutePath);
 
-        Mockito.when(vaadinService.getStaticResource("/frontend"))
-                .thenReturn(folderPath);
-        Assert.assertFalse("Folder on disk should not be a static resource.",
-                fileServer.serveStaticResource(routingContext));
+        Mockito.when(vaadinService.getStaticResource("/frontend")).thenReturn(folderPath);
+        Assert.assertFalse(
+                "Folder on disk should not be a static resource.", fileServer.serveStaticResource(routingContext));
 
         // Test any path ending with / to be seen as a directory
         setupRequestURI("", "/fake");
-        Mockito.when(vaadinService.getStaticResource("/fake"))
-                .thenReturn(new URL("file:///fake/"));
+        Mockito.when(vaadinService.getStaticResource("/fake")).thenReturn(new URL("file:///fake/"));
         Assert.assertFalse(
                 "Fake should not check the file system nor be a static resource.",
                 fileServer.serveStaticResource(routingContext));
@@ -309,17 +328,13 @@ public class VertxStaticFileServerTest implements Serializable {
 
         setupRequestURI("", "/frontend/.");
         Mockito.when(vaadinService.getStaticResource("/frontend/."))
-                .thenReturn(new URL("jar:file:///"
-                        + tempArchive.toString().replaceAll("\\\\", "/")
-                        + "!/frontend"));
+                .thenReturn(new URL("jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/") + "!/frontend"));
         Assert.assertFalse(
                 "Folder 'frontend' in jar should not be a static resource.",
                 fileServer.serveStaticResource(routingContext));
         setupRequestURI("", "/file.txt");
         Mockito.when(vaadinService.getStaticResource("/file.txt"))
-                .thenReturn(new URL("jar:file:///"
-                        + tempArchive.toString().replaceAll("\\\\", "/")
-                        + "!/file.txt"));
+                .thenReturn(new URL("jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/") + "!/file.txt"));
         Assert.assertTrue(
                 "File 'file.txt' inside jar should be a static resource.",
                 fileServer.serveStaticResource(routingContext));
@@ -406,8 +421,7 @@ public class VertxStaticFileServerTest implements Serializable {
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempArchive))) {
             // Create a file to the zip
             zipOutputStream.putNextEntry(new ZipEntry("/file"));
             zipOutputStream.closeEntry();
@@ -418,10 +432,8 @@ public class VertxStaticFileServerTest implements Serializable {
         return tempArchive;
     }
 
-    private void generateJarInJar(File archiveFile, Path tempArchive,
-                                  Path warArchive) throws IOException {
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempArchive))) {
+    private void generateJarInJar(File archiveFile, Path tempArchive, Path warArchive) throws IOException {
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempArchive))) {
             // Create a file to the zip
             zipOutputStream.putNextEntry(new ZipEntry("/file"));
             zipOutputStream.closeEntry();
@@ -430,8 +442,7 @@ public class VertxStaticFileServerTest implements Serializable {
             zipOutputStream.closeEntry();
         }
 
-        try (ZipOutputStream warOutputStream = new ZipOutputStream(
-                Files.newOutputStream(warArchive))) {
+        try (ZipOutputStream warOutputStream = new ZipOutputStream(Files.newOutputStream(warArchive))) {
             // Create a file to the zip
             warOutputStream.putNextEntry(new ZipEntry(archiveFile.getName()));
             warOutputStream.write(Files.readAllBytes(tempArchive));
@@ -640,18 +651,20 @@ public class VertxStaticFileServerTest implements Serializable {
     @Test
     public void isNotResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/context", "/");
-        Mockito.when(vaadinService.getStaticResource("/")).thenReturn(new URL("file",
-                "", -1,
-                "flow/flow-tests/non-root-context-test/src/main/webapp/",
-                new URLStreamHandler() {
+        Mockito.when(vaadinService.getStaticResource("/"))
+                .thenReturn(new URL(
+                        "file",
+                        "",
+                        -1,
+                        "flow/flow-tests/non-root-context-test/src/main/webapp/",
+                        new URLStreamHandler() {
 
-                    @Override
-                    protected URLConnection openConnection(URL u)
-                            throws IOException {
-                        URLConnection mock = Mockito.mock(URLConnection.class);
-                        return mock;
-                    }
-                }));
+                            @Override
+                            protected URLConnection openConnection(URL u) throws IOException {
+                                URLConnection mock = Mockito.mock(URLConnection.class);
+                                return mock;
+                            }
+                        }));
 
         Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
@@ -659,70 +672,57 @@ public class VertxStaticFileServerTest implements Serializable {
     @Test
     public void manifestPath_isResourceRequest() throws IOException {
         setupRequestURI("", "/sw.js");
-        Mockito.when(vaadinService.getStaticResource("/sw.js"))
-                .thenReturn(null);
+        Mockito.when(vaadinService.getStaticResource("/sw.js")).thenReturn(null);
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
     public void manifestPath_isResourceRequest_withContextPath() throws IOException {
         setupRequestURI("/foo", "/sw.js");
-        Mockito.when(vaadinService.getStaticResource("/sw.js"))
-                .thenReturn(null);
+        Mockito.when(vaadinService.getStaticResource("/sw.js")).thenReturn(null);
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
     public void manifestPath_indexHtml_isNotResourceRequest() throws IOException {
         setupRequestURI("", "/index.html");
-        Mockito.when(vaadinService.getStaticResource("/index.html"))
-                .thenReturn(null);
+        Mockito.when(vaadinService.getStaticResource("/index.html")).thenReturn(null);
         Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
     public void manifestPath_indexHtml_isNotResourceRequest_withContextPath() throws IOException {
         setupRequestURI("/foo", "/index.html");
-        Mockito.when(vaadinService.getStaticResource("/index.html"))
-                .thenReturn(null);
+        Mockito.when(vaadinService.getStaticResource("/index.html")).thenReturn(null);
         Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     @Test
-    public void writeModificationTimestampBrowserHasLatest()
-            throws MalformedURLException {
+    public void writeModificationTimestampBrowserHasLatest() throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = true;
         Long modificationTimestamp = writeModificationTime();
-        Assert.assertEquals(modificationTimestamp,
-                dateHeaders.get(HttpHeaders.LAST_MODIFIED.toString()));
+        Assert.assertEquals(modificationTimestamp, dateHeaders.get(HttpHeaders.LAST_MODIFIED.toString()));
     }
 
     @Test
-    public void writeModificationTimestampBrowserDoesNotHaveLatest()
-            throws MalformedURLException {
+    public void writeModificationTimestampBrowserDoesNotHaveLatest() throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = false;
         Long modificationTimestamp = writeModificationTime();
-        Assert.assertEquals(modificationTimestamp,
-                dateHeaders.get(HttpHeaders.LAST_MODIFIED.toString()));
-
+        Assert.assertEquals(modificationTimestamp, dateHeaders.get(HttpHeaders.LAST_MODIFIED.toString()));
     }
 
     private Long writeModificationTime() throws MalformedURLException {
         LocalDateTime modificationTime = LocalDateTime.of(2016, 2, 2, 0, 0, 0);
-        Long modificationTimestamp = modificationTime
-                .toEpochSecond(ZoneOffset.UTC) * 1000;
+        Long modificationTimestamp = modificationTime.toEpochSecond(ZoneOffset.UTC) * 1000;
         String filename = "modified-1d-ago.txt";
-        URL resourceUrl = new URL("file", "", -1, filename,
-                new URLStreamHandler() {
-                    @Override
-                    protected URLConnection openConnection(URL u)
-                            throws IOException {
-                        URLConnection mock = Mockito.mock(URLConnection.class);
-                        Mockito.when(mock.getLastModified())
-                                .thenReturn(modificationTimestamp);
-                        return mock;
-                    }
-                });
+        URL resourceUrl = new URL("file", "", -1, filename, new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                URLConnection mock = Mockito.mock(URLConnection.class);
+                Mockito.when(mock.getLastModified()).thenReturn(modificationTimestamp);
+                return mock;
+            }
+        });
 
         fileServer.writeModificationTimestamp(resourceUrl, routingContext);
         return modificationTimestamp;
@@ -742,18 +742,17 @@ public class VertxStaticFileServerTest implements Serializable {
     public void browserHasNewestVersionNoIfModifiedSinceHeader() {
         long fileModifiedTime = 0;
 
-        Assert.assertFalse(
-                fileServer.browserHasNewestVersion(request, fileModifiedTime));
+        Assert.assertFalse(fileServer.browserHasNewestVersion(request, fileModifiedTime));
     }
 
     @Test
     public void browserHasNewestVersionOlderIfModifiedSinceHeader() {
         long browserIfModifiedSince = 123L;
         long fileModifiedTime = 124L;
-        Mockito.when(request.getHeader("If-Modified-Since")).thenReturn(HttpUtils.formatDateHeader(browserIfModifiedSince));
+        Mockito.when(request.getHeader("If-Modified-Since"))
+                .thenReturn(HttpUtils.formatDateHeader(browserIfModifiedSince));
 
-        Assert.assertFalse(
-                fileServer.browserHasNewestVersion(request, fileModifiedTime));
+        Assert.assertFalse(fileServer.browserHasNewestVersion(request, fileModifiedTime));
     }
 
     @Test
@@ -763,8 +762,7 @@ public class VertxStaticFileServerTest implements Serializable {
         Mockito.when(request.getHeader(HttpHeaders.IF_MODIFIED_SINCE.toString()))
                 .thenReturn(HttpUtils.formatDateHeader(browserIfModifiedSince));
 
-        Assert.assertTrue(
-                fileServer.browserHasNewestVersion(request, fileModifiedTime));
+        Assert.assertTrue(fileServer.browserHasNewestVersion(request, fileModifiedTime));
     }
 
     @Test
@@ -788,8 +786,7 @@ public class VertxStaticFileServerTest implements Serializable {
         fileServer.overrideCacheTime = 0;
         fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         Assert.assertTrue(headers.get(HttpHeaders.CACHE_CONTROL.toString()).contains("max-age=0"));
-        Assert.assertTrue(
-                headers.get(HttpHeaders.CACHE_CONTROL.toString()).contains("must-revalidate"));
+        Assert.assertTrue(headers.get(HttpHeaders.CACHE_CONTROL.toString()).contains("must-revalidate"));
     }
 
     @Test
@@ -804,16 +801,12 @@ public class VertxStaticFileServerTest implements Serializable {
     @Test
     public void getCacheTime() {
         int oneYear = 60 * 60 * 24 * 365;
-        Assert.assertEquals(oneYear,
-                fileServer.getCacheTime("somefile.cache.js"));
-        Assert.assertEquals(oneYear,
-                fileServer.getCacheTime("folder/somefile.cache.js"));
+        Assert.assertEquals(oneYear, fileServer.getCacheTime("somefile.cache.js"));
+        Assert.assertEquals(oneYear, fileServer.getCacheTime("folder/somefile.cache.js"));
         Assert.assertEquals(0, fileServer.getCacheTime("somefile.nocache.js"));
-        Assert.assertEquals(0,
-                fileServer.getCacheTime("folder/somefile.nocache.js"));
+        Assert.assertEquals(0, fileServer.getCacheTime("folder/somefile.nocache.js"));
         Assert.assertEquals(3600, fileServer.getCacheTime("randomfile.js"));
-        Assert.assertEquals(3600,
-                fileServer.getCacheTime("folder/randomfile.js"));
+        Assert.assertEquals(3600, fileServer.getCacheTime("folder/randomfile.js"));
     }
 
     @Test
@@ -826,19 +819,16 @@ public class VertxStaticFileServerTest implements Serializable {
     @Test
     public void serveStaticResource() throws IOException {
         setupRequestURI("", "/some/file.js");
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         Mockito.when(vaadinService.getStaticResource("/some/file.js"))
-                .thenReturn(createFileURLWithDataAndLength("/some/file.js",
-                        fileData));
+                .thenReturn(createFileURLWithDataAndLength("/some/file.js", fileData));
 
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertArrayEquals(fileData, responseOutput.getBytes());
     }
 
     @Test
-    public void contextPath_serveStaticBundleBuildResource()
-            throws IOException {
+    public void contextPath_serveStaticBundleBuildResource() throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("/context", pathInfo);
         assertBundleBuildResource(pathInfo);
@@ -866,14 +856,12 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     public void assertBundleBuildResource(String pathInfo) throws IOException {
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                .thenReturn(createFileURLWithDataAndLength("/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -882,41 +870,32 @@ public class VertxStaticFileServerTest implements Serializable {
         Assert.assertArrayEquals(fileData, responseOutput.getBytes());
     }
 
-    private void staticBuildResourceWithDirectoryChange_nothingServed(
-            String pathInfo) throws IOException {
-        setupRequestURI("/context",  pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+    private void staticBuildResourceWithDirectoryChange_nothingServed(String pathInfo) throws IOException {
+        setupRequestURI("/context", pathInfo);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                .thenReturn(createFileURLWithDataAndLength("/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         // have data available for /VAADIN/vaadin-bundle-1234.cache.js
-        Mockito.when(mockLoader.getResource(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo.replace("build/../", "")))
-                .thenReturn(
-                        createFileURLWithDataAndLength(
-                                WEBAPP_RESOURCE_PREFIX
-                                        + pathInfo.replace("build/../", ""),
-                                fileData));
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo.replace("build/../", "")))
+                .thenReturn(createFileURLWithDataAndLength(
+                        WEBAPP_RESOURCE_PREFIX + pathInfo.replace("build/../", ""), fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
 
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertEquals(0, responseOutput.length());
-        Assert.assertEquals(HttpStatusCode.BAD_REQUEST.getCode(),
-                responseCode.get());
+        Assert.assertEquals(HttpStatusCode.BAD_REQUEST.getCode(), responseCode.get());
     }
 
     @Test
     public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
             throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
+        staticBuildResourceWithDirectoryChange_nothingServed("/VAADIN/build/../vaadin-bundle-1234.cache.js");
     }
 
     @Test
@@ -927,15 +906,17 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
-            throws IOException {
+    public void
+            serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+                    throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
-            throws IOException {
+    public void
+            serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+                    throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
     }
@@ -943,43 +924,40 @@ public class VertxStaticFileServerTest implements Serializable {
     @Test
     public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
             throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/..");
+        staticBuildResourceWithDirectoryChange_nothingServed("/VAADIN/build/..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
-            throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/something\\..");
+    public void
+            serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+                    throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed("/VAADIN/build/something\\..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
-            throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/something%5C..");
+    public void
+            serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+                    throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed("/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
-            throws IOException {
-        staticBuildResourceWithDirectoryChange_nothingServed(
-                "/VAADIN/build/something%5c..");
+    public void
+            serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+                    throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed("/VAADIN/build/something%5c..");
     }
 
     @Test
     public void customStaticBuildResource_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                .thenReturn(createFileURLWithDataAndLength("/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -1005,32 +983,27 @@ public class VertxStaticFileServerTest implements Serializable {
     public void staticManifestPathResource_isServed() throws IOException {
         String pathInfo = "/sw.js";
         setupRequestURI("", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                .thenReturn(createFileURLWithDataAndLength("/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertArrayEquals(fileData, responseOutput.getBytes());
     }
 
     @Test
-    public void staticManifestPathIndexHtmlResource_returnsNotFound()
-            throws IOException {
+    public void staticManifestPathIndexHtmlResource_returnsNotFound() throws IOException {
         String pathInfo = "/index.html";
         setupRequestURI("", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                .thenReturn(createFileURLWithDataAndLength("/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
@@ -1039,9 +1012,8 @@ public class VertxStaticFileServerTest implements Serializable {
     public void customStatsJson_isServedFromServlet() throws IOException {
 
         String pathInfo = "/VAADIN/build/stats.json";
-        setupRequestURI("/servlet",  pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        setupRequestURI("/servlet", pathInfo);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
 
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
@@ -1056,17 +1028,14 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     public void mockConfigurationPolyfills() {
-        Mockito.when(configuration.getPolyfills()).thenReturn(
-                Arrays.asList(POLYFILLS_DEFAULT_VALUE.split("[, ]+")));
+        Mockito.when(configuration.getPolyfills()).thenReturn(Arrays.asList(POLYFILLS_DEFAULT_VALUE.split("[, ]+")));
     }
 
     public void mockStatsBundles(ClassLoader mockLoader) {
         Mockito.when(configuration.getStringProperty(
-                        SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                        SERVLET_PARAMETER_STATISTICS_JSON, VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn("META-INF/VAADIN/config/stats.json");
-        Mockito.when(mockLoader
-                        .getResourceAsStream("META-INF/VAADIN/config/stats.json"))
+        Mockito.when(mockLoader.getResourceAsStream("META-INF/VAADIN/config/stats.json"))
                 .thenReturn(new ByteArrayInputStream(getStatsData()));
     }
 
@@ -1076,8 +1045,7 @@ public class VertxStaticFileServerTest implements Serializable {
      * @return
      */
     public byte[] getStatsData() {
-        return ("{ " + "\"assetsByChunkName\" :{ "
-                + "\"index\": \"build/vaadin-bundle-1234.cache.js\"} }")
+        return ("{ " + "\"assetsByChunkName\" :{ " + "\"index\": \"build/vaadin-bundle-1234.cache.js\"} }")
                 .getBytes(StandardCharsets.UTF_8);
     }
 
@@ -1090,29 +1058,22 @@ public class VertxStaticFileServerTest implements Serializable {
         Mockito.when(request.getHeader(HttpHeaders.IF_MODIFIED_SINCE.toString()))
                 .thenReturn(HttpUtils.formatDateHeader(browserLatest));
 
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         Mockito.when(vaadinService.getStaticResource("/some/file.js"))
-                .thenReturn(createFileURLWithDataAndLength("/some/file.js",
-                        fileData, fileModified));
+                .thenReturn(createFileURLWithDataAndLength("/some/file.js", fileData, fileModified));
         Assert.assertTrue(fileServer.serveStaticResource(routingContext));
         Assert.assertEquals(0, responseOutput.length());
-        Assert.assertEquals(HttpServletResponse.SC_NOT_MODIFIED,
-                responseCode.get());
+        Assert.assertEquals(HttpServletResponse.SC_NOT_MODIFIED, responseCode.get());
     }
 
     @Test
-    public void serveStaticResourceFromWebjarWithIncorrectPath()
-            throws IOException {
-        Mockito.when(configuration.getBooleanProperty(
-                        VertxStaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
+    public void serveStaticResourceFromWebjarWithIncorrectPath() throws IOException {
+        Mockito.when(configuration.getBooleanProperty(VertxStaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
                 .thenReturn(true);
 
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        byte[] fileData = "function() {eval('foo');};".getBytes(StandardCharsets.UTF_8);
         Mockito.when(vaadinService.getStaticResource("/webjars/foo/bar.js"))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/webjars/foo/bar.js", fileData));
+                .thenReturn(createFileURLWithDataAndLength("/webjars/foo/bar.js", fileData));
 
         setupRequestURI("", "/frontend/src/webjars/foo/bar.js");
 
@@ -1121,14 +1082,11 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticResourceFromWebjarWithIncorrectPathAndFixingDisabled()
-            throws IOException {
-        Mockito.when(configuration.getBooleanProperty(
-                        VertxStaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
+    public void serveStaticResourceFromWebjarWithIncorrectPathAndFixingDisabled() throws IOException {
+        Mockito.when(configuration.getBooleanProperty(VertxStaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
                 .thenReturn(false);
 
-        Mockito.when(vaadinService
-                        .getStaticResource("/frontend/src/webjars/foo/bar.js"))
+        Mockito.when(vaadinService.getStaticResource("/frontend/src/webjars/foo/bar.js"))
                 .thenReturn(null);
 
         setupRequestURI("", "/frontend/src/webjars/foo/bar.js");
@@ -1137,8 +1095,7 @@ public class VertxStaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void getStaticResource_delegateToVaadinService()
-            throws MalformedURLException {
+    public void getStaticResource_delegateToVaadinService() throws MalformedURLException {
         URL url = new URL("http://bar");
         Mockito.when(vaadinService.getStaticResource("foo")).thenReturn(url);
         URL result = fileServer.getStaticResource("foo");
@@ -1147,8 +1104,7 @@ public class VertxStaticFileServerTest implements Serializable {
         Assert.assertSame(url, result);
     }
 
-    private static class CapturingServletOutputStream
-            extends ServletOutputStream {
+    private static class CapturingServletOutputStream extends ServletOutputStream {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         @Override
@@ -1157,8 +1113,7 @@ public class VertxStaticFileServerTest implements Serializable {
         }
 
         @Override
-        public void setWriteListener(WriteListener writeListener) {
-        }
+        public void setWriteListener(WriteListener writeListener) {}
 
         @Override
         public boolean isReady() {
@@ -1182,14 +1137,12 @@ public class VertxStaticFileServerTest implements Serializable {
         }
 
         @Override
-        protected boolean browserHasNewestVersion(HttpServerRequest request,
-                                                  long resourceLastModifiedTimestamp) {
+        protected boolean browserHasNewestVersion(HttpServerRequest request, long resourceLastModifiedTimestamp) {
             if (overrideBrowserHasNewestVersion != null) {
                 return overrideBrowserHasNewestVersion;
             }
 
-            return super.browserHasNewestVersion(request,
-                    resourceLastModifiedTimestamp);
+            return super.browserHasNewestVersion(request, resourceLastModifiedTimestamp);
         }
 
         @Override
@@ -1205,26 +1158,25 @@ public class VertxStaticFileServerTest implements Serializable {
             if (!writeResponse)
                 try {
                     {
-                        ResponseWriter fakeWriter = new ResponseWriter(
-                            configuration) {
+                        ResponseWriter fakeWriter = new ResponseWriter(configuration) {
                             @Override
                             public void writeResponseContents(
-                                String filenameWithPath, URL resourceUrl, RoutingContext routingContext)
-                                throws IOException {
+                                    String filenameWithPath, URL resourceUrl, RoutingContext routingContext)
+                                    throws IOException {
                                 return;
                             }
                         };
-                        Field f = VertxStaticFileServer.class
-                            .getDeclaredField("responseWriter");
+                        Field f = VertxStaticFileServer.class.getDeclaredField("responseWriter");
                         f.setAccessible(true);
                         f.set(this, fakeWriter);
                     }
-                } catch (IllegalArgumentException | IllegalAccessException
-                    | NoSuchFieldException | SecurityException e) {
+                } catch (IllegalArgumentException
+                        | IllegalAccessException
+                        | NoSuchFieldException
+                        | SecurityException e) {
                     throw new RuntimeException(e);
                 }
             return super.serveStaticResource(routingContext);
         }
-
     }
 }

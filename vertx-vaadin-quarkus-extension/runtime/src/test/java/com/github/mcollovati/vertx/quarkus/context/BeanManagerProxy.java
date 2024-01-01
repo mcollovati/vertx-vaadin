@@ -1,23 +1,26 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.github.mcollovati.vertx.quarkus.context;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -26,11 +29,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.github.mcollovati.vertx.quarkus.context.BeanProvider;
-import org.mockito.Mockito;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.flow.server.VaadinSession;
+import org.mockito.Mockito;
 
 class BeanManagerProxy implements InvocationHandler {
 
@@ -38,8 +42,7 @@ class BeanManagerProxy implements InvocationHandler {
 
     private final Bean<?> fakeBean = Mockito.mock(Bean.class);
 
-    private final CreationalContext<?> fakeContext = Mockito
-            .mock(CreationalContext.class);
+    private final CreationalContext<?> fakeContext = Mockito.mock(CreationalContext.class);
 
     private final Class<?> mockingBeanType;
 
@@ -49,30 +52,26 @@ class BeanManagerProxy implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args)
-            throws Throwable {
-        if (method.getName().equals("getBeans")
-                && args[0].equals(mockingBeanType)) {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (method.getName().equals("getBeans") && args[0].equals(mockingBeanType)) {
             Set<Bean<?>> set = Collections.singleton(fakeBean);
             return set;
         }
-        if (method.getName().equals("resolve")
-                && args[0].equals(Collections.singleton(fakeBean))) {
+        if (method.getName().equals("resolve") && args[0].equals(Collections.singleton(fakeBean))) {
             return fakeBean;
         }
-        if (method.getName().equals("createCreationalContext")
-                && args[0].equals(fakeBean)) {
+        if (method.getName().equals("createCreationalContext") && args[0].equals(fakeBean)) {
             return fakeContext;
         }
-        if (method.getName().equals("getReference") && args[0].equals(fakeBean)
+        if (method.getName().equals("getReference")
+                && args[0].equals(fakeBean)
                 && args[1].equals(mockingBeanType)
                 && args[2].equals(fakeContext)) {
             VaadinSession session = VaadinSession.getCurrent();
             String attribute = getAttributeName(mockingBeanType);
             Object value = session.getAttribute(attribute);
             if (value == null) {
-                value = BeanProvider.getContextualReference(delegate,
-                        mockingBeanType, false);
+                value = BeanProvider.getContextualReference(delegate, mockingBeanType, false);
                 session.setAttribute(attribute, value);
             }
             return value;
@@ -83,8 +82,8 @@ class BeanManagerProxy implements InvocationHandler {
 
     private Object delegate(Method method, Object[] args) throws Throwable {
         Method[] methods = delegate.getClass().getDeclaredMethods();
-        List<Method> filtered = Stream.of(methods).filter(
-                origMethod -> origMethod.getName().equals(method.getName()))
+        List<Method> filtered = Stream.of(methods)
+                .filter(origMethod -> origMethod.getName().equals(method.getName()))
                 .collect(Collectors.toList());
 
         Method found = null;
@@ -92,8 +91,7 @@ class BeanManagerProxy implements InvocationHandler {
             found = filtered.get(0);
         } else {
             for (Method overloaded : filtered) {
-                if (overloaded.getParameterCount() == method
-                        .getParameterCount()) {
+                if (overloaded.getParameterCount() == method.getParameterCount()) {
                     found = overloaded;
                     break;
                 }
@@ -105,5 +103,4 @@ class BeanManagerProxy implements InvocationHandler {
     static String getAttributeName(Class<?> mockingBeanType) {
         return "test-" + mockingBeanType;
     }
-
 }

@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -72,9 +79,8 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
         // Check that there is no notification about session expired
         assertFalse(
-            "By default, the 'Session Expired' notification "
-                + "should not be used",
-            isSessionExpiredNotificationPresent());
+                "By default, the 'Session Expired' notification " + "should not be used",
+                isSessionExpiredNotificationPresent());
     }
 
     @Test
@@ -90,12 +96,15 @@ public class InternalErrorIT extends ChromeBrowserTest {
         // Just click on any button to make a request after killing the session
         clickButton(CLOSE_SESSION);
 
-        assertTrue("After enabling the 'Session Expired' notification, "
-            + "the page should not be refreshed "
-            + "after killing the session", isMessageUpdated());
-        assertTrue("After enabling the 'Session Expired' notification "
-                + "and killing the session, the notification should be displayed",
-            isSessionExpiredNotificationPresent());
+        assertTrue(
+                "After enabling the 'Session Expired' notification, "
+                        + "the page should not be refreshed "
+                        + "after killing the session",
+                isMessageUpdated());
+        assertTrue(
+                "After enabling the 'Session Expired' notification "
+                        + "and killing the session, the notification should be displayed",
+                isSessionExpiredNotificationPresent());
     }
 
     @Test
@@ -104,23 +113,21 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
         clickButton("cause-exception");
 
-        assertTrue("The page should not be immediately refreshed after "
-            + "a server-side exception", isMessageUpdated());
         assertTrue(
-            "'Internal error' notification should be present after "
-                + "a server-side exception",
-            isInternalErrorNotificationPresent());
+                "The page should not be immediately refreshed after " + "a server-side exception", isMessageUpdated());
+        assertTrue(
+                "'Internal error' notification should be present after " + "a server-side exception",
+                isInternalErrorNotificationPresent());
 
         getErrorNotification().click();
         try {
             waitUntil(driver -> !isMessageUpdated());
         } catch (TimeoutException e) {
             Assert.fail("After internal error, clicking the notification "
-                + "should refresh the page, resetting the state of the UI.");
+                    + "should refresh the page, resetting the state of the UI.");
         }
         assertFalse(
-            "'Internal error' notification should be gone after refreshing",
-            isInternalErrorNotificationPresent());
+                "'Internal error' notification should be gone after refreshing", isInternalErrorNotificationPresent());
     }
 
     @Test
@@ -129,30 +136,26 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
         clickButton("cause-exception");
 
-        assertTrue("The page should not be immediately refreshed after "
-            + "a server-side exception", isMessageUpdated());
         assertTrue(
-            "'Internal error' notification should be present after "
-                + "a server-side exception",
-            isInternalErrorNotificationPresent());
+                "The page should not be immediately refreshed after " + "a server-side exception", isMessageUpdated());
+        assertTrue(
+                "'Internal error' notification should be present after " + "a server-side exception",
+                isInternalErrorNotificationPresent());
 
         new Actions(getDriver()).sendKeys(Keys.ESCAPE).build().perform();
         try {
             waitUntil(driver -> !isMessageUpdated());
         } catch (TimeoutException e) {
-            Assert.fail(
-                "After internal error, pressing esc-key should refresh the page, "
+            Assert.fail("After internal error, pressing esc-key should refresh the page, "
                     + "resetting the state of the UI.");
         }
         assertFalse(
-            "'Internal error' notification should be gone after refreshing",
-            isInternalErrorNotificationPresent());
+                "'Internal error' notification should be gone after refreshing", isInternalErrorNotificationPresent());
     }
 
     @After
     public void resetSystemMessages() {
-        waitUntil(ExpectedConditions
-            .presenceOfElementLocated(By.id("reset-system-messages")));
+        waitUntil(ExpectedConditions.presenceOfElementLocated(By.id("reset-system-messages")));
         clickButton("reset-system-messages");
     }
 

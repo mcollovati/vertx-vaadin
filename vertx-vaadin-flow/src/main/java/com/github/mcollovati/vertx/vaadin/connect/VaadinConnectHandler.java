@@ -22,9 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import com.github.mcollovati.vertx.vaadin.connect.auth.VertxVaadinConnectAccessChecker;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -35,16 +32,23 @@ import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import com.github.mcollovati.vertx.vaadin.connect.auth.VertxVaadinConnectAccessChecker;
+
 public class VaadinConnectHandler {
 
     private final VertxVaadinConnectEndpointService endpointService;
     private final VertxVaadinService vaadinService;
 
     VaadinConnectHandler(VaadinEndpointRegistry endpointRegistry, VertxVaadinService vaadinService) {
-        this(new VertxVaadinConnectEndpointService(
-                DatabindCodec.mapper(), endpointRegistry, new VertxVaadinConnectAccessChecker(vaadinService.getContext()), new ExplicitNullableTypeChecker()
-        ), vaadinService);
-
+        this(
+                new VertxVaadinConnectEndpointService(
+                        DatabindCodec.mapper(),
+                        endpointRegistry,
+                        new VertxVaadinConnectAccessChecker(vaadinService.getContext()),
+                        new ExplicitNullableTypeChecker()),
+                vaadinService);
     }
 
     VaadinConnectHandler(VertxVaadinConnectEndpointService service, VertxVaadinService vaadinService) {
@@ -55,7 +59,8 @@ public class VaadinConnectHandler {
     void handle(RoutingContext routingContext) {
         String endpoint = routingContext.request().getParam("endpoint");
         String method = routingContext.request().getParam("method");
-        VaadinConnectResponse connectResponse = endpointService.serveEndpoint(endpoint, method, new VertxConnectRequestContext(routingContext));
+        VaadinConnectResponse connectResponse =
+                endpointService.serveEndpoint(endpoint, method, new VertxConnectRequestContext(routingContext));
 
         HttpServerResponse response = routingContext.response();
         response.setStatusCode(connectResponse.getStatusCode());
@@ -102,5 +107,4 @@ public class VaadinConnectHandler {
                     }
                 });
     }
-
 }

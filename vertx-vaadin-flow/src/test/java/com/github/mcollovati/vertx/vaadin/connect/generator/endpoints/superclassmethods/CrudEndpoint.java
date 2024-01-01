@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
-import dev.hilla.EndpointExposed;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import dev.hilla.EndpointExposed;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
@@ -35,6 +35,5 @@ public abstract class CrudEndpoint<T, ID> extends ReadOnlyEndpoint<T, ID> {
         return entity;
     }
 
-    public void delete(ID id) {
-    }
+    public void delete(ID id) {}
 }

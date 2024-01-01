@@ -22,6 +22,11 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
+import java.lang.reflect.Method;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import io.vertx.core.Future;
@@ -34,11 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -69,20 +69,17 @@ public class VertxConnectAccessCheckerTest {
         routingContextMock = mock(RoutingContext.class);
         requestMock = mock(HttpServerRequest.class);
         sessionMock = mock(Session.class);
-        when(sessionMock.get(VaadinService.getCsrfTokenAttributeName()))
-            .thenReturn("Vaadin CCDM");
+        when(sessionMock.get(VaadinService.getCsrfTokenAttributeName())).thenReturn("Vaadin CCDM");
         when(routingContextMock.request()).thenReturn(requestMock);
         when(routingContextMock.session()).thenReturn(sessionMock);
         User user = mock(User.class);
         when(routingContextMock.user()).thenReturn(user);
-        when(requestMock.getHeader("X-CSRF-Token"))
-            .thenReturn("Vaadin CCDM");
-        when(user.isAuthorized(anyString(), any()))
-            .then(i -> {
-                boolean inRole = "ROLE_USER".equals(i.getArgument(0, String.class));
-                i.getArgument(1, Handler.class).handle(Future.succeededFuture(inRole));
-                return user;
-            });
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin CCDM");
+        when(user.isAuthorized(anyString(), any())).then(i -> {
+            boolean inRole = "ROLE_USER".equals(i.getArgument(0, String.class));
+            i.getArgument(1, Handler.class).handle(Future.succeededFuture(inRole));
+            return user;
+        });
     }
 
     private void createAnonymousContext() {
@@ -90,13 +87,11 @@ public class VertxConnectAccessCheckerTest {
     }
 
     private void createDifferentSessionToken() {
-        when(sessionMock.get(VaadinService.getCsrfTokenAttributeName()))
-            .thenReturn("CCDM Token");
+        when(sessionMock.get(VaadinService.getCsrfTokenAttributeName())).thenReturn("CCDM Token");
     }
 
     private void createNullTokenContextInHeaderRequest() {
-        when(requestMock.getHeader("X-CSRF-Token"))
-            .thenReturn(null);
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn(null);
     }
 
     private void createNullTokenSession() {
@@ -120,8 +115,7 @@ public class VertxConnectAccessCheckerTest {
     @Test
     public void should_fail_When_not_having_token_in_headerRequest() throws Exception {
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createNullTokenContextInHeaderRequest();
         shouldFail(Test.class);
@@ -130,19 +124,18 @@ public class VertxConnectAccessCheckerTest {
     @Test
     public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header() throws Exception {
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createNullTokenSession();
         shouldFail(Test.class);
     }
 
     @Test
-    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header_And_AnonymousAllowed() throws Exception {
+    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header_And_AnonymousAllowed()
+            throws Exception {
         @AnonymousAllowed
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createNullTokenSession();
         shouldFail(Test.class);
@@ -152,8 +145,7 @@ public class VertxConnectAccessCheckerTest {
     public void should_pass_When_not_having_session_And_not_having_token_in_request_header() throws Exception {
         @PermitAll
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createNullSession();
         createNullTokenContextInHeaderRequest();
@@ -161,11 +153,11 @@ public class VertxConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_pass_When_not_having_session_And_not_having_token_in_request_header_And_AnonymousAllowed() throws Exception {
+    public void should_pass_When_not_having_session_And_not_having_token_in_request_header_And_AnonymousAllowed()
+            throws Exception {
         @AnonymousAllowed
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createNullSession();
         createNullTokenContextInHeaderRequest();
@@ -176,8 +168,7 @@ public class VertxConnectAccessCheckerTest {
     public void should_pass_When_csrf_disabled() throws Exception {
         @PermitAll
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createNullTokenContextInHeaderRequest();
         checker.enableCsrf(false);
@@ -187,19 +178,19 @@ public class VertxConnectAccessCheckerTest {
     @Test
     public void should_fail_When_having_different_token_between_session_and_headerRequest() throws Exception {
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createDifferentSessionToken();
         shouldFail(Test.class);
     }
 
     @Test
-    public void should_fail_When_having_different_token_between_session_and_headerRequest_and_NoAuthentication_AnonymousAllowed() throws Exception {
+    public void
+            should_fail_When_having_different_token_between_session_and_headerRequest_and_NoAuthentication_AnonymousAllowed()
+                    throws Exception {
         class Test {
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         createAnonymousContext();
         createDifferentSessionToken();
@@ -209,8 +200,7 @@ public class VertxConnectAccessCheckerTest {
     @Test
     public void should_Fail_When_NoAuthentication() throws Exception {
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createAnonymousContext();
         shouldFail(Test.class);
@@ -220,8 +210,7 @@ public class VertxConnectAccessCheckerTest {
     public void should_Pass_When_Authentication_And_matching_token() throws Exception {
         @PermitAll
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
@@ -230,32 +219,27 @@ public class VertxConnectAccessCheckerTest {
     public void should_Fail_When_DenyAllClass() throws Exception {
         @DenyAll
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         shouldFail(Test.class);
     }
 
     @Test()
-    public void should_Pass_When_DenyAllClass_ValidRoleMethod()
-        throws Exception {
+    public void should_Pass_When_DenyAllClass_ValidRoleMethod() throws Exception {
         @DenyAll
         class Test {
             @RolesAllowed(ROLE_USER)
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
 
     @Test()
-    public void should_Pass_When_DenyAllClass_PermitAllMethod()
-        throws Exception {
+    public void should_Pass_When_DenyAllClass_PermitAllMethod() throws Exception {
         @DenyAll
         class Test {
             @PermitAll
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
@@ -264,32 +248,27 @@ public class VertxConnectAccessCheckerTest {
     public void should_Fail_When_InvalidRoleClass() throws Exception {
         @RolesAllowed({"ROLE_ADMIN"})
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         shouldFail(Test.class);
     }
 
     @Test()
-    public void should_Pass_When_InvalidRoleClass_ValidRoleMethod()
-        throws Exception {
+    public void should_Pass_When_InvalidRoleClass_ValidRoleMethod() throws Exception {
         @RolesAllowed({"ROLE_ADMIN"})
         class Test {
             @RolesAllowed(ROLE_USER)
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
 
     @Test()
-    public void should_Pass_When_InvalidRoleClass_PermitAllMethod()
-        throws Exception {
+    public void should_Pass_When_InvalidRoleClass_PermitAllMethod() throws Exception {
         @RolesAllowed({"ROLE_ADMIN"})
         class Test {
             @PermitAll
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
@@ -298,19 +277,16 @@ public class VertxConnectAccessCheckerTest {
     public void should_Pass_When_ValidRoleClass() throws Exception {
         @RolesAllowed(ROLE_USER)
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
 
     @Test
-    public void should_AllowAnonymousAccess_When_ClassIsAnnotated()
-        throws Exception {
+    public void should_AllowAnonymousAccess_When_ClassIsAnnotated() throws Exception {
         @AnonymousAllowed
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
 
         createAnonymousContext();
@@ -318,48 +294,40 @@ public class VertxConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_AllowAnonymousAccess_When_MethodIsAnnotated()
-        throws Exception {
+    public void should_AllowAnonymousAccess_When_MethodIsAnnotated() throws Exception {
         class Test {
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         createAnonymousContext();
         shouldPass(Test.class);
     }
 
     @Test
-    public void should_NotAllowAnonymousAccess_When_NoAnnotationsPresent()
-        throws Exception {
+    public void should_NotAllowAnonymousAccess_When_NoAnnotationsPresent() throws Exception {
         class Test {
-            public void test() {
-            }
+            public void test() {}
         }
         createAnonymousContext();
         shouldFail(Test.class);
     }
 
     @Test
-    public void should_AllowAnyAuthenticatedAccess_When_PermitAllAndAnonymousAllowed()
-        throws Exception {
+    public void should_AllowAnyAuthenticatedAccess_When_PermitAllAndAnonymousAllowed() throws Exception {
         class Test {
             @PermitAll
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
 
     @Test
-    public void should_AllowAnonymousAccess_When_PermitAllAndAnonymousAllowed()
-        throws Exception {
+    public void should_AllowAnonymousAccess_When_PermitAllAndAnonymousAllowed() throws Exception {
         class Test {
             @PermitAll
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
 
         createAnonymousContext();
@@ -367,87 +335,73 @@ public class VertxConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_AllowAnyAuthenticatedAccess_When_RolesAllowedAndAnonymousAllowed()
-        throws Exception {
+    public void should_AllowAnyAuthenticatedAccess_When_RolesAllowedAndAnonymousAllowed() throws Exception {
         class Test {
             @RolesAllowed("ADMIN")
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
 
     @Test
-    public void should_AllowAnonymousAccess_When_RolesAllowedAndAnonymousAllowed()
-        throws Exception {
+    public void should_AllowAnonymousAccess_When_RolesAllowedAndAnonymousAllowed() throws Exception {
         class Test {
             @RolesAllowed("ADMIN")
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         createAnonymousContext();
         shouldPass(Test.class);
     }
 
     @Test
-    public void should_DisallowAnyAuthenticatedAccess_When_DenyAllAndAnonymousAllowed()
-        throws Exception {
+    public void should_DisallowAnyAuthenticatedAccess_When_DenyAllAndAnonymousAllowed() throws Exception {
         class Test {
             @DenyAll
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         shouldFail(Test.class);
     }
 
     @Test
-    public void should_DisallowNotMatchingRoleAccess_When_RolesAllowedAndPermitAll()
-        throws Exception {
+    public void should_DisallowNotMatchingRoleAccess_When_RolesAllowedAndPermitAll() throws Exception {
         class Test {
             @RolesAllowed("ADMIN")
             @PermitAll
-            public void test() {
-            }
+            public void test() {}
         }
         shouldFail(Test.class);
     }
 
     @Test
-    public void should_AllowSpecificRoleAccess_When_RolesAllowedAndPermitAll()
-        throws Exception {
+    public void should_AllowSpecificRoleAccess_When_RolesAllowedAndPermitAll() throws Exception {
         class Test {
             @RolesAllowed(ROLE_USER)
             @PermitAll
-            public void test() {
-            }
+            public void test() {}
         }
         shouldPass(Test.class);
     }
 
     @Test
-    public void should_DisallowAnonymousAccess_When_DenyAllAndAnonymousAllowed()
-        throws Exception {
+    public void should_DisallowAnonymousAccess_When_DenyAllAndAnonymousAllowed() throws Exception {
         class Test {
             @DenyAll
             @AnonymousAllowed
-            public void test() {
-            }
+            public void test() {}
         }
         createAnonymousContext();
         shouldFail(Test.class);
     }
 
     @Test
-    public void should_DisallowAnonymousAccess_When_AnonymousAllowedIsOverriddenWithDenyAll()
-        throws Exception {
+    public void should_DisallowAnonymousAccess_When_AnonymousAllowedIsOverriddenWithDenyAll() throws Exception {
         @AnonymousAllowed
         class Test {
             @DenyAll
-            public void test() {
-            }
+            public void test() {}
         }
 
         createAnonymousContext();
@@ -455,13 +409,11 @@ public class VertxConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_DisallowAnonymousAccess_When_AnonymousAllowedIsOverriddenWithRolesAllowed()
-        throws Exception {
+    public void should_DisallowAnonymousAccess_When_AnonymousAllowedIsOverriddenWithRolesAllowed() throws Exception {
         @AnonymousAllowed
         class Test {
             @RolesAllowed(ROLE_USER)
-            public void test() {
-            }
+            public void test() {}
         }
 
         createAnonymousContext();
@@ -469,13 +421,11 @@ public class VertxConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_DisallowAnonymousAccess_When_AnonymousAllowedIsOverriddenWithPermitAll()
-        throws Exception {
+    public void should_DisallowAnonymousAccess_When_AnonymousAllowedIsOverriddenWithPermitAll() throws Exception {
         @AnonymousAllowed
         class Test {
             @PermitAll
-            public void test() {
-            }
+            public void test() {}
         }
 
         createAnonymousContext();
@@ -485,8 +435,7 @@ public class VertxConnectAccessCheckerTest {
     @Test
     public void should_Throw_When_PrivateMethodIsPassed() throws Exception {
         class Test {
-            private void test() {
-            }
+            private void test() {}
         }
 
         Method method = Test.class.getDeclaredMethod("test");
@@ -494,5 +443,4 @@ public class VertxConnectAccessCheckerTest {
         exception.expectMessage(method.toString());
         checker.check(method, routingContextMock);
     }
-
 }

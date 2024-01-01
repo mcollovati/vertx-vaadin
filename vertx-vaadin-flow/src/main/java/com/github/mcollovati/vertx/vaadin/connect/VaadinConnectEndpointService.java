@@ -46,7 +46,8 @@ import dev.hilla.Endpoint;
  *
  * Source code and javadocs adapted from Vaadin Flow (https://github.com/vaadin/flow)
  */
-public interface VaadinConnectEndpointService<REQUEST, RESPONSE, CTX extends EndpointServiceContext<REQUEST, RESPONSE>> {
+public interface VaadinConnectEndpointService<
+        REQUEST, RESPONSE, CTX extends EndpointServiceContext<REQUEST, RESPONSE>> {
 
     /**
      * Processes the Vaadin Connect requests.

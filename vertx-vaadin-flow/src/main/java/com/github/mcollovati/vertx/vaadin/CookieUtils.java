@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.http.Cookie;
 import java.util.Optional;
+import javax.servlet.http.Cookie;
 
 import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 
@@ -49,8 +49,10 @@ class CookieUtils {
 
     public static io.vertx.core.http.Cookie toVertxCookie(Cookie cookie) {
         return io.vertx.core.http.Cookie.cookie(cookie.getName(), cookie.getValue())
-            .setMaxAge(cookie.getMaxAge()).setSecure(cookie.getSecure())
-            .setHttpOnly(cookie.isHttpOnly()).setPath(cookie.getPath())
-            .setDomain(cookie.getDomain());
+                .setMaxAge(cookie.getMaxAge())
+                .setSecure(cookie.getSecure())
+                .setHttpOnly(cookie.isHttpOnly())
+                .setPath(cookie.getPath())
+                .setDomain(cookie.getDomain());
     }
 }

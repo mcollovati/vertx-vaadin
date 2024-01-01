@@ -22,10 +22,11 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
+import java.security.Principal;
+
 import io.vertx.ext.web.RoutingContext;
 
-import java.security.Principal;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 
 public class VertxAccessAnnotationChecker extends AccessAnnotationChecker<RoutingContext> {
 
@@ -49,5 +50,4 @@ public class VertxAccessAnnotationChecker extends AccessAnnotationChecker<Routin
             }
         };
     }
-
 }

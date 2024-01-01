@@ -60,5 +60,4 @@ public class VertxVaadinConfig implements VaadinConfig {
         }
         return null;
     }
-
 }

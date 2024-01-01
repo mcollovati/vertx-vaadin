@@ -33,10 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
@@ -59,6 +56,9 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.ext.web.FileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -105,19 +105,23 @@ public class StreamReceiverHandler implements Serializable {
      *                       receiver id
      * @throws IOException if an IO error occurred
      */
-    public void handleRequest(VaadinSession session, VaadinRequest request,
-                              VaadinResponse response, StreamReceiver streamReceiver, String uiId,
-                              String securityKey) throws IOException {
+    public void handleRequest(
+            VaadinSession session,
+            VaadinRequest request,
+            VaadinResponse response,
+            StreamReceiver streamReceiver,
+            String uiId,
+            String securityKey)
+            throws IOException {
         StateNode source;
 
         session.lock();
         try {
             String secKey = streamReceiver.getId();
-            if (secKey == null || !MessageDigest.isEqual(
-                secKey.getBytes(StandardCharsets.UTF_8),
-                securityKey.getBytes(StandardCharsets.UTF_8))) {
-                getLogger().warn(
-                    "Received incoming stream with faulty security key.");
+            if (secKey == null
+                    || !MessageDigest.isEqual(
+                            secKey.getBytes(StandardCharsets.UTF_8), securityKey.getBytes(StandardCharsets.UTF_8))) {
+                getLogger().warn("Received incoming stream with faulty security key.");
                 return;
             }
 
@@ -131,14 +135,14 @@ public class StreamReceiverHandler implements Serializable {
         }
 
         try {
-            List<FileUpload> fileUploads = ((VertxVaadinRequest) request).getRoutingContext().fileUploads();
+            List<FileUpload> fileUploads =
+                    ((VertxVaadinRequest) request).getRoutingContext().fileUploads();
             if (!fileUploads.isEmpty()) {
                 doHandleMultipartFileUpload(session, request, response, fileUploads, streamReceiver, source);
             } else {
                 // if boundary string does not exist, the posted file is from
                 // XHR2.post(File)
-                doHandleXhrFilePost(session, request, response, streamReceiver,
-                    source, getContentLength(request));
+                doHandleXhrFilePost(session, request, response, streamReceiver, source, getContentLength(request));
             }
         } finally {
             UI.setCurrent(null);
@@ -161,12 +165,18 @@ public class StreamReceiverHandler implements Serializable {
      * @throws IOException If there is a problem reading the request or writing the
      *                     response
      */
-    protected void doHandleMultipartFileUpload(VaadinSession session,
-                                               VaadinRequest request, VaadinResponse response, Collection<FileUpload> uploads,
-                                               StreamReceiver streamReceiver, StateNode owner) throws IOException {
+    protected void doHandleMultipartFileUpload(
+            VaadinSession session,
+            VaadinRequest request,
+            VaadinResponse response,
+            Collection<FileUpload> uploads,
+            StreamReceiver streamReceiver,
+            StateNode owner)
+            throws IOException {
 
         long contentLength = getContentLength(request);
-        FileSystem fileSystem = ((VertxVaadinRequest) request).getService().getVertx().fileSystem();
+        FileSystem fileSystem =
+                ((VertxVaadinRequest) request).getService().getVertx().fileSystem();
         try {
             uploads.forEach(item -> handleStream(session, fileSystem, streamReceiver, owner, contentLength, item));
         } catch (Exception e) {
@@ -175,15 +185,19 @@ public class StreamReceiverHandler implements Serializable {
         sendUploadResponse(response);
     }
 
-    private void handleStream(VaadinSession session, FileSystem fileSystem,
-                              StreamReceiver streamReceiver, StateNode owner, long contentLength,
-                              FileUpload item) {
+    private void handleStream(
+            VaadinSession session,
+            FileSystem fileSystem,
+            StreamReceiver streamReceiver,
+            StateNode owner,
+            long contentLength,
+            FileUpload item) {
         String name = item.fileName();
         Buffer buffer = fileSystem.readFileBlocking(item.uploadedFileName());
         InputStream stream = new BufferInputStreamAdapter(buffer);
         try {
-            handleFileUploadValidationAndData(session, stream, streamReceiver,
-                name, item.contentType(), contentLength, owner);
+            handleFileUploadValidationAndData(
+                    session, stream, streamReceiver, name, item.contentType(), contentLength, owner);
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
@@ -206,10 +220,14 @@ public class StreamReceiverHandler implements Serializable {
      * @throws IOException If there is a problem reading the request or writing the
      *                     response
      */
-    protected void doHandleXhrFilePost(VaadinSession session,
-                                       VaadinRequest request, VaadinResponse response,
-                                       StreamReceiver streamReceiver, StateNode owner, long contentLength)
-        throws IOException {
+    protected void doHandleXhrFilePost(
+            VaadinSession session,
+            VaadinRequest request,
+            VaadinResponse response,
+            StreamReceiver streamReceiver,
+            StateNode owner,
+            long contentLength)
+            throws IOException {
 
         // These are unknown in filexhr ATM, maybe add to Accept header that
         // is accessible in portlets
@@ -218,27 +236,31 @@ public class StreamReceiverHandler implements Serializable {
         final InputStream stream = request.getInputStream();
 
         try {
-            handleFileUploadValidationAndData(session, stream, streamReceiver,
-                filename, mimeType, contentLength, owner);
+            handleFileUploadValidationAndData(
+                    session, stream, streamReceiver, filename, mimeType, contentLength, owner);
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
         sendUploadResponse(response);
     }
 
-    private void handleFileUploadValidationAndData(VaadinSession session,
-                                                   InputStream inputStream, StreamReceiver streamReceiver,
-                                                   String filename, String mimeType, long contentLength,
-                                                   StateNode node) throws UploadException {
+    private void handleFileUploadValidationAndData(
+            VaadinSession session,
+            InputStream inputStream,
+            StreamReceiver streamReceiver,
+            String filename,
+            String mimeType,
+            long contentLength,
+            StateNode node)
+            throws UploadException {
         session.lock();
         try {
             if (node == null) {
-                throw new UploadException(
-                    "File upload ignored because the node for the stream variable was not found");
+                throw new UploadException("File upload ignored because the node for the stream variable was not found");
             }
             if (!node.isAttached()) {
-                throw new UploadException("Warning: file upload ignored for "
-                    + node.getId() + " because the component was disabled");
+                throw new UploadException(
+                        "Warning: file upload ignored for " + node.getId() + " because the component was disabled");
             }
         } finally {
             session.unlock();
@@ -246,8 +268,8 @@ public class StreamReceiverHandler implements Serializable {
         try {
             // Store ui reference so we can do cleanup even if node is
             // detached in some event handler
-            boolean forgetVariable = streamToReceiver(session, inputStream,
-                streamReceiver, filename, mimeType, contentLength);
+            boolean forgetVariable =
+                    streamToReceiver(session, inputStream, streamReceiver, filename, mimeType, contentLength);
             if (forgetVariable) {
                 cleanStreamVariable(session, streamReceiver);
             }
@@ -291,13 +313,10 @@ public class StreamReceiverHandler implements Serializable {
      * @param response response to write to
      * @throws IOException exception when writing to stream
      */
-    private void sendUploadResponse(VaadinResponse response)
-        throws IOException {
-        response.setContentType(
-            ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
+    private void sendUploadResponse(VaadinResponse response) throws IOException {
+        response.setContentType(ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
         try (OutputStream out = response.getOutputStream()) {
-            final PrintWriter outWriter = new PrintWriter(
-                new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
+            final PrintWriter outWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
             try {
                 outWriter.print("<html><body>download handled</body></html>");
             } finally {
@@ -306,8 +325,7 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
-    private void cleanStreamVariable(VaadinSession session,
-                                     StreamReceiver streamReceiver) {
+    private void cleanStreamVariable(VaadinSession session, StreamReceiver streamReceiver) {
         session.lock();
         try {
             session.getResourceRegistry().unregisterResource(streamReceiver);
@@ -316,20 +334,22 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
-    private final boolean streamToReceiver(VaadinSession session,
-                                           final InputStream in, StreamReceiver streamReceiver,
-                                           String filename, String type, long contentLength)
-        throws UploadException {
+    private final boolean streamToReceiver(
+            VaadinSession session,
+            final InputStream in,
+            StreamReceiver streamReceiver,
+            String filename,
+            String type,
+            long contentLength)
+            throws UploadException {
         StreamVariable streamVariable = streamReceiver.getStreamVariable();
         if (streamVariable == null) {
-            throw new IllegalStateException(
-                "StreamVariable for the post not found");
+            throw new IllegalStateException("StreamVariable for the post not found");
         }
 
         OutputStream out = null;
         long totalBytes = 0;
-        StreamingStartEventImpl startedEvent = new StreamingStartEventImpl(
-            filename, type, contentLength);
+        StreamingStartEventImpl startedEvent = new StreamingStartEventImpl(filename, type, contentLength);
         try {
             boolean listenProgress;
             session.lock();
@@ -361,12 +381,11 @@ public class StreamReceiverHandler implements Serializable {
                     totalBytes += bytesReadToBuffer;
                 }
                 if (listenProgress) {
-                    StreamingProgressEventImpl progressEvent = new StreamingProgressEventImpl(
-                        filename, type, contentLength, totalBytes);
+                    StreamingProgressEventImpl progressEvent =
+                            new StreamingProgressEventImpl(filename, type, contentLength, totalBytes);
 
-                    lastStreamingEvent = updateProgress(session, streamVariable,
-                        progressEvent, lastStreamingEvent,
-                        bytesReadToBuffer);
+                    lastStreamingEvent = updateProgress(
+                            session, streamVariable, progressEvent, lastStreamingEvent, bytesReadToBuffer);
                 }
                 if (streamVariable.isInterrupted()) {
                     throw new UploadInterruptedException();
@@ -375,8 +394,7 @@ public class StreamReceiverHandler implements Serializable {
 
             // upload successful
             out.close();
-            StreamVariable.StreamingEndEvent event = new StreamingEndEventImpl(
-                filename, type, totalBytes);
+            StreamVariable.StreamingEndEvent event = new StreamingEndEventImpl(filename, type, totalBytes);
             session.lock();
             try {
                 streamVariable.streamingFinished(event);
@@ -387,8 +405,8 @@ public class StreamReceiverHandler implements Serializable {
         } catch (UploadInterruptedException e) {
             // Download interrupted by application code
             tryToCloseStream(out);
-            StreamVariable.StreamingErrorEvent event = new StreamingErrorEventImpl(
-                filename, type, contentLength, totalBytes, e);
+            StreamVariable.StreamingErrorEvent event =
+                    new StreamingErrorEventImpl(filename, type, contentLength, totalBytes, e);
             session.lock();
             try {
                 streamVariable.streamingFailed(event);
@@ -401,8 +419,8 @@ public class StreamReceiverHandler implements Serializable {
             tryToCloseStream(out);
             session.lock();
             try {
-                StreamVariable.StreamingErrorEvent event = new StreamingErrorEventImpl(
-                    filename, type, contentLength, totalBytes, e);
+                StreamVariable.StreamingErrorEvent event =
+                        new StreamingErrorEventImpl(filename, type, contentLength, totalBytes, e);
                 streamVariable.streamingFailed(event);
                 // throw exception for terminal to be handled (to be passed to
                 // terminalErrorHandler)
@@ -414,15 +432,16 @@ public class StreamReceiverHandler implements Serializable {
         return startedEvent.isDisposed();
     }
 
-    private long updateProgress(VaadinSession session,
-                                StreamVariable streamVariable,
-                                StreamingProgressEventImpl progressEvent, long lastStreamingEvent,
-                                int bytesReadToBuffer) {
+    private long updateProgress(
+            VaadinSession session,
+            StreamVariable streamVariable,
+            StreamingProgressEventImpl progressEvent,
+            long lastStreamingEvent,
+            int bytesReadToBuffer) {
         long now = System.currentTimeMillis();
         // to avoid excessive session locking and event storms,
         // events are sent in intervals, or at the end of the file.
-        if (lastStreamingEvent + getProgressEventInterval() <= now
-            || bytesReadToBuffer <= 0) {
+        if (lastStreamingEvent + getProgressEventInterval() <= now || bytesReadToBuffer <= 0) {
             session.lock();
             try {
                 streamVariable.onProgress(progressEvent);

@@ -42,7 +42,6 @@ import com.vaadin.client.communication.PushConnectionFactory;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
-
 import elemental.json.JsonObject;
 
 public class SockJSPushConnection implements PushConnection {
@@ -71,13 +70,11 @@ public class SockJSPushConnection implements PushConnection {
         this.registry = registry;
         registry.getUILifecycle().addHandler(event -> {
             if (event.getUiLifecycle().isTerminated()) {
-                if (state == State.CLOSING
-                        || state == State.CLOSED) {
+                if (state == State.CLOSING || state == State.CLOSED) {
                     return;
                 }
 
-                disconnect(() -> {
-                });
+                disconnect(() -> {});
             }
         });
         config = createConfig();
@@ -85,13 +82,11 @@ public class SockJSPushConnection implements PushConnection {
         config.setStringValue("logLevel", "debug");
 
         getPushConfiguration().getParameters().forEach((value, key) -> {
-            if (value.equalsIgnoreCase("true")
-                    || value.equalsIgnoreCase("false")) {
+            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                 config.setBooleanValue(key, value.equalsIgnoreCase("true"));
             } else {
                 config.setStringValue(key, value);
             }
-
         });
         config.mapTransports();
         String pushMapping = getPushConfiguration().getPushServletMapping();
@@ -105,15 +100,13 @@ public class SockJSPushConnection implements PushConnection {
             }
             url = serviceUrl + url;
         } else {
-            String contextRootUrl = registry.getApplicationConfiguration()
-                    .getContextRootUrl();
-            if (contextRootUrl.endsWith("/")  && pushMapping.startsWith("/")) {
+            String contextRootUrl = registry.getApplicationConfiguration().getContextRootUrl();
+            if (contextRootUrl.endsWith("/") && pushMapping.startsWith("/")) {
                 pushMapping = pushMapping.substring(1);
             }
             url = contextRootUrl + pushMapping + Constants.PUSH_MAPPING;
         }
-        runWhenSockJSLoaded(
-                () -> Scheduler.get().scheduleDeferred(this::connect));
+        runWhenSockJSLoaded(() -> Scheduler.get().scheduleDeferred(this::connect));
     }
 
     private PushConfiguration getPushConfiguration() {
@@ -128,8 +121,7 @@ public class SockJSPushConnection implements PushConnection {
         }
         if (state == State.OPEN) {
             String messageJson = WidgetUtil.stringify(message);
-            getLogger().info("Sending push (" + transport
-                    + ") message to server: " + messageJson);
+            getLogger().info("Sending push (" + transport + ") message to server: " + messageJson);
 
             doPush(socket, messageJson);
             return;
@@ -141,11 +133,9 @@ public class SockJSPushConnection implements PushConnection {
         }
 
         throw new IllegalStateException("Can not push after disconnecting");
-
     }
 
-    private native void doPush(SockJS socket, String message)
-    /*-{
+    private native void doPush(SockJS socket, String message) /*-{
        socket.send(message);
     }-*/;
 
@@ -159,7 +149,6 @@ public class SockJSPushConnection implements PushConnection {
                 return false;
         }
     }
-
 
     @Override
     public String getTransportType() {
@@ -187,22 +176,20 @@ public class SockJSPushConnection implements PushConnection {
             // again to be sure
         }
         return true;
-
     }
 
     private void connect() {
         String pushUrl = registry.getURIResolver().resolveVaadinUri(url);
-        pushUrl = SharedUtil.addGetParameter(pushUrl,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                ApplicationConstants.REQUEST_TYPE_PUSH);
-        pushUrl = SharedUtil.addGetParameter(pushUrl,
+        pushUrl = SharedUtil.addGetParameter(
+                pushUrl, ApplicationConstants.REQUEST_TYPE_PARAMETER, ApplicationConstants.REQUEST_TYPE_PUSH);
+        pushUrl = SharedUtil.addGetParameter(
+                pushUrl,
                 ApplicationConstants.UI_ID_PARAMETER,
                 registry.getApplicationConfiguration().getUIId());
 
         String pushId = registry.getMessageHandler().getPushId();
         if (pushId != null) {
-            pushUrl = SharedUtil.addGetParameter(pushUrl,
-                    ApplicationConstants.PUSH_ID_PARAMETER, pushId);
+            pushUrl = SharedUtil.addGetParameter(pushUrl, ApplicationConstants.PUSH_ID_PARAMETER, pushId);
         }
 
         Console.log("Establishing push connection");
@@ -232,7 +219,6 @@ public class SockJSPushConnection implements PushConnection {
             default:
                 throw new IllegalStateException("Invalid state");
         }
-
     }
 
     protected SockJSConfiguration getConfig() {
@@ -249,8 +235,7 @@ public class SockJSPushConnection implements PushConnection {
      * - sessionId
      * - server
      */
-    protected native SockJSConfiguration createConfig()
-    /*-{
+    protected native SockJSConfiguration createConfig() /*-{
         return {
             transport: 'websocket',
             fallbackTransport: 'xhr-polling',
@@ -267,8 +252,7 @@ public class SockJSPushConnection implements PushConnection {
     }
 
     protected void onOpen(JavaScriptObject event) {
-        getLogger().info(
-                "Push connection established using " + socket.getTransport());
+        getLogger().info("Push connection established using " + socket.getTransport());
         onConnect(socket);
     }
 
@@ -300,11 +284,11 @@ public class SockJSPushConnection implements PushConnection {
             if (!registry.getUILifecycle().isTerminated()) {
                 registry.getMessageHandler().handleMessage(json);
             } else {
-                Console.warn("Received push (" + getTransportType() + ") message, but ui is already terminated: " + message);
+                Console.warn(
+                        "Received push (" + getTransportType() + ") message, but ui is already terminated: " + message);
             }
         }
     }
-
 
     protected void onConnect(SockJS socket) {
         transport = socket.getTransport();
@@ -324,14 +308,11 @@ public class SockJSPushConnection implements PushConnection {
                 break;
             default:
                 throw new IllegalStateException(
-                        "Got onOpen event when conncetion state is " + state
-                                + ". This should never happen.");
+                        "Got onOpen event when conncetion state is " + state + ". This should never happen.");
         }
     }
 
-    private native SockJS doConnect(String uri,
-                                    JavaScriptObject config)
-    /*-{
+    private native SockJS doConnect(String uri, JavaScriptObject config) /*-{
         var self = this;
 
 
@@ -367,8 +348,7 @@ public class SockJSPushConnection implements PushConnection {
 
             Console.log("Loading sockJS " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
-            String pushScriptUrl = registry.getApplicationConfiguration()
-                    .getContextRootUrl() + pushJs;
+            String pushScriptUrl = registry.getApplicationConfiguration().getContextRootUrl() + pushJs;
 
             ResourceLoader.ResourceLoadListener loadListener = new ResourceLoader.ResourceLoadListener() {
                 @Override
@@ -387,8 +367,7 @@ public class SockJSPushConnection implements PushConnection {
 
                 @Override
                 public void onError(ResourceLoader.ResourceLoadEvent event) {
-                    getConnectionStateHandler().pushScriptLoadError(
-                            event.getResourceData());
+                    getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
                 }
             };
             loader.loadScript(pushScriptUrl, loadListener);
@@ -409,59 +388,51 @@ public class SockJSPushConnection implements PushConnection {
         return ApplicationConstants.VAADIN_STATIC_FILES_PATH + "push/" + pushJs;
     }
 
-    private static native boolean isSockJSLoaded()
-    /*-{
+    private static native boolean isSockJSLoaded() /*-{
         return $wnd.vaadinPush && $wnd.vaadinPush.SockJS;
     }-*/;
 
-    private static native void doDisconnect(SockJS sock)
-    /*-{
+    private static native void doDisconnect(SockJS sock) /*-{
        sock.close();
     }-*/;
-
 
     private static Logger getLogger() {
         return Logger.getLogger(SockJSPushConnection.class.getName());
     }
 
     private enum State {
-        CONNECTING, OPEN, CLOSING, CLOSED
+        CONNECTING,
+        OPEN,
+        CLOSING,
+        CLOSED
     }
 
     public abstract static class AbstractJSO extends JavaScriptObject {
-        protected AbstractJSO() {
-        }
+        protected AbstractJSO() {}
 
-        protected final native String getStringValue(String key)
-        /*-{
+        protected final native String getStringValue(String key) /*-{
            return this[key];
          }-*/;
 
-        protected final native void setStringValue(String key, String value)
-        /*-{
+        protected final native void setStringValue(String key, String value) /*-{
             this[key] = value;
         }-*/;
 
-        protected final native int getIntValue(String key)
-        /*-{
+        protected final native int getIntValue(String key) /*-{
            return this[key];
          }-*/;
 
-        protected final native void setIntValue(String key, int value)
-        /*-{
+        protected final native void setIntValue(String key, int value) /*-{
             this[key] = value;
         }-*/;
 
-        protected final native boolean getBooleanValue(String key)
-        /*-{
+        protected final native boolean getBooleanValue(String key) /*-{
            return this[key];
          }-*/;
 
-        protected final native void setBooleanValue(String key, boolean value)
-        /*-{
+        protected final native void setBooleanValue(String key, boolean value) /*-{
             this[key] = value;
         }-*/;
-
     }
 
     public static class SockJSConfiguration extends AbstractJSO {
@@ -476,8 +447,7 @@ public class SockJSPushConnection implements PushConnection {
             TRANSPORT_MAPPER.put("streaming", "xhr-streaming");
         }
 
-        protected SockJSConfiguration() {
-        }
+        protected SockJSConfiguration() {}
 
         public final String getTransport() {
             return getStringValue("transport");
@@ -501,40 +471,31 @@ public class SockJSPushConnection implements PushConnection {
             setTransports();
         }
 
-        private native void setTransports()
-        /*-{
+        private native void setTransports() /*-{
             this.transports = [this.transport, this.fallbackTransport];
         }-*/;
-
-
     }
 
     public static class TransportMessageEvent extends AbstractJSO {
 
-        protected TransportMessageEvent() {
-        }
+        protected TransportMessageEvent() {}
 
         protected final String getResponseBody() {
             return getStringValue("data");
         }
-
     }
 
     public static class SockJS extends AbstractJSO {
 
-        protected SockJS() {
-        }
+        protected SockJS() {}
 
-        protected native final String getTransport()
-        /*-{
+        protected final native String getTransport() /*-{
             return this.getTransport();
         }-*/;
 
-        protected native final int readyState()
-        /*-{
+        protected final native int readyState() /*-{
             return this.getReadyState();
         }-*/;
-
     }
 
     static class Factory implements PushConnectionFactory {
