@@ -1,0 +1,102 @@
+name: vertx-vaadin latest versions validation
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+env:
+  JAVA_VERSION: 17
+jobs:
+  build-matrix:
+    name: Build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Compute matrix
+        id: matrix
+        run: |
+          set -x -e -o pipefail
+          branches="development"
+          matrix=$(for branch in $branches; do \
+            git fetch --depth=1 origin $branch:$branch;
+            git show $branch:pom.xml | grep -E '<(vaadin\.(platform|flow)|vertx)\.version>' \
+              | sed -E 's/.*(platform|flow|vertx).*>(([0-9]+\.[0-9]+)\..*)<.*/"\1": "\2","\1Minor":"\3"/g' | paste -s -d',' \
+              | awk --assign BRANCH=$branch '{print "{\"branch\":\""BRANCH"\","$0"}"}'; \
+          done | paste -s -d',' | awk '{print "["$i"]"}' \
+            | jq -c '{ include: [ .[] | {branch,vertx,vaadin:.platform,flow:.flow,vertxSearch:.vertx,vaadinSearch:(.platformMinor+".*"),flowSearch:(.flowMinor+".*")},{branch,vertx:.vertx,vaadin:.platform,flow:.flow,vertxSearch:(.vertxMinor+".*"),vaadinSearch:.platform,flowSearch:.flow} ]}')
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+  build:
+    name: Vert.x ${{ matrix.vertxSearch }}, Vaadin ${{ matrix.vaadinSearch }}, Flow ${{ matrix.flowSearch }} (${{ matrix.branch }})
+    needs: [build-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+      fail-fast: false
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.branch }}
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      - uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
+        if: ${{ !vars.QH_DISABLE_CHROME_INSTALL }}
+        with:
+          chrome-version: stable
+      - name: Set versions
+        run: |
+          set -x -e -o pipefail
+          vertx=$(curl -s "https://search.maven.org/solrsearch/select?q=g:io.vertx+AND+a:vertx-core+AND+v:${{ matrix.vertxSearch}}&core=gav&rows=1&wt=json" |jq -r '.response.docs | .[].v')
+          vaadin=$(curl -s "https://search.maven.org/solrsearch/select?q=g:com.vaadin+AND+a:vaadin-bom+AND+v:${{ matrix.vaadinSearch}}&core=gav&rows=1&wt=json" |jq -r '.response.docs | .[].v')
+          flow=$(curl -s "https://search.maven.org/solrsearch/select?q=g:com.vaadin+AND+a:flow-server+AND+v:${{ matrix.flowSearch }}&core=gav&rows=1&wt=json" |jq -r '.response.docs | .[].v')
+          mvn -N -ntp versions:set-property -Dproperty=vertx.version -DnewVersion="$vertx"
+          mvn -N -ntp versions:set-property -Dproperty=vaadin.platform.version -DnewVersion="$vaadin"
+          mvn -N -ntp versions:set-property -Dproperty=vaadin.flow.version -DnewVersion="$flow"
+      - name: Build
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true install -Pflow-ui-tests
+      - name: Test
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+        run: |
+          set -x -e -o pipefail
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false
+      - name: UI Test 1
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+        run: |
+          set -x -e -o pipefail
+          cd $GITHUB_WORKSPACE/vertx-vaadin-tests
+          rm -rf frontend/generated 
+          mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -pl=:vertx-vaadin-test-root-context  -DtrimStackTrace=false \
+            -Dwebdriver.chrome.driver=$(which chromedriver) \
+            -Duitest.chrome-version=$CHROME_VERSION
+      - name: UI Test 2
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+        run: |
+          set -x -e -o pipefail
+          cd $GITHUB_WORKSPACE/vertx-vaadin-tests/
+          mvn -V -e -B -ntp verify -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
+      - name: Package test output files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-${{ matrix.branch }}_vertx-${{ matrix.vertx }}_vaadin-${{ matrix.vaadin }}_flow-${{ matrix.flow }}.tgz -T -
+      - uses: actions/upload-artifact@v3
+        if: ${{ failure() || success() }}
+        with:
+          name: tests-output-${{ matrix.branch }}_vertx-${{ matrix.vertx }}_vaadin-${{ matrix.vaadin }}_flow-${{ matrix.flow }}
+          path: tests-report-*.tgz
+      - name: Publish Unit Test Results
+        if: ${{ failure() || success() }}
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          junit_files: "**/target/*-reports/TEST*.xml"
