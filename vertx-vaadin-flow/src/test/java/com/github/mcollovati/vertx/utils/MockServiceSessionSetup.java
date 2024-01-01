@@ -39,6 +39,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
@@ -71,7 +72,6 @@ public class MockServiceSessionSetup {
 
     @Mock
     private FileSystem fileSystem;
-    @Mock
     private Vertx vertx;
     @Mock
     private VaadinRequest request;
@@ -99,6 +99,7 @@ public class MockServiceSessionSetup {
 
     public MockServiceSessionSetup(boolean sessionAvailable)
         throws Exception {
+        vertx = Mockito.mock(VertxInternal.class);
         MockitoAnnotations.initMocks(this);
         SharedData sharedData = Mockito.mock(SharedData.class);
         Mockito.when(vertx.sharedData()).thenReturn(sharedData);
