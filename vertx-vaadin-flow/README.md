@@ -7,7 +7,7 @@ Vertx-vaadin provides a Vert.x verticle that starts an HTTP server and initializ
 VertxVaadinService is inspired from [VaadinServletService](https://github.com/vaadin/flow/blob/master/flow-server/src/main/java/com/vaadin/flow/server/VaadinServletService.java) and takes the same configuration parameters in the form of a `json` configuration file and from `@VaadinServletConfiguration` annotation on `VaadinVerticle` subclasses.
 
 All [Vaadin Servlet configuration parameters](https://vaadin.com/docs/v14/flow/advanced/tutorial-all-vaadin-properties.html) can be defined in a `json` file under the `vaadin` key.
- 
+
 ```
 {
   "vaadin": {
@@ -16,7 +16,7 @@ All [Vaadin Servlet configuration parameters](https://vaadin.com/docs/v14/flow/a
     "UIProvider": "com.ex.my.MyUIProvider"
   }
 }
-``` 
+```
 
 Two dependencies are needed to run Vaadin on Vert.x: `vertx-vaadin` adapter and Servlet APIs (because Vaadin relies on them, but they are not provided by Vert.x).
 
@@ -47,7 +47,7 @@ For this reason, in addition to adding `vaadin-flow-sockjs`, Vaadin `flow-push` 
         <artifactId>vaadin-flow-sockjs</artifactId>
         <version>${vertx-vaadin-flow.version}</version>
     </dependency>
-    
+
     <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-core</artifactId>
@@ -89,12 +89,12 @@ mvn archetype:generate  \
 
 Now you have a Vaadin project with Maven build script. You can build the `jar` file using `mvn install`, start the project using `mvn vertx:run`, or import it into your IDE.
 
-To make the Vaadin application ready to run on Vert.x, first, clean POM file from some servlet related stuff: 
+To make the Vaadin application ready to run on Vert.x, first, clean POM file from some servlet related stuff:
 
 - change project packaging type from `war` to `jar`
 - remove `maven-war-plugin` and `jetty-maven-plugin` if present
 - exclude `flow-push` and `flow-client` dependencies are described in **PUSH support** section
-- move `src/main/webapp` content to `src/main/resources/META-INF/resources` 
+- move `src/main/webapp` content to `src/main/resources/META-INF/resources`
 
 Then add a dependency on `vertx-vaadin-flow`:
 
@@ -132,7 +132,7 @@ For further configuration of the plugin refer to the [documentation](https://rea
 
 ```xml
 <project>
-	...
+  ...
     <build>
         <plugins>
             ...
@@ -162,10 +162,10 @@ For further configuration of the plugin refer to the [documentation](https://rea
             ...
         </plugins>
     </build>
-	...
+  ...
 </project>
 ```
 
-Build the application with `mvn package`, run it with `mvn vertx:run` and point the browser at http://localhost:8080. 
+Build the application with `mvn package`, run it with `mvn vertx:run` and point the browser at http://localhost:8080.
 
-You can also start the application with `java -jar target/<artifact-name>.jar` 
+You can also start the application with `java -jar target/<artifact-name>.jar`

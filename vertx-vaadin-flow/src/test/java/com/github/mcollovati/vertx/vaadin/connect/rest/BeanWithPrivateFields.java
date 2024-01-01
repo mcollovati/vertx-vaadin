@@ -28,6 +28,7 @@ package com.github.mcollovati.vertx.vaadin.connect.rest;
 public class BeanWithPrivateFields {
     @SuppressWarnings("unused")
     private String codeNumber = "007";
+
     private String name = "Bond";
     private String firstName = "James";
 

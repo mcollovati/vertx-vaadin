@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -21,14 +28,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.component.html.testbench.InputTextElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class HistoryIT extends ChromeBrowserTest {
 
@@ -40,8 +46,7 @@ public class HistoryIT extends ChromeBrowserTest {
         URI baseUrl = getCurrentUrl();
 
         InputTextElement stateField = $(InputTextElement.class).id("state");
-        InputTextElement locationField = $(InputTextElement.class)
-                .id("location");
+        InputTextElement locationField = $(InputTextElement.class).id("location");
         WebElement pushButton = findElement(By.cssSelector("button#pushState"));
         WebElement replaceButton = findElement(By.cssSelector("button#replaceState"));
         WebElement backButton = findElement(By.cssSelector("button#back"));
@@ -58,10 +63,7 @@ public class HistoryIT extends ChromeBrowserTest {
         backButton.click();
 
         Assert.assertEquals(baseUrl, getCurrentUrl());
-        Assert.assertEquals(
-                Arrays.asList(
-                        "New location: com.vaadin.flow.uitest.ui.HistoryView"),
-                getStatusMessages());
+        Assert.assertEquals(Arrays.asList("New location: com.vaadin.flow.uitest.ui.HistoryView"), getStatusMessages());
         clearButton.click();
 
         stateField.clear();
@@ -74,16 +76,14 @@ public class HistoryIT extends ChromeBrowserTest {
         // Forward to originally pushed state
         forwardButton.click();
         Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: asdf",
-                "New state: {\"foo\":true}"), getStatusMessages());
+        Assert.assertEquals(Arrays.asList("New location: asdf", "New state: {\"foo\":true}"), getStatusMessages());
         clearButton.click();
 
         // Back to the replaced state
         backButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: qwerty"),
-                getStatusMessages());
+        Assert.assertEquals(Arrays.asList("New location: qwerty"), getStatusMessages());
 
         // Navigate to empty string should go to the context path root
         stateField.clear();
@@ -100,6 +100,7 @@ public class HistoryIT extends ChromeBrowserTest {
 
     private List<String> getStatusMessages() {
         return findElements(By.className("status")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText)
+                .collect(Collectors.toList());
     }
 }

@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui.template;
 
@@ -45,32 +52,29 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     }
 
     @EventHandler
-    private void sendData(@EventData("event.button") int button,
-                          @EventData("event.type") String type,
-                          @EventData("event.srcElement.tagName") String tag) {
+    private void sendData(
+            @EventData("event.button") int button,
+            @EventData("event.type") String type,
+            @EventData("event.srcElement.tagName") String tag) {
         Element container = ElementFactory.createDiv();
-        container.appendChild(ElementFactory
-            .createDiv("Received event from the client with the data:"));
+        container.appendChild(ElementFactory.createDiv("Received event from the client with the data:"));
         container.appendChild(ElementFactory.createDiv("button: " + button));
         container.appendChild(ElementFactory.createDiv("type: " + type));
-        container.appendChild(ElementFactory
-            .createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
+        container.appendChild(ElementFactory.createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
         container.setAttribute("id", "event-data");
         getParent().get().getElement().appendChild(container);
     }
 
     @EventHandler
     private void overriddenClick(@EventData("event.result") String result) {
-        Element label = ElementFactory.createLabel(
-            "Overridden server event was invoked with result: " + result);
+        Element label = ElementFactory.createLabel("Overridden server event was invoked with result: " + result);
         label.setAttribute("id", "overridden-event-handler-result");
         getParent().get().getElement().appendChild(label);
     }
 
     @ClientCallable
     private void handleClientCall(String msg, boolean enabled) {
-        Element div = ElementFactory.createDiv(
-            "Call from client, message: " + msg + ", " + enabled);
+        Element div = ElementFactory.createDiv("Call from client, message: " + msg + ", " + enabled);
         div.setAttribute("id", "client-call");
         getParent().get().getElement().appendChild(div);
     }

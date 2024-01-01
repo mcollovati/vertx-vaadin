@@ -1,25 +1,32 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,12 +35,9 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 public class ShortcutsIT extends ChromeBrowserTest {
-    private static final Set<Keys> modifiers = Stream
-            .of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
-            .collect(Collectors.toSet());
+    private static final Set<Keys> modifiers =
+            Stream.of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META).collect(Collectors.toSet());
 
     private static final String DEFAULT_VALUE = "testing...";
 
@@ -42,7 +46,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
         open();
         resetKeys();
     }
-
 
     @Test
     public void clickShortcutWorks() {
@@ -58,7 +61,8 @@ public class ShortcutsIT extends ChromeBrowserTest {
 
         // seems no to work with chrome 83
         assertEquals(input, driver.switchTo().activeElement());
-        Assert.assertEquals(input.getAttribute("id"), driver.switchTo().activeElement().getAttribute("id"));
+        Assert.assertEquals(
+                input.getAttribute("id"), driver.switchTo().activeElement().getAttribute("id"));
     }
 
     @Test
@@ -168,8 +172,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     public void removingShortcutCleansJavascriptEventSettingsItUsed() {
         WebElement removalInput = findElement(By.id("removal-input"));
 
-        Assert.assertEquals("removalInput should be empty", "",
-                removalInput.getAttribute("value"));
+        Assert.assertEquals("removalInput should be empty", "", removalInput.getAttribute("value"));
 
         // the removalInput has a shortcut bound on 'd'. When 'd' is typed,
         // instead of printing the letter, the contents are capitalized instead.
@@ -177,14 +180,13 @@ public class ShortcutsIT extends ChromeBrowserTest {
         // printed out.
 
         removalInput.sendKeys("abcd");
-        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC",
-                removalInput.getAttribute("value"));
+        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC", removalInput.getAttribute("value"));
 
         removalInput.sendKeys("abcd");
         Assert.assertEquals(
-                "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can "
-                        + "be typed.",
-                "ABCabcd", removalInput.getAttribute("value"));
+                "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can " + "be typed.",
+                "ABCabcd",
+                removalInput.getAttribute("value"));
     }
 
     @Test
@@ -213,8 +215,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     private void assertActualEquals(String expected) {
-        Assert.assertEquals(expected,
-                findElement(By.id("actual")).getAttribute("value"));
+        Assert.assertEquals(expected, findElement(By.id("actual")).getAttribute("value"));
     }
 
     private void resetActual() {

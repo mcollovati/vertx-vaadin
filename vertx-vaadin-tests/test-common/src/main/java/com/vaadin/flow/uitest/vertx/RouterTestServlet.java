@@ -1,8 +1,29 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.vaadin.flow.uitest.vertx;
 
-import javax.servlet.annotation.WebServlet;
-
 import java.util.stream.Stream;
+import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
@@ -22,7 +43,9 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
+@WebServlet(
+        asyncSupported = true,
+        urlPatterns = {"/new-router-session/*"})
 public class RouterTestServlet extends VaadinServlet {
 
     public static class ClassNameDiv extends Div {
@@ -33,8 +56,7 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     @Route("abc")
-    public static class RootNavigationTarget extends ClassNameDiv {
-    }
+    public static class RootNavigationTarget extends ClassNameDiv {}
 
     @Route("throws")
     public static class ThrowsNavigationTarget extends Div {
@@ -44,16 +66,13 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     @Route("foo")
-    public static class FooNavigationTarget extends ClassNameDiv {
-    }
+    public static class FooNavigationTarget extends ClassNameDiv {}
 
     @Route("foo/bar")
-    public static class FooBarNavigationTarget extends ClassNameDiv {
-    }
+    public static class FooBarNavigationTarget extends ClassNameDiv {}
 
     @Route("greeting")
-    public static class GreetingNavigationTarget extends Div
-            implements HasUrlParameter<String> {
+    public static class GreetingNavigationTarget extends Div implements HasUrlParameter<String> {
         public GreetingNavigationTarget() {
             setId("greeting-div");
         }
@@ -72,7 +91,6 @@ public class RouterTestServlet extends VaadinServlet {
                 add(new Div(new NativeButton("Button " + i)));
             }
         }
-
     }
 
     public static class MyRouterLayout extends Div implements RouterLayout {
@@ -83,9 +101,7 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     @Route(value = "baz", layout = MyRouterLayout.class)
-    public static class ChildNavigationTarget extends ClassNameDiv {
-
-    }
+    public static class ChildNavigationTarget extends ClassNameDiv {}
 
     public static class MainLayout extends Div implements RouterLayout {
         public MainLayout() {
@@ -101,24 +117,18 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     @Route(value = "target", layout = MiddleLayout.class)
-    public static class TargetLayout extends ClassNameDiv {
-
-    }
+    public static class TargetLayout extends ClassNameDiv {}
 
     @Route("noParent")
     @RouteAlias(value = "twoParents", layout = MiddleLayout.class)
-    public static class AliasLayout extends ClassNameDiv {
+    public static class AliasLayout extends ClassNameDiv {}
 
-    }
-
-    public static class Layout extends Div
-            implements RouterLayout, BeforeEnterObserver {
+    public static class Layout extends Div implements RouterLayout, BeforeEnterObserver {
 
         private Element sessionId;
 
         public Layout() {
-            sessionId = ElementFactory.createDiv().setAttribute("id",
-                    "sessionId");
+            sessionId = ElementFactory.createDiv().setAttribute("id", "sessionId");
             getElement().appendChild(sessionId);
             getElement().appendChild(ElementFactory.createDiv());
             getElement().appendChild(ElementFactory.createHr());
@@ -135,14 +145,16 @@ public class RouterTestServlet extends VaadinServlet {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static Stream<Class<? extends Component>> getViewClasses() {
-        return (Stream) Stream.of(NormalView.class, AnotherNormalView.class,
+        return (Stream) Stream.of(
+                NormalView.class,
+                AnotherNormalView.class,
                 ViewWhichCausesInternalException.class,
                 ViewWhichInvalidatesSession.class);
     }
 
-    public static abstract class MyAbstractView extends Div {
+    public abstract static class MyAbstractView extends Div {
 
         protected MyAbstractView() {
             getViewClasses().forEach(c -> {
@@ -152,46 +164,37 @@ public class RouterTestServlet extends VaadinServlet {
                 if (getClass() == c) {
                     div.appendChild(ElementFactory.createStrong(viewName));
                 } else {
-                    div.appendChild(ElementFactory.createRouterLink(viewName,
-                            viewName));
+                    div.appendChild(ElementFactory.createRouterLink(viewName, viewName));
                 }
                 div.appendChild(ElementFactory.createHr());
             });
         }
-
     }
 
     @Route(value = "NormalView", layout = Layout.class)
-    public static class NormalView extends MyAbstractView {
-    }
+    public static class NormalView extends MyAbstractView {}
 
     @Route(value = "AnotherNormalView", layout = Layout.class)
-    public static class AnotherNormalView extends MyAbstractView {
-    }
+    public static class AnotherNormalView extends MyAbstractView {}
 
     @Route(value = "ViewWhichCausesInternalException", layout = Layout.class)
-    public static class ViewWhichCausesInternalException extends MyAbstractView
-            implements BeforeEnterObserver {
+    public static class ViewWhichCausesInternalException extends MyAbstractView implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            throw new RuntimeException(
-                    "Intentionally caused by " + getClass().getSimpleName());
+            throw new RuntimeException("Intentionally caused by " + getClass().getSimpleName());
         }
     }
 
     @Route(value = "ViewWhichInvalidatesSession", layout = Layout.class)
-    public static class ViewWhichInvalidatesSession extends MyAbstractView
-            implements BeforeEnterObserver {
+    public static class ViewWhichInvalidatesSession extends MyAbstractView implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            Location location = event.getUI().getInternals()
-                    .getActiveViewLocation();
+            Location location = event.getUI().getInternals().getActiveViewLocation();
             if (!location.getPath().isEmpty()) {
                 VaadinSession.getCurrent().getSession().invalidate();
             }
         }
     }
-
 }

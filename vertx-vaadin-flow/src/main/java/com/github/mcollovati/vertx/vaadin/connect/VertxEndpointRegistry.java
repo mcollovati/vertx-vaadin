@@ -22,12 +22,12 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import dev.hilla.EndpointNameChecker;
-import dev.hilla.EndpointRegistry;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+
+import dev.hilla.EndpointNameChecker;
+import dev.hilla.EndpointRegistry;
 
 public class VertxEndpointRegistry extends EndpointRegistry implements VaadinEndpointRegistry {
 
@@ -76,5 +76,4 @@ public class VertxEndpointRegistry extends EndpointRegistry implements VaadinEnd
             throw new IllegalStateException("Cannot invoke base class 'registerEndpoint' method");
         }
     }
-
 }

@@ -26,6 +26,5 @@ package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclas
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
  */
 public class NonEndpointImpl implements NonEndpoint {
-    public void nonEndpointImplMethod() {
-    }
+    public void nonEndpointImplMethod() {}
 }

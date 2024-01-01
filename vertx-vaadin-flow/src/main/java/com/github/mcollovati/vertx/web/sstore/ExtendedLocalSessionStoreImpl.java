@@ -33,16 +33,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.LocalSessionStore;
-import io.vertx.ext.web.sstore.SessionStore;
 import io.vertx.ext.web.sstore.impl.LocalSessionStoreImpl;
 
 class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
 
-
     private final LocalMap<String, Session> localMap;
     private final LocalSessionStore sessionsStore;
-    private Handler<AsyncResult<String>> expirationHandler = x -> {
-    };
+    private Handler<AsyncResult<String>> expirationHandler = x -> {};
 
     public ExtendedLocalSessionStoreImpl(Vertx vertx, String sessionMapName, long reaperInterval) {
         this.localMap = vertx.sharedData().getLocalMap(sessionMapName);
@@ -52,7 +49,8 @@ class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
                 notifyExpiredSessions(() -> super.handle(tid));
             }
         };
-        this.sessionsStore.init(vertx, new JsonObject().put("mapName", sessionMapName).put("reaperInterval", reaperInterval));
+        this.sessionsStore.init(
+                vertx, new JsonObject().put("mapName", sessionMapName).put("reaperInterval", reaperInterval));
     }
 
     @Override
@@ -155,5 +153,4 @@ class ExtendedLocalSessionStoreImpl implements ExtendedLocalSessionStore {
             expirationHandler.handle(Future.failedFuture(ex));
         }
     }
-
 }

@@ -25,7 +25,6 @@ package com.github.mcollovati.vertx.vaadin;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import com.github.mcollovati.vertx.web.ExtendedSession;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -38,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.github.mcollovati.vertx.web.ExtendedSession;
+
 /**
  * Created by marco on 26/07/16.
  */
@@ -46,7 +47,6 @@ public class VertxWrappedSessionWithLocalSessionStoreUT {
 
     Vertx vertx;
     LocalSessionStore localSessionStore;
-
 
     @Before
     public void setUp(TestContext context) {
@@ -92,7 +92,6 @@ public class VertxWrappedSessionWithLocalSessionStoreUT {
         session.invalidate();
     }
 
-
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     private static class Listener implements HttpSessionBindingListener {
 
@@ -108,6 +107,4 @@ public class VertxWrappedSessionWithLocalSessionStoreUT {
             async.countDown();
         }
     }
-
-
 }

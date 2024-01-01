@@ -22,45 +22,27 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletContext;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-
-import com.github.mcollovati.vertx.Sync;
-import com.github.mcollovati.vertx.http.HttpReverseProxy;
-import com.github.mcollovati.vertx.support.StartupContext;
-import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
-import com.github.mcollovati.vertx.vaadin.connect.VaadinConnectHandler;
-import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
-import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
-import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
-import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
-import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
+import javax.servlet.ServletContext;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
@@ -77,6 +59,17 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import org.slf4j.LoggerFactory;
+
+import com.github.mcollovati.vertx.Sync;
+import com.github.mcollovati.vertx.http.HttpReverseProxy;
+import com.github.mcollovati.vertx.support.StartupContext;
+import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
+import com.github.mcollovati.vertx.vaadin.connect.VaadinConnectHandler;
+import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
+import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
+import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
+import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
+import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
 
 public class VertxVaadin {
 
@@ -104,7 +97,6 @@ public class VertxVaadin {
         VERSION = version;
     }
 
-
     private VertxVaadin(Vertx vertx, Optional<ExtendedSessionStore> sessionStore, StartupContext startupContext) {
         this.vertx = Objects.requireNonNull(vertx);
         this.startupContext = Objects.requireNonNull(startupContext);
@@ -119,8 +111,7 @@ public class VertxVaadin {
             if (config.supportsSockJS()) {
                 logger.trace("Configuring SockJS Push connection");
                 service.addUIInitListener(event ->
-                        event.getUI().getInternals().setPushConnection(new SockJSPushConnection(event.getUI()))
-                );
+                        event.getUI().getInternals().setPushConnection(new SockJSPushConnection(event.getUI())));
             }
 
             logger.trace("Setup WebJar server");
@@ -130,9 +121,7 @@ public class VertxVaadin {
                 throw new VertxException("Cannot initialize Vaadin service", ex);
             }
 
-            this.sessionStore = withSessionExpirationHandler(
-                    service, sessionStore.orElseGet(this::createSessionStore)
-            );
+            this.sessionStore = withSessionExpirationHandler(service, sessionStore.orElseGet(this::createSessionStore));
             configureSessionStore();
             vaadinRouter = Router.router(vertx);
             connectRouter = Router.router(vertx);
@@ -152,8 +141,10 @@ public class VertxVaadin {
                     .findStaticVarHandle(VaadinServlet.class, "frontendMapping", String.class)
                     .set(config.mountPoint());
         } catch (Exception e) {
-            throw new RuntimeException("Cannot set VaadinServlet.frontendMapping by reflection. " +
-                    "This is necessary to start Vaadin DevModeServer", e);
+            throw new RuntimeException(
+                    "Cannot set VaadinServlet.frontendMapping by reflection. "
+                            + "This is necessary to start Vaadin DevModeServer",
+                    e);
         }
     }
 
@@ -198,18 +189,15 @@ public class VertxVaadin {
 
     private void configureSessionStore() {
         final Registration sessionInitListenerReg = service.addSessionInitListener(event -> {
-            MessageConsumer<String> consumer = sessionExpiredHandler(vertx, msg ->
-                    Optional.of(event.getSession().getSession())
+            MessageConsumer<String> consumer = sessionExpiredHandler(
+                    vertx, msg -> Optional.of(event.getSession().getSession())
                             .filter(session -> msg.body().equals(session.getId()))
                             .ifPresent(WrappedSession::invalidate));
             AtomicReference<Registration> sessionDestroyListenerUnregister = new AtomicReference<>();
-            sessionDestroyListenerUnregister.set(
-                    event.getService().addSessionDestroyListener(ev2 -> {
-                        consumer.unregister();
-                        sessionDestroyListenerUnregister.get().remove();
-                    })
-            );
-
+            sessionDestroyListenerUnregister.set(event.getService().addSessionDestroyListener(ev2 -> {
+                consumer.unregister();
+                sessionDestroyListenerUnregister.get().remove();
+            }));
         });
         service.addServiceDestroyListener(event -> sessionInitListenerReg.remove());
     }
@@ -233,7 +221,6 @@ public class VertxVaadin {
     public String serviceName() {
         return config.serviceName().orElseGet(() -> vertx.getOrCreateContext().deploymentID() + ".service");
     }
-
 
     protected final VaadinOptions config() {
         return config;
@@ -259,7 +246,6 @@ public class VertxVaadin {
         return ExtendedLocalSessionStore.create(vertx);
     }
 
-
     private void initRouters() {
         logger.debug("Initializing router");
         String sessionCookieName = sessionCookieName();
@@ -268,7 +254,6 @@ public class VertxVaadin {
                 .setSessionCookieName(sessionCookieName)
                 .setNagHttps(false)
                 .setCookieHttpOnlyFlag(true);
-
 
         connectRouter.route().handler(sessionHandler);
         connectRouter.route().handler(BodyHandler.create());
@@ -280,23 +265,25 @@ public class VertxVaadin {
         // Redirect mountPoint to mountPoint/
         vaadinRouter.routeWithRegex("^$").handler(ctx -> ctx.response()
                 .putHeader(HttpHeaders.LOCATION, ctx.request().uri() + "/")
-                .setStatusCode(302).end()
-        );
+                .setStatusCode(302)
+                .end());
 
         vaadinRouter.route().handler(BodyHandler.create());
 
         // Disable SessionHandler for /VAADIN/ static resources
-        vaadinRouter.routeWithRegex("^(?!/(VAADIN(?!/(dynamic|push))|frontend|frontend-es6|webjars|webroot)/).*$")
+        vaadinRouter
+                .routeWithRegex("^(?!/(VAADIN(?!/(dynamic|push))|frontend|frontend-es6|webjars|webroot)/).*$")
                 .handler(sessionHandler);
 
         String pushJavascript = String.format(
-                "META-INF/resources/VAADIN/static/push/vaadinPush%s",
-                config.supportsSockJS() ? "SockJS" : ""
-        );
-        vaadinRouter.routeWithRegex("/VAADIN/static/push/vaadinPush(SockJS)?(?<suffix>.*)")
-                .handler(ctx -> ctx.response().sendFile(pushJavascript + ctx.request().getParam("suffix")));
+                "META-INF/resources/VAADIN/static/push/vaadinPush%s", config.supportsSockJS() ? "SockJS" : "");
+        vaadinRouter
+                .routeWithRegex("/VAADIN/static/push/vaadinPush(SockJS)?(?<suffix>.*)")
+                .handler(ctx ->
+                        ctx.response().sendFile(pushJavascript + ctx.request().getParam("suffix")));
 
-        DevModeHandler devModeHandler = DevModeHandlerManager.getDevModeHandler(service).orElse(null);
+        DevModeHandler devModeHandler =
+                DevModeHandlerManager.getDevModeHandler(service).orElse(null);
         if (devModeHandler != null) {
             logger.info("Starting DevModeHandler proxy");
             HttpReverseProxy proxy = HttpReverseProxy.create(vertx, devModeHandler);
@@ -305,13 +292,12 @@ public class VertxVaadin {
             vaadinRouter.routeWithRegex("/.*\\.js").handler(proxy::forward);
             vaadinRouter.routeWithRegex("/(index|web-component)\\.html").handler(proxy::forward);
 
-            VertxDebugWindowConnection windowConnection = service.getContext().getAttribute(VertxDebugWindowConnection.class);
+            VertxDebugWindowConnection windowConnection =
+                    service.getContext().getAttribute(VertxDebugWindowConnection.class);
             windowConnection.attachService(service);
         }
 
-
         initSockJS(vaadinRouter, sessionHandler);
-
 
         VertxStaticFileServer staticFileServer = new VertxStaticFileServer(service);
         vaadinRouter.route("/*").handler(staticFileServer);
@@ -328,7 +314,8 @@ public class VertxVaadin {
         try {
             logger.trace("Handling Vaadin request: {}", routingContext.request().uri());
             service.handleRequest(request, response);
-            logger.trace("Vaadin request completed: {}", routingContext.request().uri());
+            logger.trace(
+                    "Vaadin request completed: {}", routingContext.request().uri());
             response.end();
         } catch (Exception ex) {
             logger.error("Error processing request {}", routingContext.request().uri(), ex);
@@ -351,7 +338,8 @@ public class VertxVaadin {
             logger.debug("Setup PUSH communication on {}", pushPath);
 
             vaadinRouter.route(pushPath).handler(rc -> {
-                if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
+                if (ApplicationConstants.REQUEST_TYPE_PUSH.equals(
+                        rc.request().getParam(ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
                     pushHandler.handle(rc);
                 } else {
                     rc.next();
@@ -362,14 +350,14 @@ public class VertxVaadin {
         }
     }
 
-
     private String sessionCookieName() {
         return config().sessionCookieName();
     }
 
     protected DeploymentConfiguration createDeploymentConfiguration() {
         return startupContext.deploymentConfiguration();
-        //return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(startupContext.getVaadinContext()), getClass(), config.asProperties());
+        // return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(startupContext.getVaadinContext()),
+        // getClass(), config.asProperties());
     }
 
     public static VertxVaadin create(Vertx vertx, ExtendedSessionStore sessionStore, StartupContext startupContext) {
@@ -377,7 +365,8 @@ public class VertxVaadin {
     }
 
     public static VertxVaadin create(Vertx vertx, JsonObject config) {
-        StartupContext startupContext = Sync.await(completer -> StartupContext.of(vertx, new VaadinOptions(config)).onComplete(completer));
+        StartupContext startupContext = Sync.await(
+                completer -> StartupContext.of(vertx, new VaadinOptions(config)).onComplete(completer));
         return create(vertx, startupContext);
     }
 
@@ -386,8 +375,7 @@ public class VertxVaadin {
     }
 
     private static ExtendedSessionStore withSessionExpirationHandler(
-            VertxVaadinService service, ExtendedSessionStore store
-    ) {
+            VertxVaadinService service, ExtendedSessionStore store) {
         MessageProducer<String> sessionExpiredProducer = sessionExpiredProducer(service);
         store.expirationHandler(res -> {
             if (res.succeeded()) {
@@ -431,20 +419,15 @@ public class VertxVaadin {
     // easier to fix the StaticFileServer to take the incorrect path names
     // into account than fixing the Polymer build chain to generate correct
     // paths. Hence, these methods:
-    static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
-            + "fixIncorrectWebjarPaths";
-    private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
-            .compile("^/frontend[-\\w/]*/webjars/");
+    static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX + "fixIncorrectWebjarPaths";
+    private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern.compile("^/frontend[-\\w/]*/webjars/");
 
     private boolean shouldFixIncorrectWebjarPaths() {
         return service.getDeploymentConfiguration().isProductionMode()
-                && service.getDeploymentConfiguration().getBooleanProperty(
-                PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
+                && service.getDeploymentConfiguration().getBooleanProperty(PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
     }
 
     private String fixIncorrectWebjarPath(String requestFilename) {
-        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
-                .replaceAll("/webjars/");
+        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename).replaceAll("/webjars/");
     }
-
 }

@@ -30,35 +30,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import com.github.mcollovati.vertx.vaadin.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import dev.hilla.EndpointNameChecker;
 import dev.hilla.ExplicitNullableTypeChecker;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.RoutingContext;
 
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import com.github.mcollovati.vertx.vaadin.connect.auth.VaadinConnectAccessChecker;
+
 public class VertxVaadinConnectEndpointService
-    extends BaseVaadinConnectEndpointService<RoutingContext, DefaultVaadinConnectResponse, VertxConnectRequestContext> {
+        extends BaseVaadinConnectEndpointService<
+                RoutingContext, DefaultVaadinConnectResponse, VertxConnectRequestContext> {
 
     public VertxVaadinConnectEndpointService(
-        ObjectMapper vaadinEndpointMapper, VaadinEndpointRegistry endpointRegistry,
-        VaadinConnectAccessChecker<RoutingContext> accessChecker,
-        ExplicitNullableTypeChecker explicitNullableTypeChecker) {
+            ObjectMapper vaadinEndpointMapper,
+            VaadinEndpointRegistry endpointRegistry,
+            VaadinConnectAccessChecker<RoutingContext> accessChecker,
+            ExplicitNullableTypeChecker explicitNullableTypeChecker) {
         super(vaadinEndpointMapper, endpointRegistry, accessChecker, explicitNullableTypeChecker);
     }
 
     @Override
     protected ObjectMapper createVaadinConnectObjectMapper() {
-        return DatabindCodec.mapper().copy()
-            .registerModule(new Jdk8Module())
-            .registerModule(new JavaTimeModule())
-            .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
-            .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        return DatabindCodec.mapper()
+                .copy()
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule())
+                .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
+                .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     @Override

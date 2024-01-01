@@ -1,22 +1,27 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.github.mcollovati.vertx.quarkus.context;
 
-import javax.annotation.PreDestroy;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PreDestroy;
 
 /**
  * Base class for manage and store ContextualStorages.
@@ -49,7 +55,7 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
      * Gets the {@link ContextualStorage} associated with the given context
      * {@code key}, possibly creating a new instance, if requested and not
      * already existing.
-     * 
+     *
      * @param key
      *            context key
      * @param createIfNotExist
@@ -57,8 +63,7 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
      *            yet exist.
      * @return a {@link ContextualStorage} instance.
      */
-    protected ContextualStorage getContextualStorage(K key,
-                                                     boolean createIfNotExist) {
+    protected ContextualStorage getContextualStorage(K key, boolean createIfNotExist) {
         if (createIfNotExist) {
             return storageMap.computeIfAbsent(key, this::newContextualStorage);
         } else {
@@ -68,7 +73,7 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
 
     /**
      * Changes the context key for a contextual storage.
-     * 
+     *
      * @param from
      *            the contextual storage context key
      * @param to
@@ -83,7 +88,7 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
 
     /**
      * Creates a new {@link ContextualStorage} for the given context key.
-     * 
+     *
      * @param key
      *            the context key
      * @return a new {@link ContextualStorage} instance.
@@ -106,7 +111,7 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
 
     /**
      * Destroys the contextual storage associated with the given context key.
-     * 
+     *
      * @param key
      *            the context key
      */
@@ -119,11 +124,10 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
 
     /**
      * Gets context keys of all registered contextual storages.
-     * 
+     *
      * @return immutable set of context keys.
      */
     protected Set<K> getKeySet() {
         return Collections.unmodifiableSet(storageMap.keySet());
     }
-
 }

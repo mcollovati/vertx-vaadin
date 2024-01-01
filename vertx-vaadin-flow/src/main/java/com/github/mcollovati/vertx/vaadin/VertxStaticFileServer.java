@@ -1,7 +1,27 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +38,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +46,8 @@ import java.util.Stack;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -37,8 +58,6 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.impl.FileResolverImpl;
@@ -46,7 +65,6 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.spi.file.FileResolver;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +81,6 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern.compile("^/frontend[-\\w/]*/webjars/");
     protected static final Pattern APP_THEME_PATTERN = Pattern.compile("^\\/themes\\/[\\s\\S]+?\\/");
-
 
     private final VertxVaadinService vaadinService;
     private final DeploymentConfiguration deploymentConfiguration;
@@ -85,8 +102,8 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         vaadinStaticFileServer = new StaticFileServer(vaadinService);
         deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
-        this.devModeHandler = DevModeHandlerManager
-            .getDevModeHandler(vaadinService).orElse(null);
+        this.devModeHandler =
+                DevModeHandlerManager.getDevModeHandler(vaadinService).orElse(null);
     }
 
     public boolean serveStaticResource(RoutingContext routingContext) throws IOException {
@@ -99,8 +116,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         }
 
         if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
-            getLogger().info("Blocked attempt to access file: {}",
-                filenameWithPath);
+            getLogger().info("Blocked attempt to access file: {}", filenameWithPath);
             routingContext.response().setStatusCode(HttpStatusCode.BAD_REQUEST.getCode());
             routingContext.end();
             return true;
@@ -108,25 +124,23 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
         URL resourceUrl = null;
         if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            resourceUrl = vaadinService.getClassLoader()
-                .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                    + filenameWithPath.replaceFirst("^/", ""));
+            resourceUrl = vaadinService
+                    .getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" + filenameWithPath.replaceFirst("^/", ""));
 
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
-            resourceUrl = vaadinService.getClassLoader()
-                .getResource(VAADIN_WEBAPP_RESOURCES
-                    + filenameWithPath.replaceFirst("^/", ""));
+            resourceUrl = vaadinService
+                    .getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + filenameWithPath.replaceFirst("^/", ""));
         }
 
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
         }
-        if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
-            && isIncorrectWebjarPath(filenameWithPath)) {
+        if (resourceUrl == null && shouldFixIncorrectWebjarPaths() && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = getStaticResource(
-                fixIncorrectWebjarPath(filenameWithPath));
+            resourceUrl = getStaticResource(fixIncorrectWebjarPath(filenameWithPath));
         }
 
         if (resourceUrl == null) {
@@ -162,7 +176,6 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
     static final String UNSAFE_PATH_ERROR_MESSAGE_PATTERN = "Blocked attempt to access file: {}";
 
-
     @Override
     public void handle(RoutingContext routingContext) {
         try {
@@ -191,7 +204,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         // ->
         // /VAADIN/folder/file.js
         return HttpUtils.pathInfo(routingContext);
-                /*
+        /*
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
@@ -220,12 +233,12 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             // are not returned by the browser in the "If-Modified-Since"
             // header).
             lastModifiedTime = lastModifiedTime - lastModifiedTime % 1000;
-            routingContext.response().putHeader(HttpHeaders.LAST_MODIFIED, HttpUtils.formatDateHeader(lastModifiedTime));
+            routingContext
+                    .response()
+                    .putHeader(HttpHeaders.LAST_MODIFIED, HttpUtils.formatDateHeader(lastModifiedTime));
             return lastModifiedTime;
         } catch (Exception e) {
-            getLogger().trace(
-                "Failed to find out last modified timestamp. Continuing without it.",
-                e);
+            getLogger().trace("Failed to find out last modified timestamp. Continuing without it.", e);
         } finally {
             try {
                 // Explicitly close the input stream to prevent it
@@ -254,8 +267,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
      * @return true if the If-Modified-Since header tells the cached version in
      * the browser is up to date, false otherwise
      */
-    protected boolean browserHasNewestVersion(HttpServerRequest request,
-                                              long resourceLastModifiedTimestamp) {
+    protected boolean browserHasNewestVersion(HttpServerRequest request, long resourceLastModifiedTimestamp) {
         assert resourceLastModifiedTimestamp >= -1L;
 
         if (resourceLastModifiedTimestamp == -1L) {
@@ -290,8 +302,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
      * @param filenameWithPath the name and path of the file being sent
      * @param response         the response object
      */
-    protected void writeCacheHeaders(String filenameWithPath,
-                                     HttpServerResponse response) {
+    protected void writeCacheHeaders(String filenameWithPath, HttpServerResponse response) {
         int resourceCacheTime = getCacheTime(filenameWithPath);
         String cacheControl;
         if (!deploymentConfiguration.isProductionMode()) {
@@ -337,7 +348,6 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         return 3600;
     }
 
-
     /**
      * Returns a URL to the static Web resource at the given URI or null if no
      * file found.
@@ -369,10 +379,9 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
         // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-            || APP_THEME_PATTERN.matcher(filenameWithPath).find();
+                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
-
 
     private boolean resourceIsDirectory(URL resource) {
         if (resource.getPath().endsWith("/")) {
@@ -390,8 +399,8 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
         if ("jar".equals(resource.getProtocol())) {
             // Get the file path in jar
-            final String pathInJar = resource.getPath()
-                .substring(resource.getPath().indexOf('!') + 1);
+            final String pathInJar =
+                    resource.getPath().substring(resource.getPath().indexOf('!') + 1);
             try {
                 FileSystem fileSystem = getFileSystem(resourceURI);
                 // Get the file path inside the jar.
@@ -406,8 +415,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         }
 
         // If not a jar check if a file path directory.
-        return "file".equals(resource.getProtocol())
-            && Files.isDirectory(Paths.get(resourceURI));
+        return "file".equals(resource.getProtocol()) && Files.isDirectory(Paths.get(resourceURI));
     }
 
     /**
@@ -438,8 +446,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             }
             return new URI(scheme);
         } catch (URISyntaxException syntaxException) {
-            throw new IllegalArgumentException(syntaxException.getMessage(),
-                syntaxException);
+            throw new IllegalArgumentException(syntaxException.getMessage(), syntaxException);
         }
     }
 
@@ -449,12 +456,11 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
             URI fileURI = getFileURI(resourceURI);
             if (!fileURI.getScheme().equals("file")) {
                 throw new IOException("Can not read scheme '"
-                    + fileURI.getScheme() + "' for resource " + resourceURI
-                    + " and will determine this as not a folder");
+                        + fileURI.getScheme() + "' for resource " + resourceURI
+                        + " and will determine this as not a folder");
             }
 
-            if (openFileSystems.computeIfPresent(fileURI,
-                (key, value) -> value + 1) != null) {
+            if (openFileSystems.computeIfPresent(fileURI, (key, value) -> value + 1) != null) {
                 // Get filesystem is for the file to get the correct provider
                 return FileSystems.getFileSystem(resourceURI);
             }
@@ -465,15 +471,11 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         }
     }
 
-    private FileSystem getNewOrExistingFileSystem(URI resourceURI)
-        throws IOException {
+    private FileSystem getNewOrExistingFileSystem(URI resourceURI) throws IOException {
         try {
-            return FileSystems.newFileSystem(resourceURI,
-                Collections.emptyMap());
+            return FileSystems.newFileSystem(resourceURI, Collections.emptyMap());
         } catch (FileSystemAlreadyExistsException fsaee) {
-            getLogger().trace(
-                "Tried to get new filesystem, but it already existed for target uri.",
-                fsaee);
+            getLogger().trace("Tried to get new filesystem, but it already existed for target uri.", fsaee);
             return FileSystems.getFileSystem(resourceURI);
         }
     }
@@ -483,8 +485,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         synchronized (fileSystemLock) {
             try {
                 URI fileURI = getFileURI(resourceURI);
-                final Integer locks = openFileSystems.computeIfPresent(fileURI,
-                    (key, value) -> value - 1);
+                final Integer locks = openFileSystems.computeIfPresent(fileURI, (key, value) -> value - 1);
                 if (locks != null && locks == 0) {
                     openFileSystems.remove(fileURI);
                     // Get filesystem is for the file to get the correct
@@ -492,8 +493,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
                     FileSystems.getFileSystem(resourceURI).close();
                 }
             } catch (IOException ioe) {
-                getLogger().error("Failed to close FileSystem for '{}'",
-                    resourceURI);
+                getLogger().error("Failed to close FileSystem for '{}'", resourceURI);
                 getLogger().debug("Exception closing FileSystem", ioe);
             }
         }
@@ -522,8 +522,7 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
     private boolean shouldFixIncorrectWebjarPaths() {
         return deploymentConfiguration.isProductionMode()
-            && deploymentConfiguration.getBooleanProperty(
-            PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
+                && deploymentConfiguration.getBooleanProperty(PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
     }
 
     private boolean isIncorrectWebjarPath(String requestFilename) {
@@ -531,24 +530,19 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
     }
 
     private String fixIncorrectWebjarPath(String requestFilename) {
-        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
-            .replaceAll("/webjars/");
+        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename).replaceAll("/webjars/");
     }
-
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VertxStaticFileServer.class.getName());
     }
-
 }
 
 class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern
-        .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern
-        .compile("(\\d*)-(\\d*)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("(\\d*)-(\\d*)");
 
     /**
      * Maximum number of ranges accepted in a single Range header. Remaining
@@ -597,7 +591,7 @@ class ResponseWriter implements Serializable {
      *                     the resource
      */
     public void writeResponseContents(String filenameWithPath, URL resourceUrl, RoutingContext routingContext)
-        throws IOException {
+            throws IOException {
         writeContentType(filenameWithPath, routingContext);
 
         URL url = null;
@@ -616,9 +610,7 @@ class ResponseWriter implements Serializable {
                     response.putHeader(HttpHeaders.CONTENT_ENCODING, "br");
                 }
             } catch (Exception e) {
-                getLogger().debug(
-                    "Unexpected exception looking for Brotli resource {}",
-                    brotliFilenameWithPath, e);
+                getLogger().debug("Unexpected exception looking for Brotli resource {}", brotliFilenameWithPath, e);
             }
         }
 
@@ -633,9 +625,7 @@ class ResponseWriter implements Serializable {
                     response.putHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
                 }
             } catch (Exception e) {
-                getLogger().debug(
-                    "Unexpected exception looking for gzipped resource {}",
-                    gzippedFilenameWithPath, e);
+                getLogger().debug("Unexpected exception looking for gzipped resource {}", gzippedFilenameWithPath, e);
             }
         }
 
@@ -687,8 +677,7 @@ class ResponseWriter implements Serializable {
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests for
      * protocol details.
      */
-    private void writeRangeContents(String range, HttpServerResponse response,
-                                    URL resourceURL) throws IOException {
+    private void writeRangeContents(String range, HttpServerResponse response, URL resourceURL) throws IOException {
         response.putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 
         URLConnection connection = resourceURL.openConnection();
@@ -711,19 +700,14 @@ class ResponseWriter implements Serializable {
             if (startGroup.isEmpty() && endGroup.isEmpty()) {
                 response.putHeader(HttpHeaders.CONTENT_LENGTH, "0");
                 response.setStatusCode(416); // Range Not Satisfiable
-                getLogger().info("received a malformed range: '{}'",
-                    rangeMatcher.group());
+                getLogger().info("received a malformed range: '{}'", rangeMatcher.group());
                 return;
             }
             long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
-            long end = endGroup.isEmpty() ? Long.MAX_VALUE
-                : Long.parseLong(endGroup);
-            if (end < start
-                || (resourceLength >= 0 && start >= resourceLength)) {
+            long end = endGroup.isEmpty() ? Long.MAX_VALUE : Long.parseLong(endGroup);
+            if (end < start || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
-                getLogger().info(
-                    "received an illegal range '{}' for resource '{}'",
-                    rangeMatcher.group(), resourceURL);
+                getLogger().info("received an illegal range '{}' for resource '{}'", rangeMatcher.group(), resourceURL);
                 response.putHeader(HttpHeaders.CONTENT_LENGTH, "0");
                 response.setStatusCode(416);
                 return;
@@ -732,9 +716,11 @@ class ResponseWriter implements Serializable {
 
             if (!verifyRangeLimits(ranges)) {
                 ranges.pop();
-                getLogger().info(
-                    "serving only {} ranges for resource '{}' even though more were requested",
-                    ranges.size(), resourceURL);
+                getLogger()
+                        .info(
+                                "serving only {} ranges for resource '{}' even though more were requested",
+                                ranges.size(),
+                                resourceURL);
                 break;
             }
         }
@@ -749,8 +735,7 @@ class ResponseWriter implements Serializable {
                 end = Math.min(end, resourceLength - 1);
             }
             setContentLength(response, end - start + 1);
-            response.putHeader(HttpHeaders.CONTENT_RANGE,
-                createContentRangeHeader(start, end, resourceLength));
+            response.putHeader(HttpHeaders.CONTENT_RANGE, createContentRangeHeader(start, end, resourceLength));
 
             final InputStream dataStream = connection.getInputStream();
             try {
@@ -761,8 +746,7 @@ class ResponseWriter implements Serializable {
                 closeStream(dataStream);
             }
         } else {
-            writeMultipartRangeContents(ranges, connection, response,
-                resourceURL);
+            writeMultipartRangeContents(ranges, connection, response, resourceURL);
         }
     }
 
@@ -771,9 +755,9 @@ class ResponseWriter implements Serializable {
      * separated by boundaries and use "Transfer-Encoding: chunked" mode to
      * avoid computing "Content-Length".
      */
-    private void writeMultipartRangeContents(List<Pair<Long, Long>> ranges,
-                                             URLConnection connection, HttpServerResponse response,
-                                             URL resourceURL) throws IOException {
+    private void writeMultipartRangeContents(
+            List<Pair<Long, Long>> ranges, URLConnection connection, HttpServerResponse response, URL resourceURL)
+            throws IOException {
         String partBoundary = UUID.randomUUID().toString();
         response.putHeader(HttpHeaders.CONTENT_TYPE, String.format("multipart/byteranges; boundary=%s", partBoundary));
         response.putHeader(HttpHeaders.TRANSFER_ENCODING, "chunked");
@@ -789,9 +773,9 @@ class ResponseWriter implements Serializable {
                 if (mimeType != null) {
                     response.write(String.format("Content-Type: %s\r\n", mimeType));
                 }
-                response.write(String.format("Content-Range: %s\r\n\r\n",
-                    createContentRangeHeader(start, end,
-                        connection.getContentLengthLong())));
+                response.write(String.format(
+                        "Content-Range: %s\r\n\r\n",
+                        createContentRangeHeader(start, end, connection.getContentLengthLong())));
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
@@ -817,8 +801,7 @@ class ResponseWriter implements Serializable {
         return String.format("bytes %d-%d/%s", start, end, lengthString);
     }
 
-    private void setContentLength(HttpServerResponse response,
-                                  long contentLength) {
+    private void setContentLength(HttpServerResponse response, long contentLength) {
         try {
             response.putHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength));
         } catch (Exception e) {
@@ -841,28 +824,23 @@ class ResponseWriter implements Serializable {
         for (int i = 0; i < ranges.size(); i++) {
             for (int j = i + 1; j < ranges.size(); j++) {
                 if (ranges.get(i).getFirst() <= ranges.get(j).getSecond()
-                    && ranges.get(j).getFirst() <= ranges.get(i)
-                    .getSecond()) {
+                        && ranges.get(j).getFirst() <= ranges.get(i).getSecond()) {
                     count++;
                 }
             }
         }
         if (count > MAX_OVERLAPPING_RANGE_COUNT) {
-            getLogger().info("more than {} overlapping ranges requested",
-                MAX_OVERLAPPING_RANGE_COUNT);
+            getLogger().info("more than {} overlapping ranges requested", MAX_OVERLAPPING_RANGE_COUNT);
             return false;
         }
         return true;
     }
 
-    private URL getResource(String resource)
-        throws MalformedURLException {
+    private URL getResource(String resource) throws MalformedURLException {
         FileResolver fileResolver = new FileResolverImpl();
         File file = fileResolver.resolveFile(resource);
-        if (!file.exists() && resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            && isAllowedVAADINBuildUrl(resource)) {
-            file = fileResolver.resolveFile(
-                VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
+        if (!file.exists() && resource.startsWith("/" + VAADIN_BUILD_FILES_PATH) && isAllowedVAADINBuildUrl(resource)) {
+            file = fileResolver.resolveFile(VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
         }
         return file.exists() ? file.toURI().toURL() : null;
     }
@@ -878,25 +856,22 @@ class ResponseWriter implements Serializable {
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
         // Check that we target VAADIN/build and do not have '/../'
-        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-            || filenameWithPath.contains("/../")) {
-            getLogger().info("Blocked attempt to access file: {}",
-                filenameWithPath);
+        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH) || filenameWithPath.contains("/../")) {
+            getLogger().info("Blocked attempt to access file: {}", filenameWithPath);
             return false;
         }
 
         return true;
     }
 
-    private void writeStream(HttpServerResponse response,
-                             InputStream dataStream, long count) throws IOException {
+    private void writeStream(HttpServerResponse response, InputStream dataStream, long count) throws IOException {
 
         final byte[] buffer = new byte[bufferSize];
 
         long bytesTotal = 0L;
         int bytes;
-        while (bytesTotal < count && (bytes = dataStream.read(buffer, 0,
-            (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
+        while (bytesTotal < count
+                && (bytes = dataStream.read(buffer, 0, (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
             Buffer bf = Buffer.buffer(bufferSize);
             bf.appendBytes(buffer, 0, bytes);
             response.write(bf);
@@ -935,8 +910,7 @@ class ResponseWriter implements Serializable {
         return acceptsEncoding(request, "br");
     }
 
-    private static boolean acceptsEncoding(HttpServerRequest request,
-                                           String encodingName) {
+    private static boolean acceptsEncoding(HttpServerRequest request, String encodingName) {
         String accept = request.getHeader(HttpHeaders.ACCEPT_ENCODING);
         if (accept == null) {
             return false;
@@ -973,8 +947,7 @@ class ResponseWriter implements Serializable {
      * @param encoding       encoding to check
      * @return true if quality value is Zero
      */
-    private static boolean isQualityValueZero(String acceptEncoding,
-                                              String encoding) {
+    private static boolean isQualityValueZero(String acceptEncoding, String encoding) {
         String qPrefix = encoding + ";q=";
         int qValueIndex = acceptEncoding.indexOf(qPrefix);
         if (qValueIndex == -1) {
@@ -982,8 +955,7 @@ class ResponseWriter implements Serializable {
         }
 
         // gzip;q=0.123 or gzip;q=0.123,compress...
-        String qValue = acceptEncoding
-            .substring(qValueIndex + qPrefix.length());
+        String qValue = acceptEncoding.substring(qValueIndex + qPrefix.length());
         int endOfQValue = qValue.indexOf(',');
         if (endOfQValue != -1) {
             qValue = qValue.substring(0, endOfQValue);

@@ -1,33 +1,27 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
- * 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.github.mcollovati.vertx.quarkus.context;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Typed;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.inject.spi.InjectionTarget;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,12 +30,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Typed;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.InjectionTarget;
 
 import com.github.mcollovati.vertx.quarkus.AnyLiteral;
 
 /**
  * A modified copy of org.apache.deltaspike.core.api.provider.BeanProvider.
- * 
+ *
  * This class contains utility methods for resolution of contextual references
  * in situations where no injection is available because the current class is
  * not managed by the CDI Container. This can happen in e.g. a JPA 2.0
@@ -57,8 +59,7 @@ import com.github.mcollovati.vertx.quarkus.AnyLiteral;
  */
 @Typed()
 public final class BeanProvider {
-    private static final Logger LOG = Logger
-            .getLogger(BeanProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(BeanProvider.class.getName());
 
     private BeanProvider() {
         // this is a utility class which doesn't get instantiated.
@@ -97,8 +98,7 @@ public final class BeanProvider {
      *             if the bean could not be found.
      * @see #getContextualReference(Class, boolean, Annotation...)
      */
-    public static <T> T getContextualReference(Class<T> type,
-            Annotation... qualifiers) {
+    public static <T> T getContextualReference(Class<T> type, Annotation... qualifiers) {
         return getContextualReference(type, false, qualifiers);
     }
 
@@ -122,8 +122,7 @@ public final class BeanProvider {
      *
      * @see #getContextualReference(Class, Annotation...)
      */
-    public static <T> T getContextualReference(Class<T> type, boolean optional,
-            Annotation... qualifiers) {
+    public static <T> T getContextualReference(Class<T> type, boolean optional, Annotation... qualifiers) {
         BeanManager beanManager = getBeanManager();
 
         return getContextualReference(beanManager, type, optional, qualifiers);
@@ -152,8 +151,8 @@ public final class BeanProvider {
      *
      * @see #getContextualReference(Class, Annotation...)
      */
-    public static <T> T getContextualReference(BeanManager beanManager,
-            Class<T> type, boolean optional, Annotation... qualifiers) {
+    public static <T> T getContextualReference(
+            BeanManager beanManager, Class<T> type, boolean optional, Annotation... qualifiers) {
         Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers);
 
         if (beans == null || beans.isEmpty()) {
@@ -161,8 +160,8 @@ public final class BeanProvider {
                 return null;
             }
 
-            throw new IllegalStateException("Could not find beans for Type="
-                    + type + " and qualifiers:" + Arrays.toString(qualifiers));
+            throw new IllegalStateException(
+                    "Could not find beans for Type=" + type + " and qualifiers:" + Arrays.toString(qualifiers));
         }
 
         return getContextualReference(type, beanManager, beans);
@@ -239,8 +238,7 @@ public final class BeanProvider {
      *
      * @return the resolved Contextual Reference
      */
-    public static <T> T getContextualReference(String name, boolean optional,
-            Class<T> type) {
+    public static <T> T getContextualReference(String name, boolean optional, Class<T> type) {
         return getContextualReference(getBeanManager(), name, optional, type);
     }
 
@@ -273,8 +271,7 @@ public final class BeanProvider {
      *            target type
      * @return the resolved Contextual Reference
      */
-    public static <T> T getContextualReference(BeanManager beanManager,
-            String name, boolean optional, Class<T> type) {
+    public static <T> T getContextualReference(BeanManager beanManager, String name, boolean optional, Class<T> type) {
         Set<Bean<?>> beans = beanManager.getBeans(name);
 
         if (beans == null || beans.isEmpty()) {
@@ -282,8 +279,7 @@ public final class BeanProvider {
                 return null;
             }
 
-            throw new IllegalStateException("Could not find beans for Type="
-                    + type + " and name:" + name);
+            throw new IllegalStateException("Could not find beans for Type=" + type + " and name:" + name);
         }
 
         return getContextualReference(type, beanManager, beans);
@@ -311,11 +307,9 @@ public final class BeanProvider {
         return getContextualReference(type, getBeanManager(), bean);
     }
 
-    private static <T> T getContextualReference(Class<T> type,
-            BeanManager beanManager, Bean<?> bean) {
+    private static <T> T getContextualReference(Class<T> type, BeanManager beanManager, Bean<?> bean) {
         // noinspection unchecked
-        return getContextualReference(type, beanManager,
-                Collections.<Bean<?>> singleton(bean));
+        return getContextualReference(type, beanManager, Collections.<Bean<?>>singleton(bean));
     }
 
     /**
@@ -350,8 +344,7 @@ public final class BeanProvider {
      * @return the resolved list of Contextual Reference or an empty-list if
      *         optional is true
      */
-    public static <T> List<T> getContextualReferences(Class<T> type,
-            boolean optional) {
+    public static <T> List<T> getContextualReferences(Class<T> type, boolean optional) {
         return getContextualReferences(type, optional, true);
     }
 
@@ -387,12 +380,11 @@ public final class BeanProvider {
      * @return the resolved list of Contextual Reference or an empty-list if
      *         optional is true
      */
-    public static <T> List<T> getContextualReferences(Class<T> type,
-            boolean optional, boolean includeDefaultScopedBeans) {
+    public static <T> List<T> getContextualReferences(
+            Class<T> type, boolean optional, boolean includeDefaultScopedBeans) {
         BeanManager beanManager = getBeanManager();
 
-        Set<Bean<T>> beans = getBeanDefinitions(type, optional,
-                includeDefaultScopedBeans, beanManager);
+        Set<Bean<T>> beans = getBeanDefinitions(type, optional, includeDefaultScopedBeans, beanManager);
 
         List<T> result = new ArrayList<T>(beans.size());
 
@@ -421,12 +413,11 @@ public final class BeanProvider {
      * @return the resolved set of {@link Bean} definitions or an empty set if
      *         optional is true
      */
-    public static <T> Set<Bean<T>> getBeanDefinitions(Class<T> type,
-            boolean optional, boolean includeDefaultScopedBeans) {
+    public static <T> Set<Bean<T>> getBeanDefinitions(
+            Class<T> type, boolean optional, boolean includeDefaultScopedBeans) {
         BeanManager beanManager = getBeanManager();
 
-        return getBeanDefinitions(type, optional, includeDefaultScopedBeans,
-                beanManager);
+        return getBeanDefinitions(type, optional, includeDefaultScopedBeans, beanManager);
     }
 
     /**
@@ -449,9 +440,8 @@ public final class BeanProvider {
      * @return the resolved set of {@link Bean} definitions or an empty set if
      *         optional is true
      */
-    public static <T> Set<Bean<T>> getBeanDefinitions(Class<T> type,
-            boolean optional, boolean includeDefaultScopedBeans,
-            BeanManager beanManager) {
+    public static <T> Set<Bean<T>> getBeanDefinitions(
+            Class<T> type, boolean optional, boolean includeDefaultScopedBeans, BeanManager beanManager) {
         Set<Bean<?>> beans = beanManager.getBeans(type, new AnyLiteral());
 
         if (beans == null || beans.isEmpty()) {
@@ -459,8 +449,7 @@ public final class BeanProvider {
                 return Collections.emptySet();
             }
 
-            throw new IllegalStateException(
-                    "Could not find beans for Type=" + type);
+            throw new IllegalStateException("Could not find beans for Type=" + type);
         }
 
         if (!includeDefaultScopedBeans) {
@@ -503,13 +492,10 @@ public final class BeanProvider {
 
         BeanManager beanManager = getBeanManager();
 
-        CreationalContext<T> creationalContext = beanManager
-                .createCreationalContext(null);
+        CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
 
-        AnnotatedType<T> annotatedType = beanManager
-                .createAnnotatedType((Class<T>) instance.getClass());
-        InjectionTarget<T> injectionTarget = beanManager
-                .createInjectionTarget(annotatedType);
+        AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) instance.getClass());
+        InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
         injectionTarget.inject(instance, creationalContext);
         return instance;
     }
@@ -539,14 +525,12 @@ public final class BeanProvider {
      *            target type
      * @return the contextual reference
      */
-    private static <T> T getContextualReference(Class<T> type,
-            BeanManager beanManager, Set<Bean<?>> beans) {
+    private static <T> T getContextualReference(Class<T> type, BeanManager beanManager, Set<Bean<?>> beans) {
         Bean<?> bean = beanManager.resolve(beans);
 
-        CreationalContext<?> creationalContext = beanManager
-                .createCreationalContext(bean);
+        CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
 
-        @SuppressWarnings({ "unchecked", "UnnecessaryLocalVariable" })
+        @SuppressWarnings({"unchecked", "UnnecessaryLocalVariable"})
         T result = (T) beanManager.getReference(bean, type, creationalContext);
         return result;
     }

@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.http.Cookie;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,9 +38,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.servlet.http.Cookie;
 
-import com.github.mcollovati.vertx.Sync;
-import com.github.mcollovati.vertx.web.ExtendedSession;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.WrappedSession;
 import io.vertx.core.MultiMap;
@@ -54,6 +52,9 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
+import com.github.mcollovati.vertx.Sync;
+import com.github.mcollovati.vertx.web.ExtendedSession;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -61,8 +62,10 @@ import static java.util.stream.Collectors.toList;
  */
 public class VertxVaadinRequest implements VaadinRequest {
 
-    private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("^(.*/[^;]+)(?:;.*$|$)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern CHARSET_PATTERN = Pattern.compile("^.*(?<=charset=)([^;]+)(?:;.*$|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CONTENT_TYPE_PATTERN =
+            Pattern.compile("^(.*/[^;]+)(?:;.*$|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CHARSET_PATTERN =
+            Pattern.compile("^.*(?<=charset=)([^;]+)(?:;.*$|$)", Pattern.CASE_INSENSITIVE);
 
     private final VertxVaadinService service;
     private final RoutingContext routingContext;
@@ -72,7 +75,6 @@ public class VertxVaadinRequest implements VaadinRequest {
         this.service = service;
         this.routingContext = routingContext;
         this.request = routingContext.request();
-
     }
 
     public HttpServerRequest getRequest() {
@@ -85,9 +87,8 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     @Override
     public String getParameter(String parameter) {
-        //return request.getParam(parameter);
-        return routingContext.queryParam(parameter)
-                .stream().findFirst().orElse(null);
+        // return request.getParam(parameter);
+        return routingContext.queryParam(parameter).stream().findFirst().orElse(null);
     }
 
     @Override
@@ -147,9 +148,7 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     public static String extractContextPath(RoutingContext routingContext) {
         // until vertx 3.8.3 routingContext.mountPoint() for "/" is "", since 3.8.4 it is "/"
-        return Optional.ofNullable(routingContext.mountPoint())
-                .orElse("")
-                .replaceAll("/$", "");
+        return Optional.ofNullable(routingContext.mountPoint()).orElse("").replaceAll("/$", "");
     }
 
     @Override
@@ -161,14 +160,17 @@ public class VertxVaadinRequest implements VaadinRequest {
     public WrappedSession getWrappedSession(boolean allowSessionCreation) {
         return Optional.ofNullable(routingContext.session())
                 .map(ExtendedSession::adapt)
-                .map(VertxWrappedSession::new).orElse(null);
+                .map(VertxWrappedSession::new)
+                .orElse(null);
     }
 
     @Override
     public String getContentType() {
         return Optional.ofNullable(request.getHeader(HttpHeaders.CONTENT_TYPE))
-                .map(CONTENT_TYPE_PATTERN::matcher).filter(Matcher::matches)
-                .map(m -> m.group(1)).orElse(null);
+                .map(CONTENT_TYPE_PATTERN::matcher)
+                .filter(Matcher::matches)
+                .map(m -> m.group(1))
+                .orElse(null);
     }
 
     @Override
@@ -179,7 +181,8 @@ public class VertxVaadinRequest implements VaadinRequest {
     @Override
     public String getRemoteAddr() {
         return Optional.ofNullable(request.remoteAddress())
-                .map(SocketAddress::host).orElse(null);
+                .map(SocketAddress::host)
+                .orElse(null);
     }
 
     @Override
@@ -201,7 +204,8 @@ public class VertxVaadinRequest implements VaadinRequest {
     public Cookie[] getCookies() {
         if (routingContext.cookieCount() > 0) {
             return routingContext.cookieMap().values().stream()
-                    .map(CookieUtils::fromVertxCookie).toArray(Cookie[]::new);
+                    .map(CookieUtils::fromVertxCookie)
+                    .toArray(Cookie[]::new);
         }
         return null;
     }
@@ -215,7 +219,8 @@ public class VertxVaadinRequest implements VaadinRequest {
     @Override
     public String getRemoteUser() {
         return Optional.ofNullable(routingContext.user())
-                .map(User::principal).flatMap(json -> Optional.ofNullable(json.getString("username")))
+                .map(User::principal)
+                .flatMap(json -> Optional.ofNullable(json.getString("username")))
                 .orElse(null);
     }
 
@@ -243,7 +248,8 @@ public class VertxVaadinRequest implements VaadinRequest {
     @Override
     public Enumeration<Locale> getLocales() {
         return Collections.enumeration(routingContext.acceptableLanguages().stream()
-                .map(VertxVaadinRequest::toJavaLocale).collect(toList()));
+                .map(VertxVaadinRequest::toJavaLocale)
+                .collect(toList()));
     }
 
     @Override
@@ -254,14 +260,17 @@ public class VertxVaadinRequest implements VaadinRequest {
     @Override
     public int getRemotePort() {
         return Optional.ofNullable(request.remoteAddress())
-                .map(SocketAddress::port).orElse(-1);
+                .map(SocketAddress::port)
+                .orElse(-1);
     }
 
     @Override
     public String getCharacterEncoding() {
         return Optional.ofNullable(request.getHeader(HttpHeaders.CONTENT_TYPE))
-                .map(CHARSET_PATTERN::matcher).filter(Matcher::matches)
-                .map(m -> m.group(1)).orElse(null);
+                .map(CHARSET_PATTERN::matcher)
+                .filter(Matcher::matches)
+                .map(m -> m.group(1))
+                .orElse(null);
     }
 
     @Override
@@ -277,10 +286,13 @@ public class VertxVaadinRequest implements VaadinRequest {
     @Override
     public long getDateHeader(String name) {
         return Optional.ofNullable(request.getHeader(name))
-                .flatMap(s -> tryParseDate(s, DateTimeFormatter.RFC_1123_DATE_TIME,
+                .flatMap(s -> tryParseDate(
+                        s,
+                        DateTimeFormatter.RFC_1123_DATE_TIME,
                         DateTimeFormatter.ofPattern("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US),
-                        DateTimeFormatter.ofPattern("EEE MMM ppd HH:mm:ss yyyy", Locale.US).withZone(ZoneId.of("GMT"))
-                )).orElse(-1L);
+                        DateTimeFormatter.ofPattern("EEE MMM ppd HH:mm:ss yyyy", Locale.US)
+                                .withZone(ZoneId.of("GMT"))))
+                .orElse(-1L);
     }
 
     private Optional<Long> tryParseDate(String date, DateTimeFormatter... formatter) {
@@ -308,10 +320,10 @@ public class VertxVaadinRequest implements VaadinRequest {
 
     private static Locale toJavaLocale(LanguageHeader locale) {
         return Optional.ofNullable(locale)
-                .map(loc -> new Locale(loc.tag(),
+                .map(loc -> new Locale(
+                        loc.tag(),
                         Optional.ofNullable(loc.subtag()).orElse(""),
-                        Optional.ofNullable(loc.subtag(2)).orElse("")
-                ))
+                        Optional.ofNullable(loc.subtag(2)).orElse("")))
                 .orElse(null);
     }
 
@@ -332,5 +344,4 @@ public class VertxVaadinRequest implements VaadinRequest {
             return user.principal().getString("username");
         }
     }
-
 }

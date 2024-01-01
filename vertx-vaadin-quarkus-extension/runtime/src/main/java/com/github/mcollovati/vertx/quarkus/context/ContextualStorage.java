@@ -1,33 +1,34 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
- * 
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.github.mcollovati.vertx.quarkus.context;
 
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.enterprise.context.spi.Contextual;
+import javax.enterprise.context.spi.CreationalContext;
 
 /**
  * This Storage holds all information needed for storing Contextual Instances in
@@ -43,7 +44,7 @@ public class ContextualStorage implements Serializable {
 
     /**
      * Creates a new instance of storage.
-     * 
+     *
      * @param concurrent
      *            whether the ContextualStorage might get accessed concurrently
      *            by different threads
@@ -82,17 +83,17 @@ public class ContextualStorage implements Serializable {
      *            contextual instance type
      * @return a created contextual instance
      */
-    public <T> T createContextualInstance(Contextual<T> bean,
-            CreationalContext<T> creationalContext) {
+    public <T> T createContextualInstance(Contextual<T> bean, CreationalContext<T> creationalContext) {
         Object beanKey = getBeanKey(bean);
         if (isConcurrent()) {
             // locked approach
             ContextualInstanceInfo<T> instanceInfo = new ContextualInstanceInfo<T>();
 
-            ConcurrentMap<Object, ContextualInstanceInfo<?>> concurrentMap = (ConcurrentHashMap<Object, ContextualInstanceInfo<?>>) contextualInstances;
+            ConcurrentMap<Object, ContextualInstanceInfo<?>> concurrentMap =
+                    (ConcurrentHashMap<Object, ContextualInstanceInfo<?>>) contextualInstances;
 
-            ContextualInstanceInfo<T> oldInstanceInfo = (ContextualInstanceInfo<T>) concurrentMap
-                    .putIfAbsent(beanKey, instanceInfo);
+            ContextualInstanceInfo<T> oldInstanceInfo =
+                    (ContextualInstanceInfo<T>) concurrentMap.putIfAbsent(beanKey, instanceInfo);
 
             if (oldInstanceInfo != null) {
                 instanceInfo = oldInstanceInfo;
@@ -123,12 +124,12 @@ public class ContextualStorage implements Serializable {
     /**
      * If the context is a passivating scope then we return the passivationId of
      * the Bean. Otherwise we use the Bean directly.
-     * 
+     *
      * @param <T>
      *            bean type
      * @param bean
      *            the contextual type
-     * 
+     *
      * @return the key to use in the context map
      */
     public <T> Object getBeanKey(Contextual<T> bean) {
@@ -137,12 +138,12 @@ public class ContextualStorage implements Serializable {
 
     /**
      * Restores the Bean from its beanKey.
-     * 
+     *
      * @see #getBeanKey(Contextual)
-     * 
+     *
      * @param beanKey
      *            a bean key
-     * 
+     *
      * @return the contextual type
      */
     public Contextual<?> getBean(Object beanKey) {

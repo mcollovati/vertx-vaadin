@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin.communication;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -30,6 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -62,8 +62,8 @@ public class VertxStreamRequestHandler implements RequestHandler {
     private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-                                 VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
 
         String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
@@ -80,11 +80,10 @@ public class VertxStreamRequestHandler implements RequestHandler {
         Optional<AbstractStreamResource> abstractStreamResource;
         session.lock();
         try {
-            abstractStreamResource = VertxStreamRequestHandler.getPathUri(pathInfo)
-                .flatMap(session.getResourceRegistry()::getResource);
+            abstractStreamResource =
+                    VertxStreamRequestHandler.getPathUri(pathInfo).flatMap(session.getResourceRegistry()::getResource);
             if (!abstractStreamResource.isPresent()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "Resource is not found for path=" + pathInfo);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource is not found for path=" + pathInfo);
                 return true;
             }
         } finally {
@@ -94,14 +93,12 @@ public class VertxStreamRequestHandler implements RequestHandler {
         if (abstractStreamResource.isPresent()) {
             AbstractStreamResource resource = abstractStreamResource.get();
             if (resource instanceof StreamResource) {
-                resourceHandler.handleRequest(session, request, response,
-                    (StreamResource) resource);
+                resourceHandler.handleRequest(session, request, response, (StreamResource) resource);
             } else if (resource instanceof StreamReceiver) {
                 StreamReceiver streamReceiver = (StreamReceiver) resource;
                 String[] parts = parsePath(pathInfo);
 
-                receiverHandler.handleRequest(session, request, response,
-                    streamReceiver, parts[0], parts[1]);
+                receiverHandler.handleRequest(session, request, response, streamReceiver, parts[0], parts[1]);
             } else {
                 getLogger().warn("Received unknown stream resource.");
             }
@@ -118,8 +115,7 @@ public class VertxStreamRequestHandler implements RequestHandler {
      */
     private String[] parsePath(String pathInfo) {
         // strip away part until the data we are interested starts
-        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
-            + DYN_RES_PREFIX.length();
+        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX) + DYN_RES_PREFIX.length();
 
         String uppUri = pathInfo.substring(startOfData);
         // [0] UIid, [1] security key, [2] name
@@ -169,8 +165,7 @@ public class VertxStreamRequestHandler implements RequestHandler {
         }
     }
 
-    private static String encodeString(String name)
-        throws UnsupportedEncodingException {
+    private static String encodeString(String name) throws UnsupportedEncodingException {
         return URLEncoder.encode(name, StandardCharsets.UTF_8.name()).replace("+", "%20");
     }
 

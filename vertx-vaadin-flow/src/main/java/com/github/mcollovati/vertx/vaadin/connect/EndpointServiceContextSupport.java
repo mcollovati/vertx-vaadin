@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * @param <RESPONSE> type of the response.
  */
 public abstract class EndpointServiceContextSupport<REQUEST, RESPONSE>
-    implements EndpointServiceContext<REQUEST, RESPONSE> {
+        implements EndpointServiceContext<REQUEST, RESPONSE> {
     private final REQUEST request;
     private final ObjectNode body;
 
@@ -49,5 +49,4 @@ public abstract class EndpointServiceContextSupport<REQUEST, RESPONSE>
     public ObjectNode requestBody() {
         return body;
     }
-
 }

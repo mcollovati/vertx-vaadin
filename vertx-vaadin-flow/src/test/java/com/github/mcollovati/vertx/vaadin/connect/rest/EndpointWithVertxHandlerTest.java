@@ -22,10 +22,9 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.rest;
 
-import com.github.mcollovati.vertx.vaadin.connect.VaadinConnectHandler;
-import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistry;
-import com.github.mcollovati.vertx.vaadin.connect.VertxVaadinConnectEndpointService;
-import com.github.mcollovati.vertx.vaadin.connect.auth.VaadinConnectAccessChecker;
+import java.util.HashSet;
+import java.util.function.Consumer;
+
 import dev.hilla.EndpointNameChecker;
 import dev.hilla.ExplicitNullableTypeChecker;
 import io.vertx.core.Vertx;
@@ -42,8 +41,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashSet;
-import java.util.function.Consumer;
+import com.github.mcollovati.vertx.vaadin.connect.VaadinConnectHandler;
+import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistry;
+import com.github.mcollovati.vertx.vaadin.connect.VertxVaadinConnectEndpointService;
+import com.github.mcollovati.vertx.vaadin.connect.auth.VaadinConnectAccessChecker;
 
 import static org.mockito.Mockito.mock;
 
@@ -62,14 +63,12 @@ public class EndpointWithVertxHandlerTest {
         Vertx vertx = Vertx.vertx();
         Router router = Router.router(vertx);
         setupRouter(router);
-        vertx.createHttpServer()
-                .requestHandler(router)
-                .listen(0, ev -> {
-                    context.assertTrue(ev.succeeded(), "Http server started");
-                    HttpServer httpServer = ev.result();
-                    port = httpServer.actualPort();
-                    async.complete();
-                });
+        vertx.createHttpServer().requestHandler(router).listen(0, ev -> {
+            context.assertTrue(ev.succeeded(), "Http server started");
+            HttpServer httpServer = ev.result();
+            port = httpServer.actualPort();
+            async.complete();
+        });
         webClient = WebClient.create(vertx);
     }
 
@@ -93,18 +92,19 @@ public class EndpointWithVertxHandlerTest {
         endpointRegistry.registerEndpoint(new VaadinConnectEndpoints());
 
         VertxVaadinConnectEndpointService service = new VertxVaadinConnectEndpointService(
-                null, endpointRegistry, mock(VaadinConnectAccessChecker.class),
-                mock(ExplicitNullableTypeChecker.class)
-        );
+                null,
+                endpointRegistry,
+                mock(VaadinConnectAccessChecker.class),
+                mock(ExplicitNullableTypeChecker.class));
         VaadinConnectHandler.register(router, service);
-
     }
 
     @Test
-    //https://github.com/vaadin/flow/issues/8010
+    // https://github.com/vaadin/flow/issues/8010
     public void shouldNotExposePrivateAndProtectedFields_when_CallingFromRestAPIs(TestContext context) {
         Async async = context.async();
-        webClient.get(port, "localhost", "/api/get")
+        webClient
+                .get(port, "localhost", "/api/get")
                 .putHeader("content-type", "application/json; charset=utf-8")
                 .send(ev -> {
                     context.assertTrue(ev.succeeded());
@@ -114,32 +114,35 @@ public class EndpointWithVertxHandlerTest {
     }
 
     @Test
-    //https://github.com/vaadin/flow/issues/8034
+    // https://github.com/vaadin/flow/issues/8034
     public void should_BeAbleToSerializePrivateFieldsOfABean_when_CallingFromConnectEndPoint(TestContext context) {
-        callEndpointMethod("getBeanWithPrivateFields", context,
+        callEndpointMethod(
+                "getBeanWithPrivateFields",
+                context,
                 result -> result.isEqualTo("{\"codeNumber\":\"007\",\"name\":\"Bond\",\"firstName\":\"James\"}"),
-                "failed to serialize a bean with private fields"
-        );
+                "failed to serialize a bean with private fields");
     }
 
     @Test
-    //https://github.com/vaadin/flow/issues/8034
+    // https://github.com/vaadin/flow/issues/8034
     public void should_BeAbleToSerializeABeanWithZonedDateTimeField(TestContext context) {
-        callEndpointMethod("getBeanWithZonedDateTimeField", context,
-                result -> result
-                        .isNotBlank()
-                        .doesNotContain("Failed to serialize endpoint 'VaadinConnectTypeConversionEndpoints' method 'getBeanWithZonedDateTimeField' response"),
-                "failed to serialize a bean with ZonedDateTime field"
-        );
+        callEndpointMethod(
+                "getBeanWithZonedDateTimeField",
+                context,
+                result -> result.isNotBlank()
+                        .doesNotContain(
+                                "Failed to serialize endpoint 'VaadinConnectTypeConversionEndpoints' method 'getBeanWithZonedDateTimeField' response"),
+                "failed to serialize a bean with ZonedDateTime field");
     }
 
     @Test
-    //https://github.com/vaadin/flow/issues/8067
+    // https://github.com/vaadin/flow/issues/8067
     public void should_RepsectJacksonAnnotation_when_serializeBean(TestContext context) throws Exception {
-        callEndpointMethod("getBeanWithJacksonAnnotation", context,
+        callEndpointMethod(
+                "getBeanWithJacksonAnnotation",
+                context,
                 result -> result.isEqualTo("{\"name\":null,\"rating\":2,\"bookId\":null}"),
-                "failed to serialize a bean with Jackson annotated fields"
-        );
+                "failed to serialize a bean with Jackson annotated fields");
     }
 
     @Test
@@ -149,28 +152,29 @@ public class EndpointWithVertxHandlerTest {
      * vaadin-spring-boot-starter
      */
     public void should_serializeLocalTimeInExpectedFormat(TestContext context) {
-        callEndpointMethod("getLocalTime", context,
+        callEndpointMethod(
+                "getLocalTime",
+                context,
                 result -> result.isEqualTo("\"08:00:00\""),
-                "failed to serialize a bean with jsr310 field"
-        );
+                "failed to serialize a bean with jsr310 field");
     }
 
-    private void callEndpointMethod(String methodName, TestContext context,
-                                    Consumer<AbstractStringAssert<?>> asserter,
-                                    String failureMessage) {
+    private void callEndpointMethod(
+            String methodName, TestContext context, Consumer<AbstractStringAssert<?>> asserter, String failureMessage) {
 
         String endpointName = VaadinConnectEndpoints.class.getSimpleName();
         String requestUrl = String.format("/%s/%s", endpointName, methodName);
         Async async = context.async();
-        webClient.post(port, "localhost", requestUrl)
+        webClient
+                .post(port, "localhost", requestUrl)
                 .putHeader("content-type", "application/json; charset=utf-8")
                 .putHeader("accept", "application/json; charset=utf-8")
                 .send(ev -> {
                     context.assertTrue(ev.succeeded(), failureMessage);
-                    AbstractStringAssert<?> stringAssert = Assertions.assertThat(ev.result().bodyAsString());
+                    AbstractStringAssert<?> stringAssert =
+                            Assertions.assertThat(ev.result().bodyAsString());
                     context.verify(v -> asserter.accept(stringAssert));
                     async.complete();
                 });
     }
 }
-

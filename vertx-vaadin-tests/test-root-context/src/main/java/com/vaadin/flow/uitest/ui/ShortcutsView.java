@@ -1,19 +1,25 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,8 +38,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsView",
-        layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsView", layout = ViewTestLayout.class)
 public class ShortcutsView extends Div {
 
     private Paragraph invisibleP = new Paragraph("invisible");
@@ -62,13 +67,17 @@ public class ShortcutsView extends Div {
         input.addFocusShortcut(Key.KEY_F, KeyModifier.ALT);
 
         // shortcutsOnlyWorkWhenComponentIsVisible
-        UI.getCurrent().addShortcutListener(() -> {
-            invisibleP.setVisible(!invisibleP.isVisible());
-            actual.setValue("toggled!");
-        }, Key.KEY_I, KeyModifier.ALT);
+        UI.getCurrent()
+                .addShortcutListener(
+                        () -> {
+                            invisibleP.setVisible(!invisibleP.isVisible());
+                            actual.setValue("toggled!");
+                        },
+                        Key.KEY_I,
+                        KeyModifier.ALT);
 
-        Shortcuts.addShortcutListener(invisibleP, () -> actual
-                .setValue("invisibleP"), Key.KEY_V).withAlt();
+        Shortcuts.addShortcutListener(invisibleP, () -> actual.setValue("invisibleP"), Key.KEY_V)
+                .withAlt();
 
         add(button, input, invisibleP);
 
@@ -78,8 +87,7 @@ public class ShortcutsView extends Div {
             actual.setValue("DISABLED CLICKED");
             disabledButton.setEnabled(false);
         });
-        disabledButton.addClickShortcut(Key.KEY_U, KeyModifier.SHIFT,
-                KeyModifier.CONTROL);
+        disabledButton.addClickShortcut(Key.KEY_U, KeyModifier.SHIFT, KeyModifier.CONTROL);
 
         add(disabledButton);
 
@@ -92,8 +100,7 @@ public class ShortcutsView extends Div {
 
         subview.add(focusTarget);
 
-        Shortcuts.addShortcutListener(subview,
-                () -> actual.setValue("subview"), Key.KEY_S, KeyModifier.ALT)
+        Shortcuts.addShortcutListener(subview, () -> actual.setValue("subview"), Key.KEY_S, KeyModifier.ALT)
                 .listenOn(subview);
 
         add(subview);
@@ -102,37 +109,39 @@ public class ShortcutsView extends Div {
         Paragraph attachable = new Paragraph("attachable");
         attachable.setId("attachable");
 
-        Shortcuts.addShortcutListener(attachable, () -> actual
-                .setValue("attachable"), Key.KEY_A).withAlt();
+        Shortcuts.addShortcutListener(attachable, () -> actual.setValue("attachable"), Key.KEY_A)
+                .withAlt();
 
-        UI.getCurrent().addShortcutListener(() -> {
-            attached = !attached;
-            if (attached) {
-                add(attachable);
-            }
-            else {
-                remove(attachable);
-            }
-            actual.setValue("toggled!");
-        }, Key.KEY_Y, KeyModifier.ALT);
+        UI.getCurrent()
+                .addShortcutListener(
+                        () -> {
+                            attached = !attached;
+                            if (attached) {
+                                add(attachable);
+                            } else {
+                                remove(attachable);
+                            }
+                            actual.setValue("toggled!");
+                        },
+                        Key.KEY_Y,
+                        KeyModifier.ALT);
 
         // modifyingShortcutShouldChangeShortcutEvent
-        flipFloppingRegistration =
-                UI.getCurrent().addShortcutListener(event -> {
-                    if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
-                        actual.setValue("Alt");
-                        flipFloppingRegistration.withModifiers(
-                                KeyModifier.SHIFT);
-                    } else if (event.getKeyModifiers().contains(
-                            KeyModifier.SHIFT)) {
-                        actual.setValue("Shift");
-                        flipFloppingRegistration.withModifiers(KeyModifier.ALT);
-                    }
-                    else {
-                        actual.setValue("Failed");
-                    }
-
-                }, Key.KEY_G, KeyModifier.ALT);
+        flipFloppingRegistration = UI.getCurrent()
+                .addShortcutListener(
+                        event -> {
+                            if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
+                                actual.setValue("Alt");
+                                flipFloppingRegistration.withModifiers(KeyModifier.SHIFT);
+                            } else if (event.getKeyModifiers().contains(KeyModifier.SHIFT)) {
+                                actual.setValue("Shift");
+                                flipFloppingRegistration.withModifiers(KeyModifier.ALT);
+                            } else {
+                                actual.setValue("Failed");
+                            }
+                        },
+                        Key.KEY_G,
+                        KeyModifier.ALT);
 
         // clickShortcutAllowsKeyDefaults
         Div wrapper1 = new Div();
@@ -145,13 +154,15 @@ public class ShortcutsView extends Div {
         clickInput2.setType("text");
         clickInput2.setId("click-input-2");
 
-        NativeButton clickButton1 = new NativeButton("CB1",
-                event -> actual.setValue("click: " + clickInput1.getValue()));
+        NativeButton clickButton1 =
+                new NativeButton("CB1", event -> actual.setValue("click: " + clickInput1.getValue()));
         clickButton1.addClickShortcut(Key.ENTER).listenOn(wrapper1);
 
-        NativeButton clickButton2 = new NativeButton("CB2",
-                event -> actual.setValue("click: " + clickInput2.getValue()));
-        clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2)
+        NativeButton clickButton2 =
+                new NativeButton("CB2", event -> actual.setValue("click: " + clickInput2.getValue()));
+        clickButton2
+                .addClickShortcut(Key.ENTER)
+                .listenOn(wrapper2)
                 // this matches the default of other shortcuts but changes
                 // the default of the click shortcut
                 .setBrowserDefaultAllowed(false);
@@ -164,11 +175,13 @@ public class ShortcutsView extends Div {
         AtomicReference<ShortcutRegistration> removalAtomicReference = new AtomicReference<>();
         final Input removalInput = new Input(ValueChangeMode.EAGER);
         removalInput.setId("removal-input");
-        ShortcutRegistration removalRegistration = Shortcuts
-                .addShortcutListener(removalInput, () -> {
+        ShortcutRegistration removalRegistration = Shortcuts.addShortcutListener(
+                removalInput,
+                () -> {
                     removalInput.setValue(removalInput.getValue().toUpperCase());
                     removalAtomicReference.get().remove();
-                }, Key.KEY_D);
+                },
+                Key.KEY_D);
         removalAtomicReference.set(removalRegistration);
         add(removalInput);
 
@@ -178,16 +191,20 @@ public class ShortcutsView extends Div {
         AtomicInteger oAltCounter = new AtomicInteger(0);
         UI.getCurrent()
                 .addShortcutListener(
-                        () -> actual.setValue("" + oCounter.incrementAndGet()
-                                + oShiftCounter.get() + oAltCounter.get()),
+                        () -> actual.setValue(
+                                "" + oCounter.incrementAndGet() + oShiftCounter.get() + oAltCounter.get()),
                         Key.KEY_O);
         UI.getCurrent()
-                .addShortcutListener(() -> actual.setValue("" + oCounter.get()
-                        + oShiftCounter.incrementAndGet() + oAltCounter.get()),
-                        Key.KEY_O, KeyModifier.SHIFT);
-        UI.getCurrent().addShortcutListener(
-                () -> actual.setValue("" + oCounter.get() + oShiftCounter.get()
-                        + oAltCounter.incrementAndGet()),
-                Key.KEY_O, KeyModifier.ALT);
+                .addShortcutListener(
+                        () -> actual.setValue(
+                                "" + oCounter.get() + oShiftCounter.incrementAndGet() + oAltCounter.get()),
+                        Key.KEY_O,
+                        KeyModifier.SHIFT);
+        UI.getCurrent()
+                .addShortcutListener(
+                        () -> actual.setValue(
+                                "" + oCounter.get() + oShiftCounter.get() + oAltCounter.incrementAndGet()),
+                        Key.KEY_O,
+                        KeyModifier.ALT);
     }
 }

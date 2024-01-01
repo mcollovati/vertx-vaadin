@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class BeanWithJacksonAnnotation {
     @JsonProperty("bookId")
     private String id;
+
     private String name;
 
     @JsonProperty("name")

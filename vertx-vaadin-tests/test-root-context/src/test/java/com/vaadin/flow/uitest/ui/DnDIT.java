@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -52,8 +59,7 @@ public class DnDIT extends ChromeBrowserTest {
         dragBoxToLanes(boxElement, getLaneElement("deactivated"), false);
     }
 
-    private void dragBoxToLanes(TestBenchElement boxElement,
-            TestBenchElement laneElement, boolean dropShouldOccur) {
+    private void dragBoxToLanes(TestBenchElement boxElement, TestBenchElement laneElement, boolean dropShouldOccur) {
         clearEvents();
 
         dragAndDrop(boxElement, laneElement);
@@ -72,41 +78,46 @@ public class DnDIT extends ChromeBrowserTest {
 
     private void verifyStartEvent(int i, TestBenchElement boxElement) {
         TestBenchElement eventlog = getEventlog(i);
-        String expected = new StringBuilder().append(i).append(": Start: ")
-                .append(boxElement.getText()).toString();
-        Assert.assertEquals("Invalid start event details", expected,
-                eventlog.getText());
+        String expected = new StringBuilder()
+                .append(i)
+                .append(": Start: ")
+                .append(boxElement.getText())
+                .toString();
+        Assert.assertEquals("Invalid start event details", expected, eventlog.getText());
     }
 
-    private void verifyEndEvent(int i, TestBenchElement boxElement,
-            TestBenchElement laneElement) {
+    private void verifyEndEvent(int i, TestBenchElement boxElement, TestBenchElement laneElement) {
         TestBenchElement eventlog = getEventlog(i);
 
         // dnd-simulation must hardcode replace a working drop effect when
         // nothing set. in reality, browser determines it based on effect
         // allowed, copy is the default if both are missing (Chrome)
-        String dropEffect = laneElement == null ? "NONE"
-                : laneElement.getText();
+        String dropEffect = laneElement == null ? "NONE" : laneElement.getText();
 
-        String expected = new StringBuilder().append(i).append(": End: ")
-                .append(boxElement.getText()).append(" ").append(dropEffect)
+        String expected = new StringBuilder()
+                .append(i)
+                .append(": End: ")
+                .append(boxElement.getText())
+                .append(" ")
+                .append(dropEffect)
                 .toString();
-        Assert.assertEquals("Invalid end event details", expected,
-                eventlog.getText());
+        Assert.assertEquals("Invalid end event details", expected, eventlog.getText());
     }
 
-    private void verifyDropEvent(int i, TestBenchElement boxElement,
-            TestBenchElement laneElement) {
+    private void verifyDropEvent(int i, TestBenchElement boxElement, TestBenchElement laneElement) {
         TestBenchElement eventlog = getEventlog(i);
 
         String effectAllowed = boxElement.getText();
         String dropEffect = laneElement.getText();
 
-        String expected = new StringBuilder().append(i).append(": Drop: ")
-                .append(effectAllowed).append(" ").append(dropEffect)
+        String expected = new StringBuilder()
+                .append(i)
+                .append(": Drop: ")
+                .append(effectAllowed)
+                .append(" ")
+                .append(dropEffect)
                 .toString();
-        Assert.assertEquals("Invalid drop event details", expected,
-                eventlog.getText());
+        Assert.assertEquals("Invalid drop event details", expected, eventlog.getText());
     }
 
     private TestBenchElement getEventlog(int i) {
@@ -124,5 +135,4 @@ public class DnDIT extends ChromeBrowserTest {
     private TestBenchElement getBoxElement(String effectAllowed) {
         return $(TestBenchElement.class).id("box-" + effectAllowed);
     }
-
 }

@@ -90,7 +90,8 @@ public interface NearCacheSessionStore extends ExtendedSessionStore {
      * @return the session store
      */
     static NearCacheSessionStore create(Vertx vertx) {
-        return new NearCacheSessionStoreImpl(vertx, DEFAULT_SESSION_MAP_NAME, DEFAULT_RETRY_TIMEOUT, DEFAULT_REAPER_INTERVAL);
+        return new NearCacheSessionStoreImpl(
+                vertx, DEFAULT_SESSION_MAP_NAME, DEFAULT_RETRY_TIMEOUT, DEFAULT_REAPER_INTERVAL);
     }
 
     /**

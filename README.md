@@ -55,7 +55,7 @@ Snapshots and `vaadin-flow-sockjs` classifiers are currently published on [Repsy
         </releases>
         <snapshots>
             <enabled>false</enabled>
-        </snapshots>	
+        </snapshots>
     </repository>
     <repository>
     <id>vertx-vaadin-snapshots</id>
@@ -84,14 +84,14 @@ See [vertx-vaadin-flow](vertx-vaadin-flow-parent/vertx-vaadin-flow) module for m
 
 ## Demo and samples
 
-Source code for sample application can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository. 
+Source code for sample application can be found on [vaadin-vertx-samples](https://github.com/mcollovati/vaadin-vertx-samples) repository.
 
 ## Issue tracking
-  
+
 The issues for this project are tracked on its [github.com page](https://github.com/mcollovati/vertx-vaadin/issues). All bug reports and feature requests are appreciated.
-  
+
 ## Contributions
-  
+
 Contributions are welcome, but there are no guarantees that they are accepted as such. Process for contributing is the following:
 - Fork this project
 - Create an issue to this project about the contribution (bug or feature) if there is no such issue about it already. Try to keep the scope minimal.
@@ -99,7 +99,7 @@ Contributions are welcome, but there are no guarantees that they are accepted as
 - Refer to the fixed issue in commit
 - Send a pull request for the original project
 - Comment on the original issue that you have implemented a fix for it
-  
+
 ## License
 
 Vertx Vaadin is distributed under MIT License. For license terms, see [LICENSE](LICENSE).
@@ -107,7 +107,7 @@ Vertx Vaadin is distributed under MIT License. For license terms, see [LICENSE](
 ## Acknowledgements
 
 Thanks to:
- 
+
 * [David Sowerby](https://github.com/davidsowerby) (author of [Krail framework](https://github.com/davidsowerby/krail)) for all his precious technical and non technical support.
 * [Vaadin](https://vaadin.com/), and especially [Pekka Hyvönen](https://twitter.com/plekuu), for allowing me to use
 Flow UI test code and for the [Testbench](https://vaadin.com/testbench) license.

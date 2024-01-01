@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
 import java.io.Serializable;
@@ -29,7 +28,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.Principal;
 import java.util.function.Function;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -122,8 +120,7 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
         if (request == null) {
             throw new IllegalArgumentException("The request cannot be null");
         }
-        return hasAccess(method, request.getUserPrincipal(),
-                request::isUserInRole);
+        return hasAccess(method, request.getUserPrincipal(), request::isUserInRole);
     }
 
     /**
@@ -141,10 +138,8 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
         if (request == null) {
             throw new IllegalArgumentException("The request cannot be null");
         }
-        return hasAccess(cls, request.getUserPrincipal(),
-                request::isUserInRole);
+        return hasAccess(cls, request.getUserPrincipal(), request::isUserInRole);
     }
-
 
     /**
      * Checks if the user defined by the request (adapting request to {@link UserAwareRequest}
@@ -218,7 +213,6 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
         return hasAccess(cls, request.getUserPrincipal(), request::isUserInRole);
     }
 
-
     protected abstract UserAwareRequest adaptRequest(REQUEST request);
 
     /**
@@ -231,8 +225,7 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
      * @return {@code true} if the user has access to the given method,
      * {@code false} otherwise
      */
-    public boolean hasAccess(Method method, Principal principal,
-                             Function<String, Boolean> roleChecker) {
+    public boolean hasAccess(Method method, Principal principal, Function<String, Boolean> roleChecker) {
         return hasAccess(getSecurityTarget(method), principal, roleChecker);
     }
 
@@ -246,8 +239,7 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
      * @return {@code true} if the user has access to the given method,
      * {@code false} otherwise
      */
-    public boolean hasAccess(Class<?> cls, Principal principal,
-                             Function<String, Boolean> roleChecker) {
+    public boolean hasAccess(Class<?> cls, Principal principal, Function<String, Boolean> roleChecker) {
         return hasAccess(getSecurityTarget(cls), principal, roleChecker);
     }
 
@@ -261,12 +253,10 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
      */
     public AnnotatedElement getSecurityTarget(Method method) {
         if (!Modifier.isPublic(method.getModifiers())) {
-            throw new IllegalArgumentException(String.format(
-                    "The method '%s' is not public hence cannot have a security target",
-                    method));
+            throw new IllegalArgumentException(
+                    String.format("The method '%s' is not public hence cannot have a security target", method));
         }
-        return hasSecurityAnnotation(method) ? method
-                : method.getDeclaringClass();
+        return hasSecurityAnnotation(method) ? method : method.getDeclaringClass();
     }
 
     /**
@@ -281,20 +271,18 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
         return cls;
     }
 
-    private boolean hasAccess(AnnotatedElement annotatedClassOrMethod,
-                              Principal principal, Function<String, Boolean> roleChecker) {
+    private boolean hasAccess(
+            AnnotatedElement annotatedClassOrMethod, Principal principal, Function<String, Boolean> roleChecker) {
         if (annotatedClassOrMethod.isAnnotationPresent(DenyAll.class)) {
             return false;
         }
-        if (annotatedClassOrMethod
-                .isAnnotationPresent(AnonymousAllowed.class)) {
+        if (annotatedClassOrMethod.isAnnotationPresent(AnonymousAllowed.class)) {
             return true;
         }
         if (principal == null) {
             return false;
         }
-        RolesAllowed rolesAllowed = annotatedClassOrMethod
-                .getAnnotation(RolesAllowed.class);
+        RolesAllowed rolesAllowed = annotatedClassOrMethod.getAnnotation(RolesAllowed.class);
         if (rolesAllowed == null) {
             return annotatedClassOrMethod.isAnnotationPresent(PermitAll.class);
         } else {
@@ -302,8 +290,7 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
         }
     }
 
-    private boolean roleAllowed(RolesAllowed rolesAllowed,
-                                Function<String, Boolean> roleChecker) {
+    private boolean roleAllowed(RolesAllowed rolesAllowed, Function<String, Boolean> roleChecker) {
         for (String role : rolesAllowed.value()) {
             if (roleChecker.apply(role)) {
                 return true;
@@ -319,5 +306,4 @@ public abstract class AccessAnnotationChecker<REQUEST> implements Serializable {
                 || method.isAnnotationPresent(DenyAll.class)
                 || method.isAnnotationPresent(RolesAllowed.class);
     }
-
 }

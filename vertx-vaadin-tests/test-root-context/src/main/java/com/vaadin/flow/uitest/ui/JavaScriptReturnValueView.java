@@ -1,22 +1,26 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
-
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.Text;
@@ -39,37 +43,36 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         statusLabel.setId("status");
 
         // Callback to run an expression
-        NativeRadioButtonGroup<SerializableFunction<String, PendingJavaScriptResult>> methodSelect = new NativeRadioButtonGroup<>(
-                "Method to use");
-        methodSelect.addOption("Page.executeJavaScript",
-                UI.getCurrent().getPage()::executeJs).setId("execPage");
+        NativeRadioButtonGroup<SerializableFunction<String, PendingJavaScriptResult>> methodSelect =
+                new NativeRadioButtonGroup<>("Method to use");
         methodSelect
-                .addOption("Element.executeJavaScript",
-                        script -> getElement().executeJs(script))
+                .addOption("Page.executeJavaScript", UI.getCurrent().getPage()::executeJs)
+                .setId("execPage");
+        methodSelect
+                .addOption("Element.executeJavaScript", script -> getElement().executeJs(script))
                 .setId("execElement");
-        methodSelect.addOption("Element.callFunction", script -> {
-            getElement().executeJs("this.scriptToRun = new Function($0)",
-                    script);
-            return getElement().callJsFunction("scriptToRun");
-        }).setId("callElement");
+        methodSelect
+                .addOption("Element.callFunction", script -> {
+                    getElement().executeJs("this.scriptToRun = new Function($0)", script);
+                    return getElement().callJsFunction("scriptToRun");
+                })
+                .setId("callElement");
 
         // Value expression
-        NativeRadioButtonGroup<String> valueSelect = new NativeRadioButtonGroup<>(
-                "Value type");
+        NativeRadioButtonGroup<String> valueSelect = new NativeRadioButtonGroup<>("Value type");
         valueSelect.addOption("String", "'foo'");
         valueSelect.addOption("Number", "42");
         valueSelect.addOption("null", "null");
         valueSelect.addOption("Error", "new Error('message')");
 
         // Promise semantics to use
-        NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>(
-                "Outcome");
+        NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>("Outcome");
         resolveRejectSelect.addOption("Success", "resolve");
         resolveRejectSelect.addOption("Failure", "reject");
 
         // Builds JS expression from value expression and promise semantics
-        NativeRadioButtonGroup<SerializableBiFunction<String, String, String>> executionSelect = new NativeRadioButtonGroup<>(
-                "Execution type");
+        NativeRadioButtonGroup<SerializableBiFunction<String, String, String>> executionSelect =
+                new NativeRadioButtonGroup<>("Execution type");
         executionSelect.addOption("Synchronous", (value, resolveOrReject) -> {
             if ("resolve".equals(resolveOrReject)) {
                 return "return " + value;
@@ -77,32 +80,29 @@ public class JavaScriptReturnValueView extends AbstractDivView {
                 return "throw " + value;
             }
         });
-        executionSelect.addOption("Resolved promise",
-                (value, resolveOrReject) -> "return Promise." + resolveOrReject
-                        + "(" + value + ")");
-        executionSelect.addOption("Timeout",
+        executionSelect.addOption(
+                "Resolved promise",
+                (value, resolveOrReject) -> "return Promise." + resolveOrReject + "(" + value + ")");
+        executionSelect.addOption(
+                "Timeout",
                 (value, resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
                         + resolveOrReject + "(" + value + "), 1000)})");
 
         NativeButton runButton = createButton("Run", "run", event -> {
             statusLabel.setText("Running...");
 
-            String scriptToRun = executionSelect.selected
-                    .apply(valueSelect.selected, resolveRejectSelect.selected);
+            String scriptToRun = executionSelect.selected.apply(valueSelect.selected, resolveRejectSelect.selected);
 
-            PendingJavaScriptResult result = methodSelect.selected
-                    .apply(scriptToRun);
+            PendingJavaScriptResult result = methodSelect.selected.apply(scriptToRun);
 
-            result.then(String.class, statusLabel::setText,
-                    error -> statusLabel.setText("Error: " + error));
+            result.then(String.class, statusLabel::setText, error -> statusLabel.setText("Error: " + error));
         });
 
         NativeButton clearButton = createButton("Clear", "clear", event -> {
             statusLabel.setText("");
         });
 
-        add(methodSelect, valueSelect, resolveRejectSelect, executionSelect,
-                runButton, clearButton, statusLabel);
+        add(methodSelect, valueSelect, resolveRejectSelect, executionSelect, runButton, clearButton, statusLabel);
     }
 
     private static class NativeRadioButtonGroup<T> extends Composite<Div> {
@@ -142,5 +142,4 @@ public class JavaScriptReturnValueView extends AbstractDivView {
             return input;
         }
     }
-
 }

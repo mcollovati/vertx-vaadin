@@ -40,5 +40,4 @@ public class BufferInputStreamAdapter extends InputStream {
     public int read() throws IOException {
         return (position < buffer.length()) ? buffer.getByte(position++) & 0xff : -1;
     }
-
 }

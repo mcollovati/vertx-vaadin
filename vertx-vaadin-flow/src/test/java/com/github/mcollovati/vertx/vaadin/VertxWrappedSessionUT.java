@@ -22,13 +22,12 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 
-import com.github.mcollovati.vertx.web.ExtendedSession;
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,7 +37,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import com.github.mcollovati.vertx.web.ExtendedSession;
+
 import static java.util.Collections.emptyMap;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
@@ -72,13 +74,13 @@ public class VertxWrappedSessionUT {
         long timeout = 30000L;
         when(session.timeout()).thenReturn(timeout);
         assertThat(vertxWrappedSession.getMaxInactiveInterval())
-            .isEqualTo(Long.valueOf(timeout).intValue() / 1000);
+                .isEqualTo(Long.valueOf(timeout).intValue() / 1000);
     }
 
     @Test
     public void setMaxInactiveIntervalIsNotSupported() throws Exception {
         assertThatExceptionOfType(UnsupportedOperationException.class)
-            .isThrownBy(() -> vertxWrappedSession.setMaxInactiveInterval(10));
+                .isThrownBy(() -> vertxWrappedSession.setMaxInactiveInterval(10));
     }
 
     @Test
@@ -110,7 +112,8 @@ public class VertxWrappedSessionUT {
     public void setAttributeShuoldInvokeValueBoundForHttpSessionBindingListener() throws Exception {
         String attrName = "attributeName";
         vertxWrappedSession.setAttribute(attrName, sessionBindingListenerObject);
-        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor =
+                ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         verify(sessionBindingListenerObject).valueBound(sessionBindingEventCaptor.capture());
         assertHttpSessionBindingEvent(attrName, sessionBindingEventCaptor.getValue());
     }
@@ -120,7 +123,8 @@ public class VertxWrappedSessionUT {
         String attrName = "attributeName";
         when(session.get(attrName)).thenReturn(sessionBindingListenerObject);
         vertxWrappedSession.setAttribute(attrName, new Object());
-        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor =
+                ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         verify(sessionBindingListenerObject).valueUnbound(sessionBindingEventCaptor.capture());
         assertHttpSessionBindingEvent(attrName, sessionBindingEventCaptor.getValue());
     }
@@ -129,10 +133,12 @@ public class VertxWrappedSessionUT {
         assertHttpSessionBindingEvent(attrName, sessionBindingListenerObject, sessionBindingEvent);
     }
 
-    private void assertHttpSessionBindingEvent(String attrName, Object value, HttpSessionBindingEvent sessionBindingEvent) {
+    private void assertHttpSessionBindingEvent(
+            String attrName, Object value, HttpSessionBindingEvent sessionBindingEvent) {
         assertThat(sessionBindingEvent.getSession())
-            .isInstanceOf(VertxHttpSession.class)
-            .extracting("delegate").isEqualTo(vertxWrappedSession);
+                .isInstanceOf(VertxHttpSession.class)
+                .extracting("delegate")
+                .isEqualTo(vertxWrappedSession);
         assertThat(sessionBindingEvent.getName()).isEqualTo(attrName);
         assertThat(sessionBindingEvent.getValue()).isEqualTo(value);
     }
@@ -177,12 +183,15 @@ public class VertxWrappedSessionUT {
         when(session.data()).thenReturn(sampleData);
         vertxWrappedSession.invalidate();
         verify(session).destroy();
-        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor =
+                ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         verify(mockA).valueUnbound(sessionBindingEventCaptor.capture());
         verify(mockC).valueUnbound(sessionBindingEventCaptor.capture());
         assertThat(sessionBindingEventCaptor.getAllValues()).hasSize(2);
-        assertHttpSessionBindingEvent("a", mockA, sessionBindingEventCaptor.getAllValues().get(0));
-        assertHttpSessionBindingEvent("c", mockC, sessionBindingEventCaptor.getAllValues().get(1));
+        assertHttpSessionBindingEvent(
+                "a", mockA, sessionBindingEventCaptor.getAllValues().get(0));
+        assertHttpSessionBindingEvent(
+                "c", mockC, sessionBindingEventCaptor.getAllValues().get(1));
     }
 
     @Test
@@ -239,7 +248,8 @@ public class VertxWrappedSessionUT {
         String attrName = "attributeName";
         when(session.remove(attrName)).thenReturn(sessionBindingListenerObject);
         vertxWrappedSession.removeAttribute(attrName);
-        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor = ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
+        ArgumentCaptor<HttpSessionBindingEvent> sessionBindingEventCaptor =
+                ArgumentCaptor.forClass(HttpSessionBindingEvent.class);
         verify(sessionBindingListenerObject).valueUnbound(sessionBindingEventCaptor.capture());
         assertHttpSessionBindingEvent(attrName, sessionBindingEventCaptor.getValue());
     }
@@ -249,10 +259,8 @@ public class VertxWrappedSessionUT {
         shouldThrowExceptionWhenSessionIsInvalidated(() -> vertxWrappedSession.removeAttribute("attr"));
     }
 
-
     private void shouldThrowExceptionWhenSessionIsInvalidated(ThrowableAssert.ThrowingCallable op) {
         when(session.isDestroyed()).thenReturn(true);
         assertThatExceptionOfType(IllegalStateException.class).isThrownBy(op);
     }
-
 }

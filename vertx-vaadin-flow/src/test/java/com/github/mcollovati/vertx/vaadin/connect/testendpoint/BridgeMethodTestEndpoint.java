@@ -59,11 +59,9 @@ public class BridgeMethodTestEndpoint {
     }
 
     @Endpoint
-    public static class InheritedClass extends MySecondClass<Integer>
-            implements TestInterface<TestInterface2Impl> {
+    public static class InheritedClass extends MySecondClass<Integer> implements TestInterface<TestInterface2Impl> {
         @Override
-        public TestInterface2Impl testMethodFromInterface(
-                TestInterface2Impl testInterface2) {
+        public TestInterface2Impl testMethodFromInterface(TestInterface2Impl testInterface2) {
             return testInterface2;
         }
 

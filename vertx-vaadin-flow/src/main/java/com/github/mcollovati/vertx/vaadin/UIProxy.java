@@ -53,7 +53,6 @@ public class UIProxy {
         executor = service.getVertx().createSharedWorkerExecutor("vaadin.background.worker");
     }
 
-
     public Future<Void> runLater(UIRunnable task) {
         return schedule(task);
     }
@@ -140,5 +139,4 @@ public class UIProxy {
             return null;
         }
     }
-
 }

@@ -1,29 +1,36 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2021 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.github.mcollovati.vertx.quarkus;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.AmbiguousResolutionException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
-import java.lang.annotation.Annotation;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceEnabled;
 
@@ -43,27 +50,22 @@ class BeanLookup<T> {
     private final BeanManager beanManager;
     private final Class<T> type;
     private final Annotation[] qualifiers;
-    private UnsatisfiedHandler unsatisfiedHandler = () -> {
-    };
+    private UnsatisfiedHandler unsatisfiedHandler = () -> {};
     private Consumer<AmbiguousResolutionException> ambiguousHandler = e -> {
         throw e;
     };
 
-    private static final Annotation[] ANY = new Annotation[] {
-            new AnyLiteral() };
+    private static final Annotation[] ANY = new Annotation[] {new AnyLiteral()};
 
-    private static class ServiceLiteral
-            extends AnnotationLiteral<VaadinServiceEnabled>
-            implements VaadinServiceEnabled {
-    }
+    private static class ServiceLiteral extends AnnotationLiteral<VaadinServiceEnabled>
+            implements VaadinServiceEnabled {}
 
     @FunctionalInterface
     public interface UnsatisfiedHandler {
         void handle();
     }
 
-    BeanLookup(final BeanManager beanManager, final Class<T> type,
-            final Annotation... qualifiers) {
+    BeanLookup(final BeanManager beanManager, final Class<T> type, final Annotation... qualifiers) {
         this.beanManager = beanManager;
         this.type = type;
         if (qualifiers.length > 0) {
@@ -73,21 +75,18 @@ class BeanLookup<T> {
         }
     }
 
-    BeanLookup<T> setUnsatisfiedHandler(
-            final UnsatisfiedHandler unsatisfiedHandler) {
+    BeanLookup<T> setUnsatisfiedHandler(final UnsatisfiedHandler unsatisfiedHandler) {
         this.unsatisfiedHandler = unsatisfiedHandler;
         return this;
     }
 
-    BeanLookup<T> setAmbiguousHandler(
-            final Consumer<AmbiguousResolutionException> ambiguousHandler) {
+    BeanLookup<T> setAmbiguousHandler(final Consumer<AmbiguousResolutionException> ambiguousHandler) {
         this.ambiguousHandler = ambiguousHandler;
         return this;
     }
 
     T lookupOrElseGet(final Supplier<T> fallback) {
-        final Set<Bean<?>> beans = this.beanManager.getBeans(this.type,
-                this.qualifiers);
+        final Set<Bean<?>> beans = this.beanManager.getBeans(this.type, this.qualifiers);
         if (beans == null || beans.isEmpty()) {
             this.unsatisfiedHandler.handle();
             return fallback.get();
@@ -99,8 +98,7 @@ class BeanLookup<T> {
             this.ambiguousHandler.accept(e);
             return fallback.get();
         }
-        final CreationalContext<?> ctx = this.beanManager
-                .createCreationalContext(bean);
+        final CreationalContext<?> ctx = this.beanManager.createCreationalContext(bean);
         // noinspection unchecked
         return (T) this.beanManager.getReference(bean, this.type, ctx);
     }

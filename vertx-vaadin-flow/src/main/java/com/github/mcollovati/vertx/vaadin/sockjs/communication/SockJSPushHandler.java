@@ -39,10 +39,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
-import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
@@ -87,6 +83,11 @@ import io.vertx.ext.web.impl.RoutingContextInternal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mcollovati.vertx.http.HttpServerResponseWrapper;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
+
 /**
  * Handles incoming push connections and messages and dispatches them to the
  * correct {@link UI}/ {@link SockJSPushConnection}.
@@ -105,28 +106,27 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
      * respond to the request directly.)
      */
     private final PushEventCallback receiveCallback = (PushEvent event, UI ui) -> {
-
         logger.debug("Received message from resource {}", event.socket().getUUID());
 
         PushSocket socket = event.socket;
         SockJSPushConnection connection = getConnectionForUI(ui);
 
-        assert connection != null : "Got push from the client "
-            + "even though the connection does not seem to be "
-            + "valid. This might happen if a HttpSession is "
-            + "serialized and deserialized while the push "
-            + "connection is kept open or if the UI has a "
-            + "connection of unexpected type.";
-
+        assert connection != null
+                : "Got push from the client "
+                        + "even though the connection does not seem to be "
+                        + "valid. This might happen if a HttpSession is "
+                        + "serialized and deserialized while the push "
+                        + "connection is kept open or if the UI has a "
+                        + "connection of unexpected type.";
 
         Reader reader = event.message()
-            .map(data -> new StringReader(data.toString()))
-            .map(connection::receiveMessage).orElse(null);
+                .map(data -> new StringReader(data.toString()))
+                .map(connection::receiveMessage)
+                .orElse(null);
         if (reader == null) {
             // The whole message was not yet received
             return;
         }
-
 
         // Should be set up by caller
         VaadinRequest vaadinRequest = VaadinService.getCurrentRequest();
@@ -145,6 +145,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             sendRefreshAndDisconnect(socket);
         }
     };
+
     private final VertxVaadinService service;
     private final Router router;
     private final SessionHandler sessionHandler;
@@ -203,9 +204,8 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         } else {
             // Send an ACK
             sockJSSocket.write("ACK-CONN|" + uuid);
-            sessionHandler.handle(new SockJSRoutingContext(routingContext, rc ->
-                callWithUi(new PushEvent(socket, routingContext, null), establishCallback)
-            ));
+            sessionHandler.handle(new SockJSRoutingContext(
+                    routingContext, rc -> callWithUi(new PushEvent(socket, routingContext, null), establishCallback)));
         }
     }
 
@@ -218,20 +218,16 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
     private boolean isDebugWindowConnection(RoutingContext routingContext) {
         return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
-            && routingContext.queryParams().contains(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
+                && routingContext.queryParams().contains(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
     }
 
     private void initSocket(SockJSSocket sockJSSocket, RoutingContext routingContext, PushSocket socket) {
         sockJSSocket.handler(data -> sessionHandler.handle(
-            new SockJSRoutingContext(routingContext, rc -> onMessage(new PushEvent(socket, rc, data)))
-        ));
+                new SockJSRoutingContext(routingContext, rc -> onMessage(new PushEvent(socket, rc, data)))));
         sockJSSocket.endHandler(unused -> sessionHandler.handle(
-            new SockJSRoutingContext(routingContext, rc -> onDisconnect(new PushEvent(socket, rc, null)))
-        ));
-        sockJSSocket.exceptionHandler(t -> sessionHandler.handle(
-            new SockJSRoutingContext(routingContext, rc -> onError(new PushEvent(socket, routingContext, null), t))
-        ));
-
+                new SockJSRoutingContext(routingContext, rc -> onDisconnect(new PushEvent(socket, rc, null)))));
+        sockJSSocket.exceptionHandler(t -> sessionHandler.handle(new SockJSRoutingContext(
+                routingContext, rc -> onError(new PushEvent(socket, routingContext, null), t))));
     }
 
     private void onDisconnect(PushEvent ev) {
@@ -301,26 +297,25 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 assert UI.getCurrent() == ui;
 
                 if (ui == null) {
-                    sendNotificationAndDisconnect(
-                        socket, VaadinService.createUINotFoundJSON(true)
-                    );
+                    sendNotificationAndDisconnect(socket, VaadinService.createUINotFoundJSON(true));
                 } else {
                     callback.run(event, ui);
                 }
             } catch (final IOException e) {
                 callErrorHandler(session, e);
             } catch (final Exception e) {
-                SystemMessages msg = service.getSystemMessages(
-                    HandlerHelper.findLocale(null, vaadinRequest),
-                    vaadinRequest);
+                SystemMessages msg =
+                        service.getSystemMessages(HandlerHelper.findLocale(null, vaadinRequest), vaadinRequest);
 
                 /* TODO: verify */
                 PushSocket errorSocket = getOpenedPushConnection(socket, ui);
-                sendNotificationAndDisconnect(errorSocket,
-                    VaadinService.createCriticalNotificationJSON(
-                        msg.getInternalErrorCaption(),
-                        msg.getInternalErrorMessage(), null,
-                        msg.getInternalErrorURL()));
+                sendNotificationAndDisconnect(
+                        errorSocket,
+                        VaadinService.createCriticalNotificationJSON(
+                                msg.getInternalErrorCaption(),
+                                msg.getInternalErrorMessage(),
+                                null,
+                                msg.getInternalErrorURL()));
                 callErrorHandler(session, e);
             } finally {
                 try {
@@ -338,7 +333,6 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
 
                 // can't call ErrorHandler, we don't have a lock
             }
-
         }
     }
 
@@ -378,7 +372,6 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         }
     }
 
-
     private VaadinSession handleConnectionLost(PushEvent event) {
         // We don't want to use callWithUi here, as it assumes there's a client
         // request active and does requestStart and requestEnd among other
@@ -417,14 +410,12 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                 ui = findUiUsingSocket(event.socket(), session.getUIs());
 
                 if (ui == null) {
-                    logger.debug(
-                        "Could not get UI. This should never happen,"
+                    logger.debug("Could not get UI. This should never happen,"
                             + " except when reloading in Firefox and Chrome -"
                             + " see http://dev.vaadin.com/ticket/14251.");
                     return session;
                 } else {
-                    logger.info(
-                        "No UI was found based on data in the request,"
+                    logger.info("No UI was found based on data in the request,"
                             + " but a slower lookup based on the AtmosphereResource succeeded."
                             + " See http://dev.vaadin.com/ticket/14251 for more details.");
                 }
@@ -436,7 +427,8 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             String id = event.socket().getUUID();
 
             if (pushConnection == null) {
-                logger.warn("Could not find push connection to close: {} with transport {}", id, "resource.transport()");
+                logger.warn(
+                        "Could not find push connection to close: {} with transport {}", id, "resource.transport()");
             } else {
                 if (!pushMode.isEnabled()) {
                     /*
@@ -449,7 +441,10 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
                      * Unexpected cancel, e.g. if the user closes the browser
                      * tab.
                      */
-                    logger.trace("Connection unexpectedly closed for resource {} with transport {}", id, "resource.transport()");
+                    logger.trace(
+                            "Connection unexpectedly closed for resource {} with transport {}",
+                            id,
+                            "resource.transport()");
                 }
 
                 pushConnection.connectionLost();
@@ -468,7 +463,6 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
         return session;
     }
 
-
     private static LocalMap<String, SockJSSocket> socketsMap(Vertx vertx) {
         return vertx.sharedData().getLocalMap(SockJSPushHandler.class.getName() + ".push-sockets");
     }
@@ -483,17 +477,16 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     private static boolean isPushIdValid(VaadinSession session, String requestPushId) {
 
         String sessionPushId = session.getPushId();
-        return requestPushId != null && MessageDigest.isEqual(
-            requestPushId.getBytes(StandardCharsets.UTF_8), sessionPushId.getBytes(StandardCharsets.UTF_8)
-        );
+        return requestPushId != null
+                && MessageDigest.isEqual(
+                        requestPushId.getBytes(StandardCharsets.UTF_8), sessionPushId.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * Tries to send a critical notification to the client and close the
      * connection. Does nothing if the connection is already closed.
      */
-    private static void sendNotificationAndDisconnect(
-        PushSocket socket, String notificationJson) {
+    private static void sendNotificationAndDisconnect(PushSocket socket, String notificationJson) {
         try {
             socket.send(notificationJson);
             socket.close();
@@ -514,8 +507,8 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     private static UI findUiUsingSocket(PushSocket socket, Collection<UI> uIs) {
         for (UI ui : uIs) {
             PushConnection pushConnection = ui.getInternals().getPushConnection();
-            if (pushConnection instanceof SockJSPushConnection &&
-                ((SockJSPushConnection) pushConnection).getSocket() == socket) {
+            if (pushConnection instanceof SockJSPushConnection
+                    && ((SockJSPushConnection) pushConnection).getSocket() == socket) {
                 return ui;
             }
         }
@@ -523,8 +516,7 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
     }
 
     private static void sendRefreshAndDisconnect(PushSocket socket) {
-        sendNotificationAndDisconnect(socket, VaadinService
-            .createCriticalNotificationJSON(null, null, null, null));
+        sendNotificationAndDisconnect(socket, VaadinService.createCriticalNotificationJSON(null, null, null, null));
     }
 
     private interface PushEventCallback {
@@ -625,8 +617,6 @@ public class SockJSPushHandler implements Handler<RoutingContext> {
             return Optional.ofNullable(message);
         }
     }
-
-
 }
 
 class SockJSRoutingContext implements RoutingContextInternal {
@@ -640,7 +630,6 @@ class SockJSRoutingContext implements RoutingContextInternal {
         decoratedContext = source;
         this.action = action;
     }
-
 
     @Override
     public HttpServerResponse response() {
@@ -676,7 +665,6 @@ class SockJSRoutingContext implements RoutingContextInternal {
         headersEndHandlers.add(handler);
         return headersEndHandlers.size();
     }
-
 
     @Override
     public int addBodyEndHandler(Handler<Void> handler) {
@@ -893,7 +881,7 @@ class SockJSRoutingContext implements RoutingContextInternal {
     @Override
     public RoutingContextInternal visitHandler(int id) {
         if (decoratedContext instanceof RoutingContextInternal) {
-            ((RoutingContextInternal)decoratedContext).visitHandler(id);
+            ((RoutingContextInternal) decoratedContext).visitHandler(id);
         }
         return this;
     }
@@ -901,7 +889,7 @@ class SockJSRoutingContext implements RoutingContextInternal {
     @Override
     public boolean seenHandler(int id) {
         if (decoratedContext instanceof RoutingContextInternal) {
-            return ((RoutingContextInternal)decoratedContext).seenHandler(id);
+            return ((RoutingContextInternal) decoratedContext).seenHandler(id);
         }
         return false;
     }
@@ -909,7 +897,7 @@ class SockJSRoutingContext implements RoutingContextInternal {
     @Override
     public RoutingContextInternal setMatchFailure(int matchFailure) {
         if (decoratedContext instanceof RoutingContextInternal) {
-            ((RoutingContextInternal)decoratedContext).setMatchFailure(matchFailure);
+            ((RoutingContextInternal) decoratedContext).setMatchFailure(matchFailure);
         }
         return this;
     }
@@ -917,7 +905,7 @@ class SockJSRoutingContext implements RoutingContextInternal {
     @Override
     public Router currentRouter() {
         if (decoratedContext instanceof RoutingContextInternal) {
-            return ((RoutingContextInternal)decoratedContext).currentRouter();
+            return ((RoutingContextInternal) decoratedContext).currentRouter();
         }
         return null;
     }
@@ -925,7 +913,7 @@ class SockJSRoutingContext implements RoutingContextInternal {
     @Override
     public RoutingContextInternal parent() {
         if (decoratedContext instanceof RoutingContextInternal) {
-            return ((RoutingContextInternal)decoratedContext).parent();
+            return ((RoutingContextInternal) decoratedContext).parent();
         }
         return null;
     }

@@ -27,10 +27,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.DependencyFilter;
@@ -83,7 +81,8 @@ class VertxVaadinInstantiator implements Instantiator {
     }
 
     @Override
-    public Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
+    public Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
+            Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
         return delegate.getIndexHtmlRequestListeners(indexHtmlRequestListeners);
     }
 
@@ -105,6 +104,4 @@ class VertxVaadinInstantiator implements Instantiator {
     public I18NProvider getI18NProvider() {
         return delegate.getI18NProvider();
     }
-    
 }
-

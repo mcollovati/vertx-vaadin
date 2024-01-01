@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -45,8 +52,7 @@ public class DnDView extends Div {
         eventLog = new Div();
         eventLog.add(new Text("Events:"));
         eventLog.add(new NativeButton("Clear", event -> {
-            eventLog.getChildren().filter(component -> component instanceof Div)
-                    .forEach(eventLog::remove);
+            eventLog.getChildren().filter(component -> component instanceof Div).forEach(eventLog::remove);
             eventCounter = 0;
         }));
         eventLog.add(new NativeButton("Data: " + data, event -> {
@@ -55,14 +61,12 @@ public class DnDView extends Div {
         }));
         eventLog.setHeightFull();
         eventLog.setWidth("400px");
-        eventLog.getStyle().set("display", "inline-block").set("border",
-                "2px " + "solid");
+        eventLog.getStyle().set("display", "inline-block").set("border", "2px " + "solid");
         add(eventLog);
 
         Div startLane = createLane("start");
         startLane.add(createDraggableBox(null));
-        Stream.of(EffectAllowed.values()).map(this::createDraggableBox)
-                .forEach(startLane::add);
+        Stream.of(EffectAllowed.values()).map(this::createDraggableBox).forEach(startLane::add);
 
         Div noEffectLane = createDropLane(null);
         Div copyDropLane = createDropLane(DropEffect.COPY);
@@ -72,12 +76,12 @@ public class DnDView extends Div {
 
         Div deactivatedLane = createDropLane(DropEffect.COPY);
         deactivatedLane.setId("lane-deactivated");
-        deactivatedLane.getChildren().findFirst().ifPresent(
-                component -> component.getElement().setText("deactivated"));
+        deactivatedLane.getChildren().findFirst().ifPresent(component -> component
+                .getElement()
+                .setText("deactivated"));
         DropTarget.configure(deactivatedLane, false);
 
-        add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,
-                noneDropLane, deactivatedLane);
+        add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane, noneDropLane, deactivatedLane);
     }
 
     private void addLogEntry(String eventDetails) {
@@ -89,8 +93,7 @@ public class DnDView extends Div {
     }
 
     private Component createDraggableBox(EffectAllowed effectAllowed) {
-        String identifier = effectAllowed == null ? NO_EFFECT_SETUP
-                : effectAllowed.toString();
+        String identifier = effectAllowed == null ? NO_EFFECT_SETUP : effectAllowed.toString();
 
         Div box = createBox(identifier);
 
@@ -106,15 +109,13 @@ public class DnDView extends Div {
             }
         });
         dragSource.addDragEndListener(event -> {
-            addLogEntry("End: " + event.getComponent().getText() + " "
-                    + event.getDropEffect());
+            addLogEntry("End: " + event.getComponent().getText() + " " + event.getDropEffect());
         });
         return box;
     }
 
     private Div createDropLane(DropEffect dropEffect) {
-        String identifier = dropEffect == null ? "no-effect"
-                : dropEffect.toString();
+        String identifier = dropEffect == null ? "no-effect" : dropEffect.toString();
 
         Div lane = createLane(identifier);
 
@@ -144,8 +145,7 @@ public class DnDView extends Div {
         Div lane = new Div();
         lane.add(identifier);
         lane.setId("lane-" + identifier);
-        lane.getStyle().set("margin", "20px").set("border", "1px solid black")
-                .set("display", "inline-block");
+        lane.getStyle().set("margin", "20px").set("border", "1px solid black").set("display", "inline-block");
         lane.setHeightFull();
         lane.setWidth("150px");
         return lane;

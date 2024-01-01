@@ -29,8 +29,7 @@ public class SerializableHolder implements ClusterSerializable {
 
     private transient Object object;
 
-    public SerializableHolder() {
-    }
+    public SerializableHolder() {}
 
     public SerializableHolder(Object object) {
         this.object = object;

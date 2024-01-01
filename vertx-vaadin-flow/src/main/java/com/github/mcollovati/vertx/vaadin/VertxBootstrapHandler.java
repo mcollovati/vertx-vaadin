@@ -45,15 +45,13 @@ public class VertxBootstrapHandler extends BootstrapHandler {
     // Copy-Paste from BootstrapHandler and adapted to get rid of servlet stuff
     public static boolean isFrameworkInternalRequest(VaadinRequest request) {
         return isInternalRequestInsideServlet(
-                request.getPathInfo(), request.getParameter(
-                        ApplicationConstants.REQUEST_TYPE_PARAMETER));
+                request.getPathInfo(), request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     // Copy-Paste from HandlerHelper#isFrameworkInternalRequest(String, HttpServletRequest)},
     // since it is package protected
     static boolean isInternalRequestInsideServlet(
-            String requestedPathWithoutServletMapping,
-            String requestTypeParameter) {
+            String requestedPathWithoutServletMapping, String requestTypeParameter) {
         if (requestedPathWithoutServletMapping == null
                 || requestedPathWithoutServletMapping.isEmpty()
                 || "/".equals(requestedPathWithoutServletMapping)) {
@@ -61,6 +59,4 @@ public class VertxBootstrapHandler extends BootstrapHandler {
         }
         return false;
     }
-
 }
-

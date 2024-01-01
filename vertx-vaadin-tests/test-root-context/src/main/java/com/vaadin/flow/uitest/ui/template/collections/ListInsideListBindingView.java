@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui.template.collections;
 
@@ -32,18 +39,18 @@ import com.vaadin.flow.templatemodel.ClientUpdateMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListInsideListBindingView", layout = ViewTestLayout.class)
+@Route(
+        value = "com.vaadin.flow.uitest.ui.template.collections.ListInsideListBindingView",
+        layout = ViewTestLayout.class)
 @Tag("list-inside-list-binding")
 @JsModule("ListInsideListBinding.js")
-public class ListInsideListBindingView extends
-    PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> {
+public class ListInsideListBindingView extends PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> {
     static final String UPDATED_TEXT = "test";
 
     public static class Message {
         private String text;
 
-        public Message() {
-        }
+        public Message() {}
 
         public Message(String text) {
             this.text = text;
@@ -74,24 +81,19 @@ public class ListInsideListBindingView extends
     }
 
     private void setInitialState() {
-        getModel().setNestedMessages(Arrays.asList(
-            Arrays.asList(new Message("a"), new Message("b"),
-                new Message("c")),
-            Collections.singletonList(new Message("d"))));
+        getModel()
+                .setNestedMessages(Arrays.asList(
+                        Arrays.asList(new Message("a"), new Message("b"), new Message("c")),
+                        Collections.singletonList(new Message("d"))));
     }
 
     @EventHandler
-    private void removeItem(@ModelItem Message clickedMessage,
-                            @RepeatIndex int itemIndex) {
-        getModel().getNestedMessages()
-            .forEach(list -> removeMessageIfContainedInList(clickedMessage,
-                itemIndex, list));
+    private void removeItem(@ModelItem Message clickedMessage, @RepeatIndex int itemIndex) {
+        getModel().getNestedMessages().forEach(list -> removeMessageIfContainedInList(clickedMessage, itemIndex, list));
     }
 
-    private void removeMessageIfContainedInList(Message clickedMessage,
-                                                int itemIndex, List<Message> list) {
-        if (list.size() > itemIndex && Objects.equals(
-            list.get(itemIndex).getText(), clickedMessage.getText())) {
+    private void removeMessageIfContainedInList(Message clickedMessage, int itemIndex, List<Message> list) {
+        if (list.size() > itemIndex && Objects.equals(list.get(itemIndex).getText(), clickedMessage.getText())) {
             Message removedMessage = list.remove(itemIndex);
             getModel().setRemovedMessage(removedMessage);
         }
@@ -104,7 +106,6 @@ public class ListInsideListBindingView extends
 
     @EventHandler
     private void updateAllElements() {
-        getModel().getNestedMessages().forEach(
-            list -> list.forEach(message -> message.setText(UPDATED_TEXT)));
+        getModel().getNestedMessages().forEach(list -> list.forEach(message -> message.setText(UPDATED_TEXT)));
     }
 }

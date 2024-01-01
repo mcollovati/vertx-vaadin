@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui.template.collections;
 
@@ -20,12 +27,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 /**
  * Normal tests with @Before are not implemented because each @Test starts new
@@ -48,61 +54,55 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         assertMethodWorksCorrectly("addElement", template, "1", "2", "3", "4");
 
-        assertMethodWorksCorrectly("addElementByIndex", template, "4", "1", "2",
-                "3");
+        assertMethodWorksCorrectly("addElementByIndex", template, "4", "1", "2", "3");
 
-        assertMethodWorksCorrectly("addNumerousElements", template, "1", "2",
-                "3", "4", "5");
+        assertMethodWorksCorrectly("addNumerousElements", template, "1", "2", "3", "4", "5");
 
-        assertMethodWorksCorrectly("addNumerousElementsByIndex", template, "4",
-                "5", "1", "2", "3");
+        assertMethodWorksCorrectly("addNumerousElementsByIndex", template, "4", "5", "1", "2", "3");
 
         assertMethodWorksCorrectly("clearList", template);
 
-        assertMethodWorksCorrectly("removeSecondElementByIndex", template, "1",
-                "3");
+        assertMethodWorksCorrectly("removeSecondElementByIndex", template, "1", "3");
 
-        assertMethodWorksCorrectly("removeFirstElementWithIterator", template,
-                "2", "3");
+        assertMethodWorksCorrectly("removeFirstElementWithIterator", template, "2", "3");
 
-        assertMethodWorksCorrectly("swapFirstAndSecond", template, "2", "1",
-                "3");
+        assertMethodWorksCorrectly("swapFirstAndSecond", template, "2", "1", "3");
 
         assertMethodWorksCorrectly("sortDescending", template, "3", "2", "1");
 
-        assertMethodWorksCorrectly("setInitialStateToEachMessage", template,
-                ListBindingView.INITIAL_STATE, ListBindingView.INITIAL_STATE,
+        assertMethodWorksCorrectly(
+                "setInitialStateToEachMessage",
+                template,
+                ListBindingView.INITIAL_STATE,
+                ListBindingView.INITIAL_STATE,
                 ListBindingView.INITIAL_STATE);
     }
 
     private void checkModelItemWorks(TestBenchElement template) {
         resetState(template);
 
-        List<TestBenchElement> msgs = template.$(TestBenchElement.class)
-                .attribute("class", "msg").all();
+        List<TestBenchElement> msgs =
+                template.$(TestBenchElement.class).attribute("class", "msg").all();
 
         // Click b message
         msgs.get(1).click();
 
         // Assert that the message was gotten correctly on the server side
-        Assert.assertEquals("Couldn't validate element click selection.",
+        Assert.assertEquals(
+                "Couldn't validate element click selection.",
                 template.$(TestBenchElement.class).id("selection").getText(),
                 "Clicked message: " + msgs.get(1).getText());
     }
 
     private void checkInitialState(TestBenchElement template) {
-        Assert.assertEquals(
-                Collections.singletonList(ListBindingView.INITIAL_STATE),
-                getMessages(template));
+        Assert.assertEquals(Collections.singletonList(ListBindingView.INITIAL_STATE), getMessages(template));
     }
 
-    private void assertMethodWorksCorrectly(String handlerName,
-            TestBenchElement template, String... expectedMessages) {
+    private void assertMethodWorksCorrectly(String handlerName, TestBenchElement template, String... expectedMessages) {
         resetState(template);
         template.$(TestBenchElement.class).id(handlerName).click();
 
-        Assert.assertEquals(Arrays.asList(expectedMessages),
-                getMessages(template));
+        Assert.assertEquals(Arrays.asList(expectedMessages), getMessages(template));
     }
 
     private void resetState(TestBenchElement template) {
@@ -111,8 +111,8 @@ public class ListBindingIT extends ChromeBrowserTest {
     }
 
     private List<String> getMessages(TestBenchElement template) {
-        return template.$(TestBenchElement.class).attribute("class", "msg")
-                .all().stream().map(WebElement::getText)
+        return template.$(TestBenchElement.class).attribute("class", "msg").all().stream()
+                .map(WebElement::getText)
                 .collect(Collectors.toList());
     }
 }

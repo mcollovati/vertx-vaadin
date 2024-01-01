@@ -56,11 +56,12 @@ public class VertxVaadinContextTest {
         Context vertxContext = mock(Context.class);
         when(vertx.getOrCreateContext()).thenReturn(vertxContext);
         doAnswer(i -> attributeMap.put(i.getArgument(0, String.class), i.getArguments()[1]))
-            .when(vertxContext).putLocal(anyString(), any());
+                .when(vertxContext)
+                .putLocal(anyString(), any());
         doAnswer(i -> attributeMap.remove(i.getArgument(0, String.class)) != null)
-            .when(vertxContext).removeLocal(anyString());
-        when(vertxContext.getLocal(anyString()))
-            .thenAnswer(i -> attributeMap.get(i.getArgument(0, String.class)));
+                .when(vertxContext)
+                .removeLocal(anyString());
+        when(vertxContext.getLocal(anyString())).thenAnswer(i -> attributeMap.get(i.getArgument(0, String.class)));
         context = new VertxVaadinContext(vertx);
     }
 
@@ -68,12 +69,11 @@ public class VertxVaadinContextTest {
     public void getAttributeWithProvider() {
         Assert.assertNull(context.getAttribute(String.class));
 
-        String value = context.getAttribute(String.class,
-            VertxVaadinContextTest::testAttributeProvider);
+        String value = context.getAttribute(String.class, VertxVaadinContextTest::testAttributeProvider);
         assertEquals(testAttributeProvider(), value);
 
-        assertEquals("Value from provider should be persisted",
-            testAttributeProvider(), context.getAttribute(String.class));
+        assertEquals(
+                "Value from provider should be persisted", testAttributeProvider(), context.getAttribute(String.class));
     }
 
     @Test(expected = AssertionError.class)
@@ -99,10 +99,9 @@ public class VertxVaadinContextTest {
         result = context.getAttribute(String.class);
         assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
-        result = context.getAttribute(String.class,
-            () -> {
-                throw new AssertionError("Should not be called");
-            });
+        result = context.getAttribute(String.class, () -> {
+            throw new AssertionError("Should not be called");
+        });
         assertEquals(newValue, result);
     }
 

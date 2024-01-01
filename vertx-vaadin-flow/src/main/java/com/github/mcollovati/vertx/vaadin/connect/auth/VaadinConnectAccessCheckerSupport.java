@@ -22,11 +22,11 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
+import java.lang.reflect.Method;
+
 import com.vaadin.flow.server.VaadinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Method;
 
 /**
  * Basic implementation of {@link VaadinConnectAccessChecker}.
@@ -50,7 +50,6 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
 
     private AccessAnnotationChecker<REQUEST> accessAnnotationChecker;
 
-
     /**
      * Creates a new instance.
      *
@@ -58,8 +57,7 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
      * @param accessAnnotationChecker the access checker to use
      */
     protected VaadinConnectAccessCheckerSupport(
-            AccessAnnotationChecker<REQUEST> accessAnnotationChecker,
-            CsrfChecker<REQUEST> csrfChecker) {
+            AccessAnnotationChecker<REQUEST> accessAnnotationChecker, CsrfChecker<REQUEST> csrfChecker) {
         this.accessAnnotationChecker = accessAnnotationChecker;
         this.csrfChecker = csrfChecker;
     }
@@ -91,8 +89,8 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
 
     private boolean isDevMode() {
         VaadinService vaadinService = VaadinService.getCurrent();
-        return (vaadinService != null && !vaadinService
-                .getDeploymentConfiguration().isProductionMode());
+        return (vaadinService != null
+                && !vaadinService.getDeploymentConfiguration().isProductionMode());
     }
 
     /**
@@ -116,5 +114,4 @@ public abstract class VaadinConnectAccessCheckerSupport<REQUEST> implements Vaad
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinConnectAccessChecker.class);
     }
-
 }

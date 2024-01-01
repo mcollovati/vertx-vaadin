@@ -22,23 +22,24 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionContext;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+import javax.servlet.http.HttpSessionContext;
 
-import com.github.mcollovati.vertx.web.ExtendedSession;
 import com.vaadin.flow.server.WrappedSession;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+
+import com.github.mcollovati.vertx.web.ExtendedSession;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -47,7 +48,6 @@ import static java.util.stream.Collectors.toMap;
  */
 @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class VertxWrappedSession implements WrappedSession {
-
 
     private final ExtendedSession delegate;
 
@@ -79,10 +79,10 @@ public class VertxWrappedSession implements WrappedSession {
             removeAttribute(name);
         } else {
             tryCastHttpSessionBindingListener(delegate.get(name))
-                .ifPresent(oldValue -> oldValue.valueUnbound(createHttpSessionBindingEvent(name, oldValue)));
+                    .ifPresent(oldValue -> oldValue.valueUnbound(createHttpSessionBindingEvent(name, oldValue)));
             delegate.put(name, value);
             tryCastHttpSessionBindingListener(value)
-                .ifPresent(listener -> listener.valueBound(createHttpSessionBindingEvent(name, value)));
+                    .ifPresent(listener -> listener.valueBound(createHttpSessionBindingEvent(name, value)));
         }
     }
 
@@ -97,8 +97,8 @@ public class VertxWrappedSession implements WrappedSession {
     public void invalidate() {
         checkSessionState();
         Map<String, HttpSessionBindingListener> toUnbind = delegate.data().entrySet().stream()
-            .filter(entry -> HttpSessionBindingListener.class.isInstance(entry.getValue()))
-            .collect(toMap(Map.Entry::getKey, e -> HttpSessionBindingListener.class.cast(e.getValue())));
+                .filter(entry -> HttpSessionBindingListener.class.isInstance(entry.getValue()))
+                .collect(toMap(Map.Entry::getKey, e -> HttpSessionBindingListener.class.cast(e.getValue())));
         delegate.destroy();
         toUnbind.forEach((name, listener) -> listener.valueUnbound(createHttpSessionBindingEvent(name, listener)));
         toUnbind.clear();
@@ -130,7 +130,7 @@ public class VertxWrappedSession implements WrappedSession {
     public void removeAttribute(String name) {
         checkSessionState();
         tryCastHttpSessionBindingListener(delegate.remove(name))
-            .ifPresent(oldValue -> oldValue.valueUnbound(createHttpSessionBindingEvent(name, oldValue)));
+                .ifPresent(oldValue -> oldValue.valueUnbound(createHttpSessionBindingEvent(name, oldValue)));
     }
 
     private void checkSessionState() {
@@ -141,14 +141,13 @@ public class VertxWrappedSession implements WrappedSession {
 
     private Optional<HttpSessionBindingListener> tryCastHttpSessionBindingListener(Object value) {
         return Optional.ofNullable(value)
-            .filter(HttpSessionBindingListener.class::isInstance)
-            .map(HttpSessionBindingListener.class::cast);
+                .filter(HttpSessionBindingListener.class::isInstance)
+                .map(HttpSessionBindingListener.class::cast);
     }
 
     private HttpSessionBindingEvent createHttpSessionBindingEvent(String name, Object value) {
         return new HttpSessionBindingEvent(new VertxHttpSession(this), name, value);
     }
-
 }
 
 class VertxHttpSession implements HttpSession {
@@ -202,5 +201,4 @@ class VertxHttpSession implements HttpSession {
     private interface Exclusions {
         Set<String> getAttributeNames();
     }
-
 }

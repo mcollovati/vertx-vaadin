@@ -55,7 +55,6 @@ public interface ExtendedSession extends Session {
      */
     boolean removeHeadersEndHandler(int handlerID);
 
-
     static ExtendedSession adapt(Session session) {
         if (session instanceof ExtendedSession) {
             return (ExtendedSession) session;

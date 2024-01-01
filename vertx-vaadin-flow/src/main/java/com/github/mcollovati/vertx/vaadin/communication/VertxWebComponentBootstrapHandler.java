@@ -22,11 +22,12 @@
  */
 package com.github.mcollovati.vertx.vaadin.communication;
 
-import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+
+import com.github.mcollovati.vertx.vaadin.VertxVaadinRequest;
 
 public class VertxWebComponentBootstrapHandler extends WebComponentBootstrapHandler {
 
@@ -56,13 +57,11 @@ public class VertxWebComponentBootstrapHandler extends WebComponentBootstrapHand
             url = ((VaadinServletRequest) request).getRequestURL().toString();
         }
         return url
-            // +1 is to keep the trailing slash
-            .substring(0, url.indexOf(PATH_PREFIX) + 1)
-            // replace http:// or https:// with // to work with https://
-            // proxies
-            // which proxies to the same http:// url
-            .replaceFirst("^" + ".*://", "//");
+                // +1 is to keep the trailing slash
+                .substring(0, url.indexOf(PATH_PREFIX) + 1)
+                // replace http:// or https:// with // to work with https://
+                // proxies
+                // which proxies to the same http:// url
+                .replaceFirst("^" + ".*://", "//");
     }
-
-
 }

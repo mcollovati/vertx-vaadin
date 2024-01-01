@@ -1,17 +1,24 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
 
@@ -33,26 +40,23 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         assertMessageCount(1);
 
-        assertLastMessage("/abc",
-            isClientRouter() ? NavigationTrigger.CLIENT_SIDE
-                : NavigationTrigger.PAGE_LOAD,
-            "abc");
-        Assert.assertEquals("The trailing '/' from the URL should be removed.",
-            url.substring(0, url.length() - 1),
-            getDriver().getCurrentUrl());
+        assertLastMessage(
+                "/abc", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.PAGE_LOAD, "abc");
+        Assert.assertEquals(
+                "The trailing '/' from the URL should be removed.",
+                url.substring(0, url.length() - 1),
+                getDriver().getCurrentUrl());
 
         findElement(By.id("routerlink")).click();
         assertMessageCount(2);
-        assertLastMessage("/routerlink",
-            isClientRouter() ? NavigationTrigger.CLIENT_SIDE
-                : NavigationTrigger.ROUTER_LINK,
-            "routerlink");
+        assertLastMessage(
+                "/routerlink",
+                isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.ROUTER_LINK,
+                "routerlink");
 
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
-        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
-            "navigate");
-
+        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE, "navigate");
     }
 
     @Test
@@ -67,36 +71,30 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         getDriver().navigate().back();
         assertMessageCount(4);
-        assertLastMessage("/routerlink",
-                isClientRouter() ? NavigationTrigger.CLIENT_SIDE
-                        : NavigationTrigger.HISTORY,
+        assertLastMessage(
+                "/routerlink",
+                isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.HISTORY,
                 "routerlink");
 
         getDriver().navigate().forward();
         assertMessageCount(5);
-        assertLastMessage("/navigate",
-                isClientRouter() ? NavigationTrigger.CLIENT_SIDE
-                        : NavigationTrigger.HISTORY,
-                "navigate");
+        assertLastMessage(
+                "/navigate", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.HISTORY, "navigate");
 
         findElement(By.id("forwardButton")).click();
         assertMessageCount(6);
-        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC,
-                "forwarded");
+        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC, "forwarded");
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);
         assertLastMessage("/", NavigationTrigger.PROGRAMMATIC, "rerouted");
     }
 
-    private void assertLastMessage(String path, NavigationTrigger trigger,
-                                   String parameter) {
+    private void assertLastMessage(String path, NavigationTrigger trigger, String parameter) {
         List<WebElement> messages = getMessages();
         String lastMessageText = messages.get(messages.size() - 1).getText();
 
-        Assert.assertEquals(
-            NavigationTriggerView.buildMessage(path, trigger, parameter),
-            lastMessageText);
+        Assert.assertEquals(NavigationTriggerView.buildMessage(path, trigger, parameter), lastMessageText);
     }
 
     private void assertMessageCount(int count) {

@@ -1,14 +1,35 @@
+/*
+ * The MIT License
+ * Copyright © 2024 Marco Collovati (mcollovati@gmail.com)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class FragmentLinkIT extends ChromeBrowserTest {
 
@@ -18,15 +39,13 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
         clickScrollerLink2();
 
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2");
+        verifyInsideServletLocation("com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2");
         verifyHashChangeEvents(1);
         verifyScrollTarget2Visible();
 
         clickScrollerLink();
 
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target");
+        verifyInsideServletLocation("com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target");
         verifyHashChangeEvents(2);
         verifyScrollTargetVisible();
     }
@@ -38,8 +57,7 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
         clickAnotherViewLink();
 
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView2#Scroll_Target");
+        verifyInsideServletLocation("com.vaadin.flow.uitest.ui.FragmentLinkView2#Scroll_Target");
         verifyHashChangeEvents(1);
         verifyScrollTargetVisible();
         verifyView2Open();
@@ -80,15 +98,13 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     private void verifyScrollTargetVisible() {
-        int scrollPos = findElement(By.id("Scroll_Target")).getLocation()
-                .getY();
+        int scrollPos = findElement(By.id("Scroll_Target")).getLocation().getY();
         int expected = getScrollLocatorPosition();
         assertScrollPosition(expected, scrollPos);
     }
 
     private void verifyScrollTarget2Visible() {
-        int scrollPos = findElement(By.id("Scroll_Target2")).getLocation()
-                .getY();
+        int scrollPos = findElement(By.id("Scroll_Target2")).getLocation().getY();
         int expected = getScrollLocatorPosition();
         assertScrollPosition(expected, scrollPos);
     }
@@ -102,30 +118,26 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     private void verifyView2Open() {
-        Assert.assertNotNull("FragmentView2 not opened",
-                findElement(By.id("view2")));
+        Assert.assertNotNull("FragmentView2 not opened", findElement(By.id("view2")));
     }
 
     private void assertScrollPosition(int expected, int actual) {
         int lowerBound = expected - 2 > 0 ? expected - 2 : 0;
         int higherBound = expected + 2;
         Assert.assertTrue(
-                "Invalid scroll position, expected " + expected
-                        + " +-2px. actual " + actual,
+                "Invalid scroll position, expected " + expected + " +-2px. actual " + actual,
                 lowerBound <= expected && expected <= higherBound);
     }
 
     private void verifyHashChangeEvents(int numberOfEvents) {
-        List<WebElement> spans = findElement(By.id("placeholder"))
-                .findElements(By.tagName("span"));
-        Assert.assertEquals("Invalid amount of hash change events",
-                numberOfEvents, spans.size());
+        List<WebElement> spans = findElement(By.id("placeholder")).findElements(By.tagName("span"));
+        Assert.assertEquals("Invalid amount of hash change events", numberOfEvents, spans.size());
     }
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
-        Assert.assertEquals("Invalid URL",
+        Assert.assertEquals(
+                "Invalid URL",
                 getRootURL() + "/view/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
     }
-
 }

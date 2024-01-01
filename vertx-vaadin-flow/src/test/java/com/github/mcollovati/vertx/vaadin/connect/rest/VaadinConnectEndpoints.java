@@ -22,10 +22,10 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.rest;
 
-import dev.hilla.Endpoint;
-
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+
+import dev.hilla.Endpoint;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
@@ -33,19 +33,19 @@ import java.time.ZonedDateTime;
 @Endpoint
 public class VaadinConnectEndpoints {
 
-    public BeanWithZonedDateTimeField getBeanWithZonedDateTimeField(){
+    public BeanWithZonedDateTimeField getBeanWithZonedDateTimeField() {
         return new BeanWithZonedDateTimeField();
     }
 
-    public BeanWithPrivateFields getBeanWithPrivateFields(){
+    public BeanWithPrivateFields getBeanWithPrivateFields() {
         return new BeanWithPrivateFields();
     }
 
-    public BeanWithJacksonAnnotation getBeanWithJacksonAnnotation(){
+    public BeanWithJacksonAnnotation getBeanWithJacksonAnnotation() {
         return new BeanWithJacksonAnnotation();
     }
 
-    public LocalTime getLocalTime(){
+    public LocalTime getLocalTime() {
         return LocalTime.of(8, 0, 0);
     }
 

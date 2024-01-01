@@ -22,11 +22,10 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
+import java.lang.reflect.Method;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-
-import java.lang.reflect.Method;
 
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
@@ -82,5 +81,4 @@ public interface VaadinConnectAccessChecker<REQUEST> {
      * issues occur, {@code null} otherwise
      */
     String check(Method method, REQUEST request);
-
 }

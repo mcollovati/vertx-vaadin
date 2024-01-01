@@ -34,9 +34,7 @@ import io.vertx.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class VertxUI {
-
 
     private static final Logger logger = LoggerFactory.getLogger(VertxUI.class);
     private final UI ui;
@@ -46,7 +44,6 @@ public class VertxUI {
         this.ui = ui;
         service = (VertxVaadinService) ui.getSession().getService();
     }
-
 
     /**
      * Exd
@@ -83,7 +80,6 @@ public class VertxUI {
         return promise.future();
     }
 
-
     private <T> Future<T> schedule(UITask<T> task) {
         return schedule(task, 0, TimeUnit.MILLISECONDS);
     }
@@ -118,5 +114,4 @@ public class VertxUI {
             return null;
         }
     }
-
 }

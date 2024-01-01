@@ -22,13 +22,11 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.github.mcollovati.failures.lookup.FakeLookupInitializer;
+import javax.servlet.ServletException;
 
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.InitParameters;
@@ -44,6 +42,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.github.mcollovati.failures.lookup.FakeLookupInitializer;
+
 @RunWith(VertxUnitRunner.class)
 public class VaadinVerticleUT {
 
@@ -53,46 +53,50 @@ public class VaadinVerticleUT {
     @Test
     public void startWithPromiseShouldInvokeSynStart(TestContext context) {
         TestVerticle verticle = new TestVerticle();
-        DeploymentOptions opts = new DeploymentOptions()
-            .setConfig(testConfig());
-        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev ->
-            context.assertTrue(verticle.startInvoked.get(), "Start not invoked")
-        ));
+        DeploymentOptions opts = new DeploymentOptions().setConfig(testConfig());
+        rule.vertx()
+                .deployVerticle(
+                        verticle,
+                        opts,
+                        context.asyncAssertSuccess(
+                                ev -> context.assertTrue(verticle.startInvoked.get(), "Start not invoked")));
     }
 
     @Test
     public void stopWithPromiseShouldInvokeSynStart(TestContext context) {
         TestVerticle verticle = new TestVerticle();
-        DeploymentOptions opts = new DeploymentOptions()
-            .setConfig(testConfig());
-        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev ->
-            rule.vertx().undeploy(ev, context.asyncAssertSuccess(ev2 ->
-                context.assertTrue(verticle.stopInvoked.get(), "Stop not invoked")
-            ))
-        ));
+        DeploymentOptions opts = new DeploymentOptions().setConfig(testConfig());
+        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev -> rule.vertx()
+                .undeploy(
+                        ev,
+                        context.asyncAssertSuccess(
+                                ev2 -> context.assertTrue(verticle.stopInvoked.get(), "Stop not invoked")))));
     }
 
     @Test
     public void shouldPropagateFailureIfInitializationFails(TestContext context) {
         TestVerticle verticle = new TestVerticle();
         JsonObject config = testConfig();
-        config.getJsonObject("vaadin").getJsonArray("flowBasePackages")
-            .add(FakeLookupInitializer.class.getPackage().getName());
+        config.getJsonObject("vaadin")
+                .getJsonArray("flowBasePackages")
+                .add(FakeLookupInitializer.class.getPackage().getName());
         DeploymentOptions opts = new DeploymentOptions().setConfig(config);
-        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertFailure(ev ->
-            Assertions.assertThat(ev).isExactlyInstanceOf(ServletException.class)
-        ));
+        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertFailure(ev -> Assertions.assertThat(ev)
+                .isExactlyInstanceOf(ServletException.class)));
     }
 
     @Test
     public void shouldDisableHillaSupportByConfiguration(TestContext context) {
         TestVerticle verticle = new TestVerticle();
         JsonObject config = testConfig();
-        DeploymentOptions opts = new DeploymentOptions()
-                .setConfig(config);
-        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev ->
-                context.assertFalse(verticle.service.getVaadinOptions().hillaEnabled(), "Hilla support should be disabled")
-        ));
+        DeploymentOptions opts = new DeploymentOptions().setConfig(config);
+        rule.vertx()
+                .deployVerticle(
+                        verticle,
+                        opts,
+                        context.asyncAssertSuccess(ev -> context.assertFalse(
+                                verticle.service.getVaadinOptions().hillaEnabled(),
+                                "Hilla support should be disabled")));
     }
 
     @Test
@@ -105,7 +109,9 @@ public class VaadinVerticleUT {
                     config.put("vaadin", new JsonObject());
                 }
                 JsonObject vaadin = config.getJsonObject("vaadin");
-                vaadin.put("flowBasePackages", new JsonArray().add(getClass().getPackage().getName()));
+                vaadin.put(
+                        "flowBasePackages",
+                        new JsonArray().add(getClass().getPackage().getName()));
                 if (!vaadin.containsKey(InitParameters.I18N_PROVIDER)) {
                     vaadin.put(InitParameters.I18N_PROVIDER, TestI18nProvider.class.getName());
                 }
@@ -114,9 +120,12 @@ public class VaadinVerticleUT {
             }
         };
         DeploymentOptions opts = new DeploymentOptions();
-        rule.vertx().deployVerticle(verticle, opts, context.asyncAssertSuccess(ev ->
-                context.assertTrue(verticle.service.getInstantiator().getI18NProvider() instanceof TestI18nProvider)
-        ));
+        rule.vertx()
+                .deployVerticle(
+                        verticle,
+                        opts,
+                        context.asyncAssertSuccess(ev -> context.assertTrue(
+                                verticle.service.getInstantiator().getI18NProvider() instanceof TestI18nProvider)));
     }
 
     public static class TestI18nProvider implements I18NProvider {
@@ -131,14 +140,19 @@ public class VaadinVerticleUT {
             return "HELLO";
         }
     }
+
     private JsonObject testConfig() {
         return new JsonObject()
-            .put("server", new JsonObject().put("port", 0))
-            .put("vaadin", new JsonObject()
-                .put("hilla.enabled", false)
-                .put("productionMode", true)
-                .put("flowBasePackages", new JsonArray().add(getClass().getPackage().getName()))
-            );
+                .put("server", new JsonObject().put("port", 0))
+                .put(
+                        "vaadin",
+                        new JsonObject()
+                                .put("hilla.enabled", false)
+                                .put("productionMode", true)
+                                .put(
+                                        "flowBasePackages",
+                                        new JsonArray()
+                                                .add(getClass().getPackage().getName())));
     }
 
     private static class TestVerticle extends VaadinVerticle {

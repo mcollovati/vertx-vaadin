@@ -22,16 +22,6 @@
  */
 package com.github.mcollovati.vertx.support;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -49,10 +39,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
-import com.github.mcollovati.vertx.vaadin.VaadinOptions;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinConfig;
-import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinConfig;
@@ -70,11 +67,12 @@ import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.FileResolverFactory;
 import io.vertx.core.spi.file.FileResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.mcollovati.vertx.vaadin.VaadinOptions;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
 
 public final class StartupContext implements VaadinConfig {
 
@@ -100,15 +98,16 @@ public final class StartupContext implements VaadinConfig {
     public Optional<String> resolveResource(String resource) {
         String normalized = resource.replaceFirst("^/", "");
         return resources.stream()
-            .filter(r -> normalized.equals(r) || r.replaceFirst("^META-INF/resources/", "").equals(normalized))
-            .findFirst();
+                .filter(r -> normalized.equals(r)
+                        || r.replaceFirst("^META-INF/resources/", "").equals(normalized))
+                .findFirst();
     }
 
     public DeploymentConfiguration deploymentConfiguration() {
         if (deploymentConfiguration == null) {
             VaadinConfig vaadinConfig = vaadinOptions.asVaadinConfig(getVaadinContext());
             deploymentConfiguration = new DeploymentConfigurationFactory()
-                .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
+                    .createPropertyDeploymentConfiguration(getClass(), vaadinConfig);
         }
         return deploymentConfiguration;
     }
@@ -141,23 +140,16 @@ public final class StartupContext implements VaadinConfig {
         return new StartupContext(vertx, promise.future().result(), vaadinOptions);
     }
 
-
     private static Handler<Promise<Set<String>>> scanResources(VaadinOptions vaadinOptions) {
-        ClassGraph classGraph = new ClassGraph()
-            .acceptPackages()
-            .removeTemporaryFilesAfterScan();
+        ClassGraph classGraph = new ClassGraph().acceptPackages().removeTemporaryFilesAfterScan();
         if (vaadinOptions.debug()) {
             classGraph.verbose();
         }
         return future -> {
             try (ScanResult scanResult = classGraph.scan()) {
-                future.complete(
-                    scanResult.getAllResources()
-                        .nonClassFilesOnly()
-                        .stream()
+                future.complete(scanResult.getAllResources().nonClassFilesOnly().stream()
                         .map(Resource::getPathRelativeToClasspathElement)
-                        .collect(Collectors.toSet())
-                );
+                        .collect(Collectors.toSet()));
             } catch (Exception ex) {
                 future.fail(ex);
             }
@@ -186,7 +178,6 @@ public final class StartupContext implements VaadinConfig {
             }
             return path;
         }
-
 
         @Override
         public String getContextPath() {
@@ -231,32 +222,33 @@ public final class StartupContext implements VaadinConfig {
             if (relativePath.isEmpty()) {
                 pattern = Pattern.compile("^((?:META-INF/resources/|)[^/]+(?:/|$))");
             } else {
-                pattern = Pattern.compile(String.format("^((?:META-INF/resources/%1$s|%1$s)/[^/]+(?:/|$))", relativePath));
+                pattern = Pattern.compile(
+                        String.format("^((?:META-INF/resources/%1$s|%1$s)/[^/]+(?:/|$))", relativePath));
             }
 
-
             return startupContext.resources.stream()
-                .filter(p -> p.startsWith("META-INF/resources/" + relativePath) || p.startsWith(relativePath))
-                .map(p -> {
-                    Matcher matcher = pattern.matcher(p);
-                    matcher.find();
-                    return matcher.group(1);
-                })
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                    .filter(p -> p.startsWith("META-INF/resources/" + relativePath) || p.startsWith(relativePath))
+                    .map(p -> {
+                        Matcher matcher = pattern.matcher(p);
+                        matcher.find();
+                        return matcher.group(1);
+                    })
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
         @Override
         public URL getResource(String path) throws MalformedURLException {
             FileSystem fileSystem = startupContext.vertx.fileSystem();
-            FileResolver fileResolver = startupContext.vertx instanceof VertxInternal ?
-                ((VertxInternal) startupContext.vertx).fileResolver() : new FileResolverImpl();
+            FileResolver fileResolver = startupContext.vertx instanceof VertxInternal
+                    ? ((VertxInternal) startupContext.vertx).fileResolver()
+                    : new FileResolverImpl();
             String relativePath = toRelativePath(path);
             URI resourceURI = Stream.of(relativePath, "META-INF/resources/" + relativePath)
-                .filter(fileSystem::existsBlocking)
-                .findFirst()
-                .map(fileResolver::resolveFile)
-                .map(File::toURI)
-                .orElse(null);
+                    .filter(fileSystem::existsBlocking)
+                    .findFirst()
+                    .map(fileResolver::resolveFile)
+                    .map(File::toURI)
+                    .orElse(null);
 
             if (resourceURI != null) {
                 return resourceURI.toURL();
@@ -269,12 +261,12 @@ public final class StartupContext implements VaadinConfig {
             String relativePath = toRelativePath(path);
             FileSystem fileSystem = startupContext.vertx.fileSystem();
             return Stream.of(relativePath, "META-INF/resources/" + relativePath)
-                .filter(fileSystem::existsBlocking)
-                .filter(p -> !fileSystem.propsBlocking(p).isDirectory())
-                .findFirst()
-                .map(fileSystem::readFileBlocking)
-                .map(BufferInputStreamAdapter::new)
-                .orElse(null);
+                    .filter(fileSystem::existsBlocking)
+                    .filter(p -> !fileSystem.propsBlocking(p).isDirectory())
+                    .findFirst()
+                    .map(fileSystem::readFileBlocking)
+                    .map(BufferInputStreamAdapter::new)
+                    .orElse(null);
         }
 
         @Override
@@ -432,7 +424,6 @@ public final class StartupContext implements VaadinConfig {
             return null;
         }
 
-
         @Override
         public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
             // Ignored on stub context
@@ -493,14 +484,13 @@ public final class StartupContext implements VaadinConfig {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             StartupContext.FakeServletContext that = (StartupContext.FakeServletContext) o;
-            return this.startupContext.vertx.equals(that.startupContext.vertx) &&
-                startupContext.vaadinOptions.equals(that.startupContext.vaadinOptions);
+            return this.startupContext.vertx.equals(that.startupContext.vertx)
+                    && startupContext.vaadinOptions.equals(that.startupContext.vaadinOptions);
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(startupContext.vertx, startupContext.vaadinOptions);
         }
-
     }
 }

@@ -1,34 +1,37 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
 import java.util.List;
 import java.util.logging.Level;
 
-import com.vaadin.flow.DevModeOnly;
-import com.vaadin.flow.DevModeRule;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.logging.LogEntry;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class DynamicDependencyIT extends ChromeBrowserTest {
 
@@ -47,14 +50,12 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void dependecyLoaderThrows_errorLogged()
-            throws InterruptedException {
+    public void dependecyLoaderThrows_errorLogged() throws InterruptedException {
         testErrorCase("throw", "Throw on purpose");
     }
 
     @Test
-    public void dependecyLoaderRejects_errorLogged()
-            throws InterruptedException {
+    public void dependecyLoaderRejects_errorLogged() throws InterruptedException {
         testErrorCase("reject", "Reject on purpose");
     }
 
@@ -69,9 +70,7 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
         List<LogEntry> entries = getLogEntries(Level.SEVERE);
         Assert.assertEquals(2, entries.size());
 
-        Assert.assertThat(entries.get(0).getMessage(),
-                Matchers.containsString(errorMessageSnippet));
-        Assert.assertThat(entries.get(1).getMessage(),
-                Matchers.containsString("could not be loaded"));
+        Assert.assertThat(entries.get(0).getMessage(), Matchers.containsString(errorMessageSnippet));
+        Assert.assertThat(entries.get(1).getMessage(), Matchers.containsString("could not be loaded"));
     }
 }

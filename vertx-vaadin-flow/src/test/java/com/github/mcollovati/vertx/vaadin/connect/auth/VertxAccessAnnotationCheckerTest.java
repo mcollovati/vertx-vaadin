@@ -22,6 +22,4 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.auth;
 
-public class VertxAccessAnnotationCheckerTest {
-
-}
+public class VertxAccessAnnotationCheckerTest {}

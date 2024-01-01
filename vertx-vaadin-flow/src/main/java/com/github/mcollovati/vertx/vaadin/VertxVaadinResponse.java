@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -81,9 +80,10 @@ public class VertxVaadinResponse implements VaadinResponse {
 
     @Override
     public void setDateHeader(String name, long timestamp) {
-        response.putHeader(name, DateTimeFormatter.RFC_1123_DATE_TIME.format(
-            OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of("GMT")))
-        );
+        response.putHeader(
+                name,
+                DateTimeFormatter.RFC_1123_DATE_TIME.format(
+                        OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of("GMT"))));
     }
 
     @Override
@@ -178,23 +178,20 @@ public class VertxVaadinResponse implements VaadinResponse {
      * Does nothing if response is already endend or if it is chunked.
      */
     public void end() {
-        //if (!response.ended() && !response.isChunked()) {
+        // if (!response.ended() && !response.isChunked()) {
         if (!response.ended()) {
             response.end(outBuffer);
         }
     }
 
-    private static void doSetCacheTime(VaadinResponse response,
-                                       long milliseconds) {
+    private static void doSetCacheTime(VaadinResponse response, long milliseconds) {
         if (milliseconds <= 0) {
             response.setHeader("Cache-Control", "no-cache");
             response.setHeader("Pragma", "no-cache");
             response.setDateHeader("Expires", 0);
         } else {
-            response.setHeader("Cache-Control",
-                "max-age=" + milliseconds / 1000);
-            response.setDateHeader("Expires",
-                System.currentTimeMillis() + milliseconds);
+            response.setHeader("Cache-Control", "max-age=" + milliseconds / 1000);
+            response.setDateHeader("Expires", System.currentTimeMillis() + milliseconds);
             // Required to apply caching in some Tomcats
             response.setHeader("Pragma", "cache");
         }

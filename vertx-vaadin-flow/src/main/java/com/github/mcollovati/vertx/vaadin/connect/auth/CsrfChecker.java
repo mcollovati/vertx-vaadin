@@ -60,5 +60,4 @@ public interface CsrfChecker<R> {
      * @return {@code true} if protection is enabled, {@code false} otherwise
      */
     boolean isCsrfProtectionEnabled();
-
 }

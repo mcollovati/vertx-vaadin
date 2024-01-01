@@ -58,6 +58,4 @@ public final class Sync {
             throw new VertxException(e);
         }
     }
-
-
 }

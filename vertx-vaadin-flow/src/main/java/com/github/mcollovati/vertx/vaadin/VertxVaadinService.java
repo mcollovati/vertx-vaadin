@@ -22,7 +22,6 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,12 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import javax.servlet.ServletContext;
 
-import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
-import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
-import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -55,7 +51,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -66,9 +61,12 @@ import io.vertx.core.file.impl.FileResolverImpl;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.file.FileResolver;
-import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
+import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
 
 /**
  * Created by marco on 16/07/16.
@@ -97,8 +95,7 @@ public class VertxVaadinService extends VaadinService {
     public void init() throws ServiceException {
         DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
         Properties initParameters = deploymentConfiguration.getInitParameters();
-        Object object = initParameters
-            .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
+        Object object = initParameters.get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
         if (object instanceof FallbackChunk) {
             VaadinContext context = getContext();
             context.setAttribute(object);
@@ -131,7 +128,6 @@ public class VertxVaadinService extends VaadinService {
         return PwaRegistry.getInstance(vertxVaadin.servletContext());
     }
 
-
     /*
     @Override
     protected Instantiator createInstantiator() throws ServiceException {
@@ -140,21 +136,19 @@ public class VertxVaadinService extends VaadinService {
      */
 
     @Override
-    protected List<RequestHandler> createRequestHandlers()
-        throws ServiceException {
+    protected List<RequestHandler> createRequestHandlers() throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
         handlers.replaceAll(RequestHandlerReplacements::replace);
         if (getDeploymentConfiguration().enableDevServer()) {
-            Optional<DevModeHandler> handlerManager = DevModeHandlerManager
-                .getDevModeHandler(this);
+            Optional<DevModeHandler> handlerManager = DevModeHandlerManager.getDevModeHandler(this);
             if (handlerManager.isPresent()) {
                 handlers.add(handlerManager.get());
             } else {
                 logger.warn("no DevModeHandlerManager implementation found "
-                    + "but dev server enabled. Include the "
-                    + "com.vaadin.vaadin-dev-server dependency.");
+                        + "but dev server enabled. Include the "
+                        + "com.vaadin.vaadin-dev-server dependency.");
             }
         }
         addBootstrapHandler(handlers);
@@ -223,10 +217,8 @@ public class VertxVaadinService extends VaadinService {
 
     // From VaadinServletService
     private boolean isOtherRequest(VaadinRequest request) {
-        String type = request
-            .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-        return type == null
-            || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
+        String type = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return type == null || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
     }
 
     @Override
@@ -288,9 +280,9 @@ public class VertxVaadinService extends VaadinService {
         String relativePath = makePathRelative(path);
         if (fileSystem.existsBlocking(relativePath)) {
             try {
-                FileResolver fileResolver = (vertx instanceof VertxInternal) ?
-                    ((VertxInternal) vertx).fileResolver() :
-                    new FileResolverImpl();
+                FileResolver fileResolver = (vertx instanceof VertxInternal)
+                        ? ((VertxInternal) vertx).fileResolver()
+                        : new FileResolverImpl();
                 return fileResolver.resolveFile(relativePath).toURI().toURL();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -328,7 +320,7 @@ public class VertxVaadinService extends VaadinService {
         String relativePath = path;
         if (path.startsWith("/")) {
             relativePath = relativePath.substring(1);
-            //relativePath = "." + relativePath;
+            // relativePath = "." + relativePath;
         }
         return relativePath;
     }

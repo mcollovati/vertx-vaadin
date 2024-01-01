@@ -1,21 +1,26 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * The MIT License
+ * Copyright © 2000-2020 Marco Collovati (mcollovati@gmail.com)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package com.vaadin.flow.uitest.ui;
-
-import java.util.function.BiConsumer;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -26,7 +31,6 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -42,26 +46,24 @@ public class HistoryView extends AbstractDivView {
         addRow(Element.createText("State to set (JSON) "), stateJsonInput);
         addRow(Element.createText("Location to set "), locationInput);
 
-        addRow(createStateButton("pushState", history::pushState),
+        addRow(
+                createStateButton("pushState", history::pushState),
                 createStateButton("replaceState", history::replaceState));
 
-        addRow(createActionButton("back", history::back),
-                createActionButton("forward", history::forward));
+        addRow(createActionButton("back", history::back), createActionButton("forward", history::forward));
 
         addRow(createActionButton("clear", this::clear));
 
         history.setHistoryStateChangeHandler(e -> {
             addStatus("New location: " + e.getLocation().getPath());
 
-            e.getState().ifPresent(
-                    state -> addStatus("New state: " + state.toJson()));
+            e.getState().ifPresent(state -> addStatus("New state: " + state.toJson()));
         });
     }
 
     private void clear() {
         while (true) {
-            Element lastChild = getElement()
-                    .getChild(getElement().getChildCount() - 1);
+            Element lastChild = getElement().getChild(getElement().getChildCount() - 1);
             if (lastChild.getClassList().contains("status")) {
                 lastChild.removeFromParent();
             } else {
@@ -74,8 +76,7 @@ public class HistoryView extends AbstractDivView {
         return createButton(text, e -> command.execute());
     }
 
-    private Element createStateButton(String text,
-            SerializableBiConsumer<JsonObject, String> stateUpdater) {
+    private Element createStateButton(String text, SerializableBiConsumer<JsonObject, String> stateUpdater) {
         return createButton(text, e -> {
             String stateJsonString = stateJsonInput.getProperty("value", "");
             JsonObject stateJson;
@@ -105,8 +106,7 @@ public class HistoryView extends AbstractDivView {
         statusRow.getClassList().add("status");
     }
 
-    private static Element createButton(String id,
-            ComponentEventListener<ClickEvent<NativeButton>> listener) {
+    private static Element createButton(String id, ComponentEventListener<ClickEvent<NativeButton>> listener) {
         return createButton(id, id, listener).getElement();
     }
 
@@ -115,5 +115,4 @@ public class HistoryView extends AbstractDivView {
         element.addPropertyChangeListener("value", "change", event -> {});
         return element;
     }
-
 }

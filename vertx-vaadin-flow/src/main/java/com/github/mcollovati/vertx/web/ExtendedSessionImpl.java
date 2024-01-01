@@ -25,7 +25,6 @@ package com.github.mcollovati.vertx.web;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.mcollovati.vertx.web.serialization.SerializableHolder;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.shareddata.Shareable;
@@ -33,11 +32,13 @@ import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.sstore.impl.SharedDataSessionImpl;
 
+import com.github.mcollovati.vertx.web.serialization.SerializableHolder;
+
 /**
  * Created by marco on 27/07/16.
  */
-public class ExtendedSessionImpl extends SharedDataSessionImpl implements ExtendedSession, Shareable, ClusterSerializable {
-
+public class ExtendedSessionImpl extends SharedDataSessionImpl
+        implements ExtendedSession, Shareable, ClusterSerializable {
 
     protected Session delegate;
     private long createdAt;
@@ -84,7 +85,7 @@ public class ExtendedSessionImpl extends SharedDataSessionImpl implements Extend
     @Override
     public Map<String, Object> data() {
         Map<String, Object> copy = new HashMap<>(delegate.data());
-        copy.replaceAll( (key, obj) -> unwrapIfNeeded(obj));
+        copy.replaceAll((key, obj) -> unwrapIfNeeded(obj));
         return copy;
     }
 
@@ -155,11 +156,14 @@ public class ExtendedSessionImpl extends SharedDataSessionImpl implements Extend
     }
 
     private Object wrapIfNeeded(Object obj) {
-        if (obj == null || obj instanceof Number || obj instanceof Character || obj instanceof String
-            || obj instanceof Boolean || obj instanceof ClusterSerializable) {
+        if (obj == null
+                || obj instanceof Number
+                || obj instanceof Character
+                || obj instanceof String
+                || obj instanceof Boolean
+                || obj instanceof ClusterSerializable) {
             return obj;
         }
         return new SerializableHolder(obj);
     }
-
 }

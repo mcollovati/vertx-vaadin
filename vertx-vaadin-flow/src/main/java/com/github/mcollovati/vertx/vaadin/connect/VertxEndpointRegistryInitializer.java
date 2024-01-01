@@ -22,17 +22,18 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
-import com.github.mcollovati.vertx.support.HillaWorkAround;
+import java.util.Set;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
+
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import dev.hilla.Endpoint;
 import dev.hilla.EndpointNameChecker;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
+import com.github.mcollovati.vertx.support.HillaWorkAround;
 
 @HandlesTypes({Endpoint.class})
 public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServletContainerInitializer {
@@ -52,9 +53,7 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
 
     static VaadinEndpointRegistry fromClasses(Set<Class<?>> endpoints) {
         VaadinEndpointRegistry registry = new VertxEndpointRegistry(new EndpointNameChecker());
-        endpoints.stream()
-            .map(VertxEndpointRegistryInitializer::newInstance)
-            .forEach(registry::registerEndpoint);
+        endpoints.stream().map(VertxEndpointRegistryInitializer::newInstance).forEach(registry::registerEndpoint);
         return registry;
     }
 
@@ -65,5 +64,4 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
             throw new RuntimeException(e);
         }
     }
-
 }
