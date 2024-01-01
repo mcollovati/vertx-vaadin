@@ -955,4 +955,19 @@ class SockJSRoutingContext implements RoutingContextInternal {
         return decoratedContext.vertx();
     }
 
+    @Override
+    public int restIndex() {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal) decoratedContext).restIndex();
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean normalizedMatch() {
+        if (decoratedContext instanceof RoutingContextInternal) {
+            return ((RoutingContextInternal) decoratedContext).normalizedMatch();
+        }
+        return false;
+    }
 }
