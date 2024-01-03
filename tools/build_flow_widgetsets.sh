@@ -57,7 +57,7 @@ if [[ "$(curl -s -o /dev/null -w '%{http_code}' ${__base_url}/maven-metadata.xml
       | grep "<classifier>vaadin-" | sed -E 's/^.*<classifier>vaadin-(.*)<\/classifier>.*/\1/g' | sort -r -t '.' || echo '')
 else
   # Extract existing versions from directory listing
-  __pattern='href="vaadin-flow-sockjs-23.4.0-alpha1-vaadin-([^"]+)\.jar\"'
+  __pattern='href="vaadin-flow-sockjs-'${_current_version}'-vaadin-([^"]+)\.jar\"'
   __existing_classifiers=$(curl -s ${__base_url}/ | sed -E -e "/${__pattern}/!d" -e "s/.*${__pattern}.*/\1/g" || echo '')
 fi
 
