@@ -22,14 +22,17 @@
  */
 package com.github.mcollovati.vertx.quarkus;
 
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.servlet.ServletContext;
 import java.util.Properties;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.servlet.ServletContext;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import io.vertx.core.Vertx;
+import org.mockito.Mockito;
 
 import com.github.mcollovati.vertx.vaadin.VertxVaadin;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
@@ -50,6 +53,9 @@ public class TestQuarkusVertxVaadinServletService extends QuarkusVertxVaadinServ
         servletContext = mock(ServletContext.class);
         vertx = new BeanLookup<>(beanManager, Vertx.class).lookup();
         vaadinContext = new VertxVaadinContext(vertx);
+
+        vaadinContext.setAttribute(Lookup.class, Mockito.mock(Lookup.class));
+        vaadinContext.setAttribute(ApplicationConfiguration.class, Mockito.mock(ApplicationConfiguration.class));
 
         DeploymentConfiguration config = getDeploymentConfiguration();
         Properties properties = new Properties();

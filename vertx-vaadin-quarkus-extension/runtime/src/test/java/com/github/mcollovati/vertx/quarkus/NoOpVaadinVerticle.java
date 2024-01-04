@@ -22,12 +22,16 @@
  */
 package com.github.mcollovati.vertx.quarkus;
 
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
 
 import io.quarkus.arc.DefaultBean;
 import io.vertx.core.Promise;
 
 import com.github.mcollovati.vertx.vaadin.VaadinVerticle;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 @Dependent
 @DefaultBean

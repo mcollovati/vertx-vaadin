@@ -22,9 +22,9 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.uicontext;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;

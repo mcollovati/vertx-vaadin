@@ -26,6 +26,7 @@ import com.vaadin.base.devserver.BrowserLiveReloadAccessorImpl;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import org.atmosphere.cpr.AtmosphereResource;
 
 import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
@@ -72,8 +73,23 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
     }
 
     @Override
+    public void update(String path, String content) {
+        reloader.update(path, content);
+    }
+
+    @Override
     public void reload() {
         reloader.reload();
+    }
+
+    @Override
+    public AtmospherePushConnection.FragmentedMessage getOrCreateFragmentedMessage(AtmosphereResource resource) {
+        return null;
+    }
+
+    @Override
+    public void clearFragmentedMessage(AtmosphereResource resource) {
+
     }
 
     public static class Accessor extends BrowserLiveReloadAccessorImpl {

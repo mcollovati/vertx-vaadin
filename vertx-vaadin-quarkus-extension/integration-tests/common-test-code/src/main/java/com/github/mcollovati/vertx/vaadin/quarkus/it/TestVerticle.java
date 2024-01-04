@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;

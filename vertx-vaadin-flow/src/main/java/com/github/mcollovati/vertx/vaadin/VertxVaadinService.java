@@ -22,36 +22,30 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import jakarta.servlet.ServletContext;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
-import javax.servlet.ServletContext;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceContextUriResolver;
 import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import io.vertx.core.Context;
@@ -89,18 +83,6 @@ public class VertxVaadinService extends VaadinService {
 
     public Vertx getVertx() {
         return vertxVaadin.vertx();
-    }
-
-    @Override
-    public void init() throws ServiceException {
-        DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
-        Properties initParameters = deploymentConfiguration.getInitParameters();
-        Object object = initParameters.get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
-        if (object instanceof FallbackChunk) {
-            VaadinContext context = getContext();
-            context.setAttribute(object);
-        }
-        super.init();
     }
 
     public VaadinOptions getVaadinOptions() {
@@ -141,11 +123,25 @@ public class VertxVaadinService extends VaadinService {
         // TODO: removed because of explicit cast to servlet; should be handled at router level?
         handlers.removeIf(FaviconHandler.class::isInstance);
         handlers.replaceAll(RequestHandlerReplacements::replace);
-        if (getDeploymentConfiguration().enableDevServer()) {
+
+        Mode mode = getDeploymentConfiguration().getMode();
+        if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD || mode == Mode.DEVELOPMENT_BUNDLE) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager.getDevModeHandler(this);
             if (handlerManager.isPresent()) {
-                handlers.add(handlerManager.get());
-            } else {
+                DevModeHandler devModeHandler = handlerManager.get();
+                // WebComponentProvider handler should run before DevModeHandler
+                // to avoid responding with html contents when dev bundle is
+                // not ready (e.g. dev-mode-not-ready.html)
+                handlers.stream()
+                        .filter(WebComponentProvider.class::isInstance)
+                        .findFirst()
+                        .map(handlers::indexOf)
+                        .ifPresentOrElse(
+                                idx -> {
+                                    handlers.add(idx, devModeHandler);
+                                },
+                                () -> handlers.add(devModeHandler));
+            } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 logger.warn("no DevModeHandlerManager implementation found "
                         + "but dev server enabled. Include the "
                         + "com.vaadin.vaadin-dev-server dependency.");
@@ -156,14 +152,8 @@ public class VertxVaadinService extends VaadinService {
     }
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
-        if (getDeploymentConfiguration().useV14Bootstrap()) {
-            handlers.add(0, new VertxBootstrapHandler());
-            logger.debug("Using '{}' in deprecated V14 bootstrapping", BootstrapHandler.class.getName());
-            UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
-        } else {
-            handlers.add(0, new VertxIndexHtmlRequestHandler());
-            logger.debug("Using '{}' in client mode bootstrapping", IndexHtmlRequestHandler.class.getName());
-        }
+        handlers.add(0, new VertxIndexHtmlRequestHandler());
+        logger.debug("Using '{}' in client mode bootstrapping", VertxIndexHtmlRequestHandler.class.getName());
     }
 
     @Override

@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.WrappedSession;

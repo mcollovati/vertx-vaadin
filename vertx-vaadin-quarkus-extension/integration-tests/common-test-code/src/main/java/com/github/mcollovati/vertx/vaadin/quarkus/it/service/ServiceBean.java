@@ -24,7 +24,7 @@ package com.github.mcollovati.vertx.vaadin.quarkus.it.service;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceScoped;
 

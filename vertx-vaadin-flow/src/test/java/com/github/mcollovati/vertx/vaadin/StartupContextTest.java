@@ -56,9 +56,10 @@ public class StartupContextTest {
         assertThat(resourcePaths).isNotEmpty().allMatch(isChildOf(""));
         System.out.println(resourcePaths);
 
-        resourcePaths = startupContext.servletContext().getResourcePaths("webjars");
-        assertThat(resourcePaths).isNotEmpty().allMatch(isChildOf("webjars/"));
-        System.out.println(resourcePaths);
+        // TODO: remove, webjars are not used anymore
+        //resourcePaths = startupContext.servletContext().getResourcePaths("webjars");
+        //assertThat(resourcePaths).isNotEmpty().allMatch(isChildOf("webjars/"));
+        //System.out.println(resourcePaths);
     }
 
     @Test

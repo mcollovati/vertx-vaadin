@@ -22,12 +22,16 @@
  */
 package com.github.mcollovati.vertx.quarkus.context;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
 
 import io.quarkus.test.junit.QuarkusTest;
 
 import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceScoped;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 @QuarkusTest
 public class ServiceContextTest extends AbstractContextTest<VaadinServiceScopedContext> {

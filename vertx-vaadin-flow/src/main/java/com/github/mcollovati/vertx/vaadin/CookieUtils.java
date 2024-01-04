@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.vaadin;
 
 import java.util.Optional;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 

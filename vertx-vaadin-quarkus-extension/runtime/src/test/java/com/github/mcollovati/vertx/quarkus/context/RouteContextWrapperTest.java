@@ -25,6 +25,10 @@ package com.github.mcollovati.vertx.quarkus.context;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 @QuarkusTest
 public class RouteContextWrapperTest
         extends InjectableContextTest<RouteContextWrapperWithinDifferentUITest.TestRouteContextWrapper> {

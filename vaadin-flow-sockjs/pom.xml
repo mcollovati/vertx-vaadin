@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx</groupId>
         <artifactId>vertx-vaadin-root</artifactId>
-        <version>23.4.0-SNAPSHOT</version>
+        <version>24.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -25,7 +25,7 @@
         <sockjs-client.version>1.5.0</sockjs-client.version>
         <checkstyle.skip>false</checkstyle.skip>
 
-        <gwt.version>2.8.2</gwt.version>
+        <gwt.version>2.9.0</gwt.version>
         <gwt.module>com.github.mcollovati.vertx.vaadin.sockjs.SockjsClientEngine</gwt.module>
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
         <gwt.module.style>OBF</gwt.module.style>
@@ -39,12 +39,49 @@
         <minify-maven-plugin.version>1.7.6</minify-maven-plugin.version>
     </properties>
 
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt</artifactId>
+                <version>${gwt.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
             <version>${vaadin.flow.version}</version>
+            <classifier>sources</classifier>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.servletdetector</groupId>
+                    <artifactId>throw-if-servlet3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${vaadin.flow.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.servletdetector</groupId>
+                    <artifactId>throw-if-servlet3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -60,19 +97,16 @@
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
-            <version>${gwt.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-dev</artifactId>
-            <version>${gwt.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-elemental</artifactId>
-            <version>${gwt.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -167,6 +201,7 @@
                     <style>${gwt.module.style}</style>
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
+                    <extraJvmArgs>-Xmx512m -Dvaadin.frontend.hotdeploy=false</extraJvmArgs>
                 </configuration>
             </plugin>
             <plugin>

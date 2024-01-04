@@ -27,9 +27,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -51,6 +51,10 @@ import org.mockito.Mockito;
 
 import com.github.mcollovati.vertx.quarkus.annotation.RouteScopeOwner;
 import com.github.mcollovati.vertx.quarkus.context.RouteScopedContext.NavigationData;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 @QuarkusTest
 @SuppressWarnings({"rawtypes", "unchecked"})

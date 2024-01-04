@@ -37,7 +37,7 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 
-import com.github.mcollovati.vertx.quarkus.QuarkusInstantiator;
+import com.github.mcollovati.vertx.quarkus.QuarkusInstantiatorFactory;
 import com.github.mcollovati.vertx.quarkus.annotation.NormalRouteScoped;
 import com.github.mcollovati.vertx.quarkus.annotation.NormalUIScoped;
 import com.github.mcollovati.vertx.quarkus.annotation.RouteScoped;
@@ -66,7 +66,7 @@ class VertxVaadinExtensionProcessor {
     public void build(
             final BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer,
             final BuildProducer<BeanDefiningAnnotationBuildItem> additionalBeanDefiningAnnotationRegistry) {
-        additionalBeanProducer.produce(AdditionalBeanBuildItem.unremovableOf(QuarkusInstantiator.class.getName()));
+        additionalBeanProducer.produce(AdditionalBeanBuildItem.unremovableOf(QuarkusInstantiatorFactory.class.getName()));
         // Make and Route annotated Component a bean for injection
         additionalBeanDefiningAnnotationRegistry.produce(new BeanDefiningAnnotationBuildItem(ROUTE_ANNOTATION));
     }

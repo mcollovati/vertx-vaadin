@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 public class AbstractCountedBean implements CountedPerUI {
 

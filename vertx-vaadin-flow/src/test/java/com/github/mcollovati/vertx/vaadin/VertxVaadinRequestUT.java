@@ -331,7 +331,7 @@ public class VertxVaadinRequestUT {
         when(routingContext.cookieMap())
                 .thenReturn(Stream.of(cookie1, cookie2).collect(Collectors.toMap(Cookie::getName, identity())));
         assertThat(vaadinRequest.getCookies()).isNull();
-        javax.servlet.http.Cookie[] cookies = vaadinRequest.getCookies();
+        jakarta.servlet.http.Cookie[] cookies = vaadinRequest.getCookies();
         assertThat(cookies).hasSize(2);
         assertThat(cookies[0])
                 .extracting("name", "value", "domain", "httpOnly", "maxAge", "path", "secure")

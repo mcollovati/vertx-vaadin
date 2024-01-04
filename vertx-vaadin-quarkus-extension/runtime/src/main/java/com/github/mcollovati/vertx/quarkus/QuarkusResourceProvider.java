@@ -38,6 +38,8 @@ import org.apache.commons.io.IOUtils;
 /**
  * A {@link ResourceProvider} implementation that delegates resource loading to
  * current thread context ClassLoader.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class QuarkusResourceProvider implements ResourceProvider {
 

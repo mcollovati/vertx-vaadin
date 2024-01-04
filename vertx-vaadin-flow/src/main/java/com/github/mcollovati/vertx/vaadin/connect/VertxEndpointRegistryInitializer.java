@@ -23,9 +23,9 @@
 package com.github.mcollovati.vertx.vaadin.connect;
 
 import java.util.Set;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;

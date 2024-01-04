@@ -24,7 +24,7 @@ package com.github.mcollovati.vertx.quarkus.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -37,6 +37,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * Qualified CDI beans implementing {@link com.vaadin.flow.i18n.I18NProvider},
  * and {@link com.vaadin.flow.di.Instantiator} interfaces are loaded.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 @Qualifier @Retention(RUNTIME)
 @Target({TYPE, METHOD, FIELD, PARAMETER})

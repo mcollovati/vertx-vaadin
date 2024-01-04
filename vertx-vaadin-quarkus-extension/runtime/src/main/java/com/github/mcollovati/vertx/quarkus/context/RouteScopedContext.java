@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
@@ -49,14 +49,17 @@ import com.github.mcollovati.vertx.quarkus.annotation.NormalUIScoped;
 import com.github.mcollovati.vertx.quarkus.annotation.RouteScopeOwner;
 import com.github.mcollovati.vertx.quarkus.annotation.VaadinSessionScoped;
 
-import static javax.enterprise.event.Reception.IF_EXISTS;
+import static jakarta.enterprise.event.Reception.IF_EXISTS;
 
 /**
  * Context for {@link NormalRouteScoped NormalRouteScoped} beans.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class RouteScopedContext extends AbstractContext {
 
-    public abstract static class ContextualStorageManager extends AbstractContextualStorageManager<RouteStorageKey> {
+    public abstract static class ContextualStorageManager
+            extends AbstractContextualStorageManager<RouteStorageKey> {
 
         public ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
@@ -66,21 +69,36 @@ public class RouteScopedContext extends AbstractContext {
 
         @Override
         protected ContextualStorage newContextualStorage(RouteStorageKey key) {
-            UI.getCurrent().addDetachListener(event -> handleUIDetach(event.getUI(), key));
+            UI.getCurrent().addDetachListener(
+                    event -> handleUIDetach(event.getUI(), key));
             return super.newContextualStorage(key);
         }
 
-        void onAfterNavigation(@Observes(notifyObserver = IF_EXISTS) AfterNavigationEvent event) {
-            Set<Class<?>> activeChain =
-                    event.getActiveChain().stream().map(Object::getClass).collect(Collectors.toSet());
 
-            destroyDescopedBeans(event.getLocationChangeEvent().getUI(), activeChain);
+        /**
+         * <a href="https://stackoverflow.com/questions/48902847/cdi-observer-condition-in-dependent-bean">...</a>
+         * <a href="https://docs.jboss.org/cdi/spec/1.2/cdi-spec.html#conditional_observer_methods">...</a>
+         * <p>
+         * Removed conditional observer method because it is not supported 1.2 CDI spec.
+         * <p>
+         * Beans with scope @Dependent may not have conditional observer methods.
+         * If a bean with scope @Dependent has an observer method declared receive=IF_EXISTS,
+         * the container automatically detects the problem and treats it as a definition error.
+         */
+        private void onAfterNavigation(
+                @Observes AfterNavigationEvent event) {
+            Set<Class<?>> activeChain = event.getActiveChain().stream()
+                    .map(Object::getClass).collect(Collectors.toSet());
+
+            destroyDescopedBeans(event.getLocationChangeEvent().getUI(),
+                    activeChain);
+
         }
 
-        void onBeforeEnter(@Observes BeforeEnterEvent event) {
+        private void onBeforeEnter(@Observes BeforeEnterEvent event) {
             UI ui = event.getUI();
-            ComponentUtil.setData(
-                    ui, NavigationData.class, new NavigationData(event.getNavigationTarget(), event.getLayouts()));
+            ComponentUtil.setData(ui, NavigationData.class, new NavigationData(
+                    event.getNavigationTarget(), event.getLayouts()));
 
             Set<Class<?>> activeChain = new HashSet<>();
             activeChain.add(event.getNavigationTarget());
@@ -89,7 +107,8 @@ public class RouteScopedContext extends AbstractContext {
             destroyDescopedBeans(ui, activeChain);
         }
 
-        private void destroyDescopedBeans(UI ui, Set<Class<?>> navigationChain) {
+        private void destroyDescopedBeans(UI ui,
+                                          Set<Class<?>> navigationChain) {
             String uiStoreId = getUIStoreId(ui);
 
             Set<RouteStorageKey> missingKeys = getKeySet().stream()
@@ -105,7 +124,8 @@ public class RouteScopedContext extends AbstractContext {
             if (uiAfterRefresh == null) {
                 destroy(key);
             } else {
-                uiAfterRefresh.addDetachListener(event -> handleUIDetach(event.getUI(), key));
+                uiAfterRefresh.addDetachListener(
+                        event -> handleUIDetach(event.getUI(), key));
             }
         }
 
@@ -113,7 +133,8 @@ public class RouteScopedContext extends AbstractContext {
             VaadinSession session = ui.getSession();
             String windowName = getWindowName(ui);
             for (UI sessionUi : session.getUIs()) {
-                if (sessionUi != ui && windowName != null && windowName.equals(getWindowName(sessionUi))) {
+                if (sessionUi != ui && windowName != null
+                        && windowName.equals(getWindowName(sessionUi))) {
                     return sessionUi;
                 }
             }
@@ -121,7 +142,8 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private static String getWindowName(UI ui) {
-            ExtendedClientDetails details = ui.getInternals().getExtendedClientDetails();
+            ExtendedClientDetails details = ui.getInternals()
+                    .getExtendedClientDetails();
             if (details == null) {
                 return null;
             }
@@ -129,20 +151,24 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private RouteStorageKey getKey(UI ui, Class<?> owner) {
-            ExtendedClientDetails details = ui.getInternals().getExtendedClientDetails();
+            ExtendedClientDetails details = ui.getInternals()
+                    .getExtendedClientDetails();
             RouteStorageKey key = new RouteStorageKey(owner, getUIStoreId(ui));
             if (details == null) {
-                ui.getPage().retrieveExtendedClientDetails(det -> relocate(ui, key));
+                ui.getPage().retrieveExtendedClientDetails(
+                        det -> relocate(ui, key));
             }
             return key;
         }
 
         private void relocate(UI ui, RouteStorageKey key) {
-            relocate(key, new RouteStorageKey(key.getOwner(), getUIStoreId(ui)));
+            relocate(key,
+                    new RouteStorageKey(key.getOwner(), getUIStoreId(ui)));
         }
 
         private String getUIStoreId(UI ui) {
-            ExtendedClientDetails details = ui.getInternals().getExtendedClientDetails();
+            ExtendedClientDetails details = ui.getInternals()
+                    .getExtendedClientDetails();
             if (details == null) {
                 return "uid-" + ui.getUIId();
             } else {
@@ -151,16 +177,20 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private List<ContextualStorage> getActiveContextualStorages() {
-            return getKeySet().stream()
-                    .filter(key -> key.getUIId().equals(getUIStoreId(UI.getCurrent())))
+            return getKeySet().stream().filter(
+                            key -> key.getUIId().equals(getUIStoreId(UI.getCurrent())))
                     .map(key -> getContextualStorage(key, false))
                     .collect(Collectors.toList());
         }
+
     }
 
     @VaadinSessionScoped
     @Unremovable
-    static class RouteContextualStorageManager extends ContextualStorageManager {}
+    private static class RouteContextualStorageManager
+            extends ContextualStorageManager {
+
+    }
 
     static class RouteStorageKey implements Serializable {
         private final Class<?> owner;
@@ -200,13 +230,15 @@ public class RouteScopedContext extends AbstractContext {
         String getUIId() {
             return uiId;
         }
+
     }
 
     static class NavigationData {
         private final Class<?> navigationTarget;
         private final List<Class<? extends RouterLayout>> layouts;
 
-        NavigationData(Class<?> navigationTarget, List<Class<? extends RouterLayout>> layouts) {
+        NavigationData(Class<?> navigationTarget,
+                       List<Class<? extends RouterLayout>> layouts) {
             this.navigationTarget = navigationTarget;
             this.layouts = layouts;
         }
@@ -231,11 +263,14 @@ public class RouteScopedContext extends AbstractContext {
 
     @Override
     public boolean isActive() {
-        return Arc.container().getActiveContext(NormalUIScoped.class).isActive();
+        return Arc.container().getActiveContext(NormalUIScoped.class)
+                .isActive();
+
     }
 
     @Override
-    protected ContextualStorage getContextualStorage(Contextual<?> contextual, boolean createIfNotExist) {
+    protected ContextualStorage getContextualStorage(Contextual<?> contextual,
+                                                     boolean createIfNotExist) {
         RouteStorageKey key = convertToKey(contextual);
         return getStorageManager().getContextualStorage(key, createIfNotExist);
     }
@@ -285,14 +320,16 @@ public class RouteScopedContext extends AbstractContext {
         if (owner.equals(data.getNavigationTarget())) {
             return true;
         }
-        return data.getLayouts().stream().anyMatch(clazz -> clazz.equals(owner));
+        return data.getLayouts().stream()
+                .anyMatch(clazz -> clazz.equals(owner));
     }
 
     @SuppressWarnings("unchecked")
     private Class<?> getOwner(UI ui, Bean<?> bean) {
         return bean.getQualifiers().stream()
                 .filter(annotation -> annotation instanceof RouteScopeOwner)
-                .map(annotation -> (Class<?>) (((RouteScopeOwner) annotation).value()))
+                .map(annotation -> (Class<?>) (((RouteScopeOwner) annotation)
+                        .value()))
                 .findFirst()
                 .orElseGet(() -> getCurrentNavigationTarget(ui, bean));
     }
@@ -310,15 +347,17 @@ public class RouteScopedContext extends AbstractContext {
     }
 
     private ContextualStorageManager getStorageManager() {
-        return BeanProvider.getContextualReference(getBeanManager(), getContextualStorageManagerClass(), false);
+        return BeanProvider.getContextualReference(getBeanManager(),
+                getContextualStorageManagerClass(), false);
     }
 
     private Bean<?> getBean(Contextual<?> contextual) {
         if (contextual instanceof Bean) {
             return (Bean<?>) contextual;
         } else {
-            throw new IllegalArgumentException(
-                    contextual.getClass().getName() + " is not of type " + Bean.class.getName());
+            throw new IllegalArgumentException(contextual.getClass().getName()
+                    + " is not of type " + Bean.class.getName());
         }
+
     }
 }

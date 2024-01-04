@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.util.Properties;
-import javax.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.CDI;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Command;
@@ -33,6 +33,10 @@ import org.mockito.Mockito;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.when;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 public class SessionUnderTestContext implements UnderTestContext {
 

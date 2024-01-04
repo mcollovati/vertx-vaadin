@@ -25,8 +25,8 @@ package com.github.mcollovati.vertx.vaadin.communication;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;

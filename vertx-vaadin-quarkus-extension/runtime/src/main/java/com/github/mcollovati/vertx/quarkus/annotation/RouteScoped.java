@@ -25,7 +25,7 @@ package com.github.mcollovati.vertx.quarkus.annotation;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.inject.Scope;
+import jakarta.inject.Scope;
 
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -69,6 +69,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * annotations reference the same underlying scope, so it is possible to get
  * both a proxy and a direct reference to the same object by using different
  * annotations.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 @Scope
 @Inherited

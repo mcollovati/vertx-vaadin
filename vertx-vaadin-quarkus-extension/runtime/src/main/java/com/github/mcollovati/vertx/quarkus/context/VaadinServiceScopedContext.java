@@ -23,9 +23,9 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.lang.annotation.Annotation;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.event.Observes;
 
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.VaadinService;
@@ -36,10 +36,12 @@ import com.github.mcollovati.vertx.quarkus.QuarkusVertxVaadinService;
 import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceScoped;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
 
-import static javax.enterprise.event.Reception.IF_EXISTS;
+import static jakarta.enterprise.event.Reception.IF_EXISTS;
 
 /**
  * Context for {@link VaadinServiceScoped @VaadinServiceScoped} beans.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class VaadinServiceScopedContext extends AbstractContext {
 

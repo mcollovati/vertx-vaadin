@@ -24,7 +24,6 @@ package com.github.mcollovati.vertx.utils;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -37,8 +36,6 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.BootstrapListener;
-import com.vaadin.flow.server.BootstrapPageResponse;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
@@ -222,8 +219,6 @@ public class MockServiceSessionSetup {
         private TestRouteRegistry routeRegistry = new TestRouteRegistry();
         private Router router;
         private Instantiator instantiator;
-        private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
-
         public TestVertxVaadinService(VertxVaadin vertxVaadin, DeploymentConfiguration deploymentConfiguration) {
             super(vertxVaadin, deploymentConfiguration);
         }
@@ -264,16 +259,6 @@ public class MockServiceSessionSetup {
             this.router = router;
         }
 
-        public void addBootstrapListener(BootstrapListener listener) {
-            bootstrapListeners.add(listener);
-        }
-
-        @Override
-        public void modifyBootstrapPage(BootstrapPageResponse response) {
-            bootstrapListeners.forEach(listener -> listener.modifyBootstrapPage(response));
-
-            super.modifyBootstrapPage(response);
-        }
 
         public void init(Instantiator instantiator) {
             this.instantiator = instantiator;

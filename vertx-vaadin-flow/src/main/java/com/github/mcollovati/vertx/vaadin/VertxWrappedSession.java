@@ -22,17 +22,16 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionContext;
 
 import com.vaadin.flow.server.WrappedSession;
 import lombok.AccessLevel;
@@ -169,33 +168,8 @@ class VertxHttpSession implements HttpSession {
     }
 
     @Override
-    public HttpSessionContext getSessionContext() {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Override
-    public Object getValue(String name) {
-        return delegate.getAttribute(name);
-    }
-
-    @Override
     public Enumeration<String> getAttributeNames() {
         return Collections.enumeration(delegate.getAttributeNames());
-    }
-
-    @Override
-    public String[] getValueNames() {
-        return delegate.getAttributeNames().toArray(new String[0]);
-    }
-
-    @Override
-    public void putValue(String name, Object value) {
-        delegate.setAttribute(name, value);
-    }
-
-    @Override
-    public void removeValue(String name) {
-        delegate.removeAttribute(name);
     }
 
     private interface Exclusions {

@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import jakarta.servlet.ServletContext;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,7 +30,6 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import javax.servlet.ServletContext;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
@@ -284,7 +284,7 @@ public class VertxVaadin {
 
         DevModeHandler devModeHandler =
                 DevModeHandlerManager.getDevModeHandler(service).orElse(null);
-        if (devModeHandler != null) {
+        if (devModeHandler != null && devModeHandler.getPort() >= 0) {
             logger.info("Starting DevModeHandler proxy");
             HttpReverseProxy proxy = HttpReverseProxy.create(vertx, devModeHandler);
             vaadinRouter.routeWithRegex("^/themes\\/[\\s\\S]+?\\/").handler(proxy::forward);

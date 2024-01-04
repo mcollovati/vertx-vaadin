@@ -26,6 +26,10 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 public class UIUnderTestContext implements UnderTestContext {
 
     private VaadinSession session;

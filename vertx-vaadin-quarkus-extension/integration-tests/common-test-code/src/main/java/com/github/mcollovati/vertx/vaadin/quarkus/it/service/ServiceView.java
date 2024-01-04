@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.service;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;

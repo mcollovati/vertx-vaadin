@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>23.4.0-SNAPSHOT</version>
+    <version>24.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin root Pom</description>
@@ -79,8 +79,8 @@
     </pluginRepositories>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
         <license.directory>${maven.multiModuleProjectDirectory}/license</license.directory>
         <checkstyle.directory>${maven.multiModuleProjectDirectory}/checkstyle</checkstyle.directory>
@@ -109,11 +109,11 @@
         <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
 
         <vertx.version>4.3.8</vertx.version>
-        <vaadin.platform.version>23.3.30</vaadin.platform.version>
-        <vaadin.flow.version>23.3.24</vaadin.flow.version>
-        <hilla.version>1.3.30</hilla.version>
+        <vaadin.platform.version>24.3.2</vaadin.platform.version>
+        <vaadin.flow.version>24.3.2</vaadin.flow.version>
+        <hilla.version>2.5.5</hilla.version>
 
-        <javax.servlet.version>3.1.0</javax.servlet.version>
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
         <byte-buddy.version>1.14.11</byte-buddy.version>
         <junit-quickcheck.version>1.0</junit-quickcheck.version>
         <lombok.version>1.18.30</lombok.version>
@@ -166,9 +166,9 @@
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${javax.servlet.version}</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.bytebuddy</groupId>

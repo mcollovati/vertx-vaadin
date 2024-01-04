@@ -24,7 +24,7 @@ package com.github.mcollovati.vertx.vaadin;
 
 import java.util.Collection;
 import java.util.Map;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;

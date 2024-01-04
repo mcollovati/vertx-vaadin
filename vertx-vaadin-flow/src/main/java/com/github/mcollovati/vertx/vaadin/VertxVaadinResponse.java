@@ -163,7 +163,7 @@ public class VertxVaadinResponse implements VaadinResponse {
     }
 
     @Override
-    public void addCookie(javax.servlet.http.Cookie cookie) {
+    public void addCookie(jakarta.servlet.http.Cookie cookie) {
         routingContext.addCookie(CookieUtils.toVertxCookie(cookie));
     }
 

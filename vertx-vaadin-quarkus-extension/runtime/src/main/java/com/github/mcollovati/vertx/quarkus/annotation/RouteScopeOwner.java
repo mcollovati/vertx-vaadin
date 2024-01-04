@@ -24,7 +24,7 @@ package com.github.mcollovati.vertx.quarkus.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -42,6 +42,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * Owner is a router component. A {@link Route @Route}, or a
  * {@link RouterLayout}, or a {@link HasErrorParameter}.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 @Qualifier @Retention(RUNTIME)
 @Target({TYPE, METHOD, FIELD, PARAMETER})

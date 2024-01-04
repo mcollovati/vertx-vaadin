@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.lang.annotation.Annotation;
-import javax.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.Contextual;
 
 import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
@@ -41,6 +41,8 @@ import com.github.mcollovati.vertx.quarkus.annotation.VaadinSessionScoped;
  * stored in the corresponding {@link VaadinSessionScoped} context.
  *
  * @since 1.0
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class VaadinSessionScopedContext extends AbstractContext {
     private static final String ATTRIBUTE_NAME = VaadinSessionScopedContext.class.getName();

@@ -22,10 +22,10 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;

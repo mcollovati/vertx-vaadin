@@ -26,11 +26,11 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.AmbiguousResolutionException;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.AmbiguousResolutionException;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceEnabled;
 
@@ -38,10 +38,12 @@ import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceEnabled;
  * Utility class for Quarkus CDI lookup, and instantiation.
  * <p>
  * Dependent beans are instantiated without any warning, but do not get
- * destroyed properly. {@link javax.annotation.PreDestroy} won't run.
+ * destroyed properly. {@link jakarta.annotation.PreDestroy} won't run.
  *
  * @param <T>
  *            Bean Type
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 class BeanLookup<T> {
 

@@ -24,17 +24,18 @@ package com.github.mcollovati.vertx.quarkus;
 
 import java.util.Optional;
 import java.util.Set;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.AmbiguousResolutionException;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.spi.Context;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.AmbiguousResolutionException;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
@@ -83,38 +84,44 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
 
     @Override
     public Optional<Instantiator> loadInstantiators() throws ServiceException {
-        final Set<Bean<?>> beans = beanManager.getBeans(Instantiator.class, BeanLookup.SERVICE);
+        final Set<Bean<?>> beans = beanManager.getBeans(InstantiatorFactory.class,
+                BeanLookup.SERVICE);
         if (beans == null || beans.isEmpty()) {
-            throw new ServiceException("Cannot init VaadinService " + "because no CDI instantiator bean found.");
+            throw new ServiceException("Cannot init VaadinService "
+                    + "because no CDI instantiator factory bean found.");
         }
-        final Bean<Instantiator> bean;
+        final Bean<InstantiatorFactory> bean;
         try {
             // noinspection unchecked
-            bean = (Bean<Instantiator>) beanManager.resolve(beans);
+            bean = (Bean<InstantiatorFactory>) beanManager.resolve(beans);
         } catch (final AmbiguousResolutionException e) {
             throw new ServiceException(
-                    "There are multiple eligible CDI " + Instantiator.class.getSimpleName() + " beans.", e);
+                    "There are multiple eligible CDI "
+                            + InstantiatorFactory.class.getSimpleName() + " beans.",
+                    e);
         }
 
         // Return the contextual instance (rather than CDI proxy) as it will be
         // stored inside VaadinService. Not relying on the proxy allows
         // accessing VaadinService::getInstantiator even when
         // VaadinServiceScopedContext is not active
-        final CreationalContext<Instantiator> creationalContext = beanManager.createCreationalContext(bean);
+        final CreationalContext<InstantiatorFactory> creationalContext = beanManager
+                .createCreationalContext(bean);
         final Context context = beanManager.getContext(ApplicationScoped.class); // VaadinServiceScoped
-        final Instantiator instantiator = context.get(bean, creationalContext);
+        final InstantiatorFactory instantiatorFactory = context.get(bean,
+                creationalContext);
 
-        if (!instantiator.init(this)) {
+        Instantiator instantiator = instantiatorFactory.createInstantitor(this);
+        if (instantiator == null) {
             throw new ServiceException("Cannot init VaadinService because "
-                    + instantiator.getClass().getName() + " CDI bean init()"
-                    + " returned false.");
+                    + Instantiator.class.getSimpleName() + " is null");
         }
         return Optional.of(instantiator);
     }
 
     private void addEventListeners() {
         addServiceDestroyListener(this::fireCdiDestroyEvent);
-        addUIInitListener(getBeanManager()::fireEvent);
+        addUIInitListener(getBeanManager().getEvent()::fire);
         addSessionInitListener(this::sessionInit);
         addSessionDestroyListener(this::sessionDestroy);
     }
@@ -122,16 +129,16 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
     private void sessionInit(SessionInitEvent sessionInitEvent) throws ServiceException {
         VaadinSession session = sessionInitEvent.getSession();
         lookup(ErrorHandler.class).ifPresent(session::setErrorHandler);
-        getBeanManager().fireEvent(sessionInitEvent);
+        getBeanManager().getEvent().fire(sessionInitEvent);
     }
 
     private void sessionDestroy(SessionDestroyEvent sessionDestroyEvent) {
-        getBeanManager().fireEvent(sessionDestroyEvent);
+        getBeanManager().getEvent().fire(sessionDestroyEvent);
     }
 
     private void fireCdiDestroyEvent(ServiceDestroyEvent event) {
         try {
-            beanManager.fireEvent(event);
+            beanManager.getEvent().fire(event);
         } catch (Exception e) {
             // During application shutdown on TomEE 7,
             // beans are lost at this point.
@@ -193,22 +200,22 @@ public class QuarkusVertxVaadinService extends VertxVaadinService {
 
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
-            getBeanManager().fireEvent(event);
+            getBeanManager().getEvent().fire(event);
         }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            getBeanManager().fireEvent(event);
+            getBeanManager().getEvent().fire(event);
         }
 
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            getBeanManager().fireEvent(event);
+            getBeanManager().getEvent().fire(event);
         }
 
         @Override
         public void onComponentEvent(PollEvent event) {
-            getBeanManager().fireEvent(event);
+            getBeanManager().getEvent().fire(event);
         }
 
         private BeanManager getBeanManager() {
