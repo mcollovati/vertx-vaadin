@@ -22,6 +22,9 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,13 +50,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.WriteListener;
-import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
@@ -66,6 +67,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
@@ -80,7 +82,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.matches;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 public class VertxStaticFileServerTest implements Serializable {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private OverrideableStaticFileServer fileServer;
     private RoutingContext routingContext;
@@ -204,6 +212,15 @@ public class VertxStaticFileServerTest implements Serializable {
 
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getMode()).thenAnswer(q -> {
+            if (configuration.isProductionMode()) {
+                return Mode.PRODUCTION_CUSTOM;
+            } else if (configuration.frontendHotdeploy()) {
+                return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
+            } else {
+                return Mode.DEVELOPMENT_BUNDLE;
+            }
+        });
 
         Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(configuration);
 
@@ -1102,6 +1119,54 @@ public class VertxStaticFileServerTest implements Serializable {
 
         Mockito.verify(vaadinService).getStaticResource("foo");
         Assert.assertSame(url, result);
+    }
+
+    @Test
+    public void serveStaticResource_projectThemeResourceRequest_serveFromFrontend() throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        final String styles = "body { background: black; }";
+        TestUtil.createStyleCssStubInFrontend(projectRootFolder, "my-theme", styles);
+
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getProjectFolder()).thenReturn(projectRootFolder);
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
+
+        setupRequestURI("", "/VAADIN/themes/my-theme/styles.css");
+        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
+        Assert.assertArrayEquals(styles.getBytes(StandardCharsets.UTF_8), responseOutput.getBytes());
+    }
+
+    @Test
+    public void serveStaticResource_externalThemeResourceRequest_serveFromBundle() throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        final String styles = "body { background: black; }";
+        TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme", styles);
+
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getProjectFolder()).thenReturn(projectRootFolder);
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
+
+        setupRequestURI("", "/VAADIN/themes/my-theme/styles.css");
+        Assert.assertTrue(fileServer.serveStaticResource(routingContext));
+        Assert.assertArrayEquals(styles.getBytes(StandardCharsets.UTF_8), responseOutput.getBytes());
+    }
+
+    @Test
+    public void serveStaticResource_themeResourceRequest_productionMode_notServeFromBundleNorFromFrontend()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        final String styles = "body { background: black; }";
+        TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme", styles);
+
+        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.getProjectFolder()).thenReturn(projectRootFolder);
+        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
+
+        setupRequestURI("", "/themes/my-theme/styles.css");
+        Assert.assertFalse(fileServer.serveStaticResource(routingContext));
     }
 
     private static class CapturingServletOutputStream extends ServletOutputStream {

@@ -56,8 +56,12 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.DevBundleUtils;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.impl.FileResolverImpl;
@@ -70,8 +74,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Adapted from Vaadin StaticFileServer
@@ -80,7 +84,10 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern.compile("^/frontend[-\\w/]*/webjars/");
-    protected static final Pattern APP_THEME_PATTERN = Pattern.compile("^\\/themes\\/[\\s\\S]+?\\/");
+    // Matches paths to theme files referenced from link tags (e.g. styles
+    // .css or document.css)
+    protected static final Pattern APP_THEME_PATTERN = Pattern
+            .compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
 
     private final VertxVaadinService vaadinService;
     private final DeploymentConfiguration deploymentConfiguration;
@@ -123,16 +130,39 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         }
 
         URL resourceUrl = null;
-        if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            resourceUrl = vaadinService
-                    .getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" + filenameWithPath.replaceFirst("^/", ""));
+        if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
+            if (!"/index.html".equals(filenameWithPath)) {
+                resourceUrl = DevBundleUtils.findBundleFile(
+                        deploymentConfiguration.getProjectFolder(),
+                        deploymentConfiguration.getBuildFolder(),
+                        "webapp" + filenameWithPath);
+            }
 
+            if (resourceUrl == null
+                    && (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                    || StaticFileServer.APP_THEME_ASSETS_PATTERN
+                    .matcher(filenameWithPath).find())) {
+                // Express mode theme file request
+                resourceUrl = findAssetInFrontendThemesOrDevBundle(
+                        vaadinService,
+                        filenameWithPath.replace(VAADIN_MAPPING, ""));
+            }
+        } else if (deploymentConfiguration
+                .getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE
+                && APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = ThemeUtils
+                    .getThemeResourceFromPrecompiledProductionBundle(
+                            filenameWithPath.replace(VAADIN_MAPPING, "")
+                                    .replaceFirst("^/", ""));
+        } else if (StaticFileServer.APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                            + filenameWithPath.replaceFirst("^/", ""));
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
-            resourceUrl = vaadinService
-                    .getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + filenameWithPath.replaceFirst("^/", ""));
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES
+                            + filenameWithPath.replaceFirst("^/", ""));
         }
 
         if (resourceUrl == null) {
@@ -367,22 +397,6 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
         return vaadinService.getStaticResource(path);
     }
 
-    /**
-     * Check if it is ok to serve the requested file from the classpath.
-     * <p>
-     * ClassLoader is applicable for use when we are in NPM mode and are serving
-     * from the VAADIN/build folder with no folder changes in path.
-     *
-     * @param filenameWithPath requested filename containing path
-     * @return true if we are ok to try serving the file
-     */
-    private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
-        // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
-    }
-
     private boolean resourceIsDirectory(URL resource) {
         if (resource.getPath().endsWith("/")) {
             return true;
@@ -416,6 +430,68 @@ class VertxStaticFileServer implements Handler<RoutingContext> {
 
         // If not a jar check if a file path directory.
         return "file".equals(resource.getProtocol()) && Files.isDirectory(Paths.get(resourceURI));
+    }
+
+
+    private static URL findAssetInFrontendThemesOrDevBundle(
+            VaadinService vaadinService, String assetPath) throws IOException {
+        DeploymentConfiguration deploymentConfiguration = vaadinService
+                .getDeploymentConfiguration();
+        // First, look for the theme assets in the {project.root}/frontend/
+        // themes/my-theme folder
+        File frontendFolder = new File(
+                deploymentConfiguration.getProjectFolder(),
+                FrontendUtils.FRONTEND);
+        File assetInFrontendThemes = new File(frontendFolder, assetPath);
+        if (assetInFrontendThemes.exists()) {
+            return assetInFrontendThemes.toURI().toURL();
+        }
+
+        // Also look into jar-resources for a packaged theme
+        File jarResourcesFolder = FrontendUtils
+                .getJarResourcesFolder(frontendFolder);
+        assetInFrontendThemes = new File(jarResourcesFolder, assetPath);
+
+        if (assetInFrontendThemes.exists()) {
+            return assetInFrontendThemes.toURI().toURL();
+        }
+
+        // Second, look into default dev bundle
+        Matcher matcher = StaticFileServer.APP_THEME_ASSETS_PATTERN.matcher(assetPath);
+        if (!matcher.find()) {
+            throw new IllegalStateException(
+                    "Asset path should match the theme pattern");
+        }
+
+        final String themeName = matcher.group(1);
+        String defaultBundleAssetPath = assetPath.replaceFirst(themeName,
+                Constants.DEV_BUNDLE_NAME);
+        URL assetInDevBundleUrl = vaadinService.getClassLoader()
+                .getResource(Constants.DEV_BUNDLE_JAR_PATH + Constants.ASSETS
+                        + defaultBundleAssetPath);
+
+        // Or search in the application dev-bundle (if the assets come from
+        // node_modules)
+        if (assetInDevBundleUrl == null) {
+            String assetInDevBundle = "/" + Constants.ASSETS + "/" + assetPath;
+            assetInDevBundleUrl = DevBundleUtils.findBundleFile(
+                    deploymentConfiguration.getProjectFolder(),
+                    deploymentConfiguration.getBuildFolder(), assetInDevBundle);
+        }
+
+        if (assetInDevBundleUrl == null) {
+            String assetName = assetPath.substring(
+                    assetPath.indexOf(themeName) + themeName.length());
+            throw new IllegalStateException(String.format(
+                    "Asset '%1$s' is not found in project frontend directory"
+                            + ", default development bundle or in the application "
+                            + "bundle '{build}/%2$s/assets/'. \n"
+                            + "Verify that the asset is available in "
+                            + "'frontend/themes/%3$s/' directory and is added into the "
+                            + "'assets' block of the 'theme.json' file.",
+                    assetName, Constants.DEV_BUNDLE_LOCATION, themeName));
+        }
+        return assetInDevBundleUrl;
     }
 
     /**
@@ -556,8 +632,11 @@ class ResponseWriter implements Serializable {
      */
     private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
 
+    private static final FileResolver FILE_RESOLVER = new FileResolverImpl();
+
     private final int bufferSize;
     private final boolean brotliEnabled;
+
 
     /**
      * Create a response writer with the given deployment configuration.
@@ -837,10 +916,9 @@ class ResponseWriter implements Serializable {
     }
 
     private URL getResource(String resource) throws MalformedURLException {
-        FileResolver fileResolver = new FileResolverImpl();
-        File file = fileResolver.resolveFile(resource);
+        File file = FILE_RESOLVER.resolveFile(resource);
         if (!file.exists() && resource.startsWith("/" + VAADIN_BUILD_FILES_PATH) && isAllowedVAADINBuildUrl(resource)) {
-            file = fileResolver.resolveFile(VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
+            file = FILE_RESOLVER.resolveFile(VAADIN_WEBAPP_RESOURCES + resource.replaceFirst("^/", ""));
         }
         return file.exists() ? file.toURI().toURL() : null;
     }
@@ -963,6 +1041,7 @@ class ResponseWriter implements Serializable {
 
         return Double.valueOf(0.000).equals(Double.valueOf(qValue));
     }
+
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass().getName());
