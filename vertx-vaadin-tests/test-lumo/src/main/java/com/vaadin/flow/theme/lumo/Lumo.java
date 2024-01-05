@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
 @JsModule("@vaadin/vaadin-lumo-styles/style.js")
 @JsModule("@vaadin/vaadin-lumo-styles/vaadin-iconset.js")
-@JsModule("./lumo-includes.ts")
+//@JsModule("./lumo-includes.ts")
 public class Lumo implements AbstractTheme {
 
     public static final String LIGHT = "light";
