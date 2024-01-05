@@ -130,6 +130,8 @@ jobs:
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Build
         if: ${{ github.run_attempt > 1 }}
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
@@ -185,6 +187,8 @@ jobs:
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Build
         if: ${{ github.run_attempt > 1 }}
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
