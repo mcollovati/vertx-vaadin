@@ -27,7 +27,7 @@ function dumpOptimizeDepsPlugin(): PluginOption {
   }
 }
 
-const customConfig: UserConfigFn = (env) => ({
+const customConfig: UserConfigFn = () => ({
   // Here you can add custom Vite parameters
   // https://vitejs.dev/config/
   plugins: [
