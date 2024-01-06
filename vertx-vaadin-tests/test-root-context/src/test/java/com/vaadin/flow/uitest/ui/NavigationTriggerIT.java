@@ -40,54 +40,39 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         assertMessageCount(1);
 
-        assertLastMessage(
-                "/abc", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.PAGE_LOAD, "abc");
-        Assert.assertEquals(
-                "The trailing '/' from the URL should be removed.",
+        assertLastMessage("/abc", NavigationTrigger.PAGE_LOAD, "abc");
+        Assert.assertEquals("The trailing '/' from the URL should be removed.",
                 url.substring(0, url.length() - 1),
                 getDriver().getCurrentUrl());
 
         findElement(By.id("routerlink")).click();
         assertMessageCount(2);
-        assertLastMessage(
-                "/routerlink",
-                isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.ROUTER_LINK,
+        assertLastMessage("/routerlink", NavigationTrigger.ROUTER_LINK,
                 "routerlink");
 
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
-        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE, "navigate");
-    }
-
-    @Test
-    @Ignore("Ignored because of fusion issue https://github.com/vaadin/flow/issues/10513")
-    public void testNavigationTriggers_back_forward() {
-        String url = getTestURL() + "/abc/";
-        getDriver().get(url);
-
-        findElement(By.id("routerlink")).click();
-
-        findElement(By.id("navigate")).click();
+        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
+                "navigate");
 
         getDriver().navigate().back();
         assertMessageCount(4);
-        assertLastMessage(
-                "/routerlink",
-                isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.HISTORY,
+        assertLastMessage("/routerlink", NavigationTrigger.HISTORY,
                 "routerlink");
 
         getDriver().navigate().forward();
         assertMessageCount(5);
-        assertLastMessage(
-                "/navigate", isClientRouter() ? NavigationTrigger.CLIENT_SIDE : NavigationTrigger.HISTORY, "navigate");
+        assertLastMessage("/navigate", NavigationTrigger.HISTORY, "navigate");
 
         findElement(By.id("forwardButton")).click();
         assertMessageCount(6);
-        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC, "forwarded");
+        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC,
+                "forwarded");
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);
-        assertLastMessage("/", NavigationTrigger.PROGRAMMATIC, "rerouted");
+        assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC,
+                "rerouted");
     }
 
     private void assertLastMessage(String path, NavigationTrigger trigger, String parameter) {
