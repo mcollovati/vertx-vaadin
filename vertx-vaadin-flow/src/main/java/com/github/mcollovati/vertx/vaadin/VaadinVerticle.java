@@ -22,6 +22,9 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HandlesTypes;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,9 +36,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.servlet.ServletContainerInitializer;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -126,9 +126,13 @@ public class VaadinVerticle extends AbstractVerticle {
         log.debug("Mounted Vaadin router on {}", mountPoint);
 
         HttpServerOptions serverOptions =
-                new HttpServerOptions(config().getJsonObject("server", new JsonObject())).setCompressionSupported(true);
+                new HttpServerOptions(config().getJsonObject("server", new JsonObject()))
+                        .setCompressionSupported(true)
+                        .addWebSocketSubProtocol("vite-hmr");
 
         httpServer = vertx.createHttpServer(serverOptions).requestHandler(router);
+        vertxVaadin.initDevServerWebSocketProxy(httpServer);
+
         Promise<Router> promise = Promise.promise();
 
         httpPort()
