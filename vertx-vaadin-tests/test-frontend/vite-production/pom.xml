@@ -55,9 +55,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>io.reactiverse</groupId>

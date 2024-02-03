@@ -19,8 +19,8 @@
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
     "lit": "3.1.0",
-    "package-outside-npm": "file:package-outside-npm",
-    "package2-outside-npm": "./package2-outside-npm"
+    "package-outside-npm": "file:../vite-test-assets/packages/package-outside-npm",
+    "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "5.0.4",
@@ -92,6 +92,6 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "4cc227b697630e1ffc2a9fca164567e4276f71ad8ab7c32b214c8e7165cf54f3"
+    "hash": "18874f8100abf21e2ac7778cc31363d48b1be72e1b5c77c5adbf6c3b532d893e"
   }
 }
