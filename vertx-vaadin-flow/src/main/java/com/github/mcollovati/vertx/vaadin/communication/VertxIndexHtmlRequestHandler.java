@@ -83,7 +83,7 @@ public class VertxIndexHtmlRequestHandler extends IndexHtmlRequestHandler {
         String replaceGizmoUrl(String url) {
             String html = outputStream.toString(UTF_8);
             return html.replaceFirst(
-                    "(<vaadin-dev-tools.*url=\")([^\"]+)(\".*></vaadin-dev-tools>)", "$1" + url + "$3");
+                    "(window.Vaadin.devToolsConf = \\{.*\"url\":\")([^\"]+)(\",.*};)", "$1" + url + "$3");
         }
 
         @Override
