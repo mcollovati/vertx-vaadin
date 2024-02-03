@@ -10,6 +10,7 @@ on:
         default: 'development'
         options:
         - "development"
+        - "vaadin-23"
       version:
         description: "Version to release (e.g. 1.1.0 or 1.2.0-alpha1)"
         required: true
@@ -65,11 +66,11 @@ jobs:
              | tee -a  $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          #if [[ "${{ inputs.target-branch }}" != "development" && ! "${{ inputs.version }}" = "${{ inputs.target-branch }}."* ]]; then
-          #  echo "🚫 Invalid version specified: '${{ inputs.version }}' does not match the release branch '${{ inputs.target-branch }}'." \
-          #   | tee -a  $GITHUB_STEP_SUMMARY
-          #  exit 1
-          #fi
+          if [[ "${{ inputs.target-branch }}" != "development" && ! "vaadin-${{ inputs.version }}" = "${{ inputs.target-branch }}."* ]]; then
+            echo "🚫 Invalid version specified: '${{ inputs.version }}' does not match the release branch '${{ inputs.target-branch }}'." \
+             | tee -a  $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
           if git rev-parse -q --verify "refs/tags/flow-${{ inputs.version }}" > /dev/null; then
             echo "🚫 Version '${{ inputs.version }}' already exists. Please choose a different version." \
              | tee -a  $GITHUB_STEP_SUMMARY

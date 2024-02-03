@@ -519,7 +519,7 @@
                                         </changelog>
                                         <draft>false</draft>
                                         <tagName>flow-{{projectVersion}}</tagName>
-                                        <releaseName>Release {{tagName}}</releaseName>
+                                        <releaseName>Release {{projectVersion}}</releaseName>
                                         <prerelease>
                                             <pattern>.*-(alpha|beta|rc)\d+</pattern>
                                         </prerelease>
