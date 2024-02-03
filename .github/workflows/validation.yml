@@ -331,10 +331,11 @@ jobs:
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests install
-      - name: Deploy classifiers
+      - name: Deploy artifacts
         run: |
           mvn -V -e -B -ntp -DskipVertxRun=true -DskipTests -Dvertx-vaadin.release=snapshot -Dvertx-vaadin.release.gpg deploy
         env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPSY_USERNAME: ${{ secrets.REPSY_USERNAME }}
           REPSY_PASSWORD: ${{ secrets.REPSY_PASSWORD }}
