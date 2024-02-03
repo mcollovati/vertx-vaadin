@@ -74,9 +74,10 @@ Snapshots and `vaadin-flow-sockjs` classifiers are currently published on [Repsy
 
 ## Compatibility matrix
 
-| Vaadin version | Vert.x version | vertx-vaadin version     | Status                                                                                                                                                            |
-|----------------|----------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 23.3           | 4.3.1+         | vertx-vaadin-flow:23.4.x | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?event=push&branch=development) |
+| Vaadin version | Vert.x version | vertx-vaadin version     | Status                                                                                                                              |
+|----------------|----------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| 24.3           | 4.3.1+         | vertx-vaadin-flow:24.3.x | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?event=push&branch=development) |
+| 23.3           | 4.3.1+         | vertx-vaadin-flow:23.4.x | ![Vaadin 23.3](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?branch=vaadin-23)   |
 
 ## Documentation
 
