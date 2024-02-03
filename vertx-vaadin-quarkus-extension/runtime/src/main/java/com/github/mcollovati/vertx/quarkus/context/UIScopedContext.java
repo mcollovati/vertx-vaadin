@@ -23,8 +23,8 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.lang.annotation.Annotation;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
@@ -38,6 +38,8 @@ import com.github.mcollovati.vertx.quarkus.annotation.VaadinSessionScoped;
 /**
  * UIScopedContext is the context for {@link NormalUIScoped @NormalUIScoped}
  * beans.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class UIScopedContext extends AbstractContext {
 

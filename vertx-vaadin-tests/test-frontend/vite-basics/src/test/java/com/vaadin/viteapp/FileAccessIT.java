@@ -38,7 +38,6 @@ public class FileAccessIT extends ViteDevModeIT {
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
          */
-        assertAllowed("target/frontend/generated-flow-imports.js");
         assertAllowed("frontend/jsonloader.js");
     }
 

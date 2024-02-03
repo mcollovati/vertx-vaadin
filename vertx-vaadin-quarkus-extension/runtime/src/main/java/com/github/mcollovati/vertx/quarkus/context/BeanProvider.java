@@ -22,6 +22,14 @@
  */
 package com.github.mcollovati.vertx.quarkus.context;
 
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.Typed;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +38,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Typed;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.inject.spi.InjectionTarget;
 
 import com.github.mcollovati.vertx.quarkus.AnyLiteral;
 
@@ -56,6 +56,7 @@ import com.github.mcollovati.vertx.quarkus.AnyLiteral;
  * BeanManager during CDI container boot time.
  * </p>
  *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 @Typed()
 public final class BeanProvider {
@@ -80,7 +81,7 @@ public final class BeanProvider {
      * (because &#064;Dependent is not &#064;NormalScoped) and thus will not be
      * automatically destroyed at the end of the lifecycle. You need to manually
      * destroy this contextual instance via
-     * {@link javax.enterprise.context.spi.Contextual#destroy(Object, CreationalContext)}.
+     * {@link jakarta.enterprise.context.spi.Contextual#destroy(Object, CreationalContext)}.
      * Thus you also need to manually store the CreationalContext and the Bean
      * you used to create the contextual instance.
      * </p>
@@ -495,7 +496,8 @@ public final class BeanProvider {
         CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
 
         AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) instance.getClass());
-        InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
+        InjectionTarget<T> injectionTarget =
+                beanManager.getInjectionTargetFactory(annotatedType).createInjectionTarget(null);
         injectionTarget.inject(instance, creationalContext);
         return instance;
     }

@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.InitParameters;

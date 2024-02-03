@@ -23,9 +23,9 @@
 package com.github.mcollovati.vertx.vaadin.quarkus.it.uicontext;
 
 import java.util.UUID;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.UI;
 

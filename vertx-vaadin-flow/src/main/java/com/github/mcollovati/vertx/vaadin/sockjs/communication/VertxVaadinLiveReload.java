@@ -31,4 +31,15 @@ public interface VertxVaadinLiveReload {
      * Requests reload
      */
     void reload();
+
+    /**
+     * Request an update of the resource with the given path.
+     *
+     * @param path
+     *            the path of the file to update, relative to the servlet path
+     * @param content
+     *            the new content of the file
+     */
+    void update(String path, String content);
+
 }

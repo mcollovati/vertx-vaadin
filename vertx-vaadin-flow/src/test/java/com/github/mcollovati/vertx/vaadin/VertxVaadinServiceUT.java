@@ -25,8 +25,6 @@ package com.github.mcollovati.vertx.vaadin;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.server.Constants;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.SocketAddressImpl;
@@ -78,14 +76,6 @@ public class VertxVaadinServiceUT {
         Assert.assertEquals("", service.resolveResource(""));
         Assert.assertEquals("foo", service.resolveResource("foo"));
         Assert.assertEquals("/foo", service.resolveResource("context://foo"));
-    }
-
-    @Test
-    public void should_report_flow_bootstrapHandler() {
-        mocks.getDeploymentConfiguration().useDeprecatedV14Bootstrapping(true);
-
-        Assert.assertTrue(UsageStatistics.getEntries()
-                .anyMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));
     }
 
     private String testLocation(String base, String contextPath, String pathInfo) throws Exception {

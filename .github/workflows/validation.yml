@@ -11,7 +11,7 @@ concurrency:
   group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 env:
-  JAVA_VERSION: 11
+  JAVA_VERSION: 17
 jobs:
   check-permissions:
     name: Check User Permissions
@@ -81,6 +81,8 @@ jobs:
         with:
           chrome-version: stable
       - name: Build
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
@@ -128,6 +130,8 @@ jobs:
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Build
         if: ${{ github.run_attempt > 1 }}
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
@@ -183,6 +187,8 @@ jobs:
           tar cf - .m2 | (cd ~ && tar xf -)
       - name: Build
         if: ${{ github.run_attempt > 1 }}
+        env:
+          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
@@ -198,7 +204,7 @@ jobs:
             -Duitest.chrome-version=$CHROME_VERSION
       - name: Package test output files
         if: ${{ failure() || success() }}
-        run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-it-1.tgz -T -
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name verticle.log | tar -czf tests-report-it-1.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
@@ -250,7 +256,7 @@ jobs:
           mvn -V -e -B -ntp verify -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Package test output files
         if: ${{ failure() || success() }}
-        run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-it-2.tgz -T -
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name verticle.log | tar -czf tests-report-it-2.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:

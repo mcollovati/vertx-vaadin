@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.quarkus;
 
-import javax.enterprise.inject.Any;
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 /**
  * Literal for the {@link Any} annotation.
@@ -31,5 +31,6 @@ import javax.enterprise.util.AnnotationLiteral;
  * @author Vaadin Ltd
  * @since 1.0
  *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class AnyLiteral extends AnnotationLiteral<Any> implements Any {}

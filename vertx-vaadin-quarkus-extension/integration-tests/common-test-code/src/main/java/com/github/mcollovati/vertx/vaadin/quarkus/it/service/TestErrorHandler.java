@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandler;

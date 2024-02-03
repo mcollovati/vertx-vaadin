@@ -23,8 +23,8 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.lang.annotation.Annotation;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
 
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.InjectableContext;
@@ -36,6 +36,8 @@ import com.github.mcollovati.vertx.quarkus.annotation.UIScoped;
  * Used to bind multiple scope annotations to a single context. Will delegate
  * all context-related operations to it's underlying instance, apart from
  * getting the scope of the context.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class UIContextWrapper implements InjectableContext {
 

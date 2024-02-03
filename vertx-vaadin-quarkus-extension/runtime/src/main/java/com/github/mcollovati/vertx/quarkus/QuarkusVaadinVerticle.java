@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.quarkus;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.inject.Inject;
 
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.VaadinVerticle;

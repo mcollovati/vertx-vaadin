@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;

@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;

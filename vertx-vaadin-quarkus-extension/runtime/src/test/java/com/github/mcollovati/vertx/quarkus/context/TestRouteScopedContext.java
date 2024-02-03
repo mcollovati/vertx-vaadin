@@ -23,10 +23,14 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.lang.reflect.Proxy;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 public class TestRouteScopedContext extends RouteScopedContext {
 

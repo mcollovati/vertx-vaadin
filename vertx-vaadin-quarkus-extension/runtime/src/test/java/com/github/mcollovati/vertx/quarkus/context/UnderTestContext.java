@@ -22,6 +22,10 @@
  */
 package com.github.mcollovati.vertx.quarkus.context;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 public interface UnderTestContext {
     void activate();
 

@@ -71,15 +71,6 @@ public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration
         this.productionMode = productionMode;
     }
 
-    public void setEnableDevServer(boolean enableDevServer) {
-        this.enableDevServer = enableDevServer;
-    }
-
-    @Override
-    public boolean enableDevServer() {
-        return enableDevServer;
-    }
-
     public void setReuseDevServer(boolean reuseDevServer) {
         this.reuseDevServer = reuseDevServer;
     }
@@ -182,15 +173,6 @@ public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration
 
     public void setBrotli(boolean brotli) {
         this.brotli = brotli;
-    }
-
-    @Override
-    public boolean useV14Bootstrap() {
-        return useDeprecatedV14Bootstrapping;
-    }
-
-    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
-        this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
     }
 
     @Override

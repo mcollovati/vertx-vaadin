@@ -22,13 +22,13 @@
  */
 package com.github.mcollovati.vertx.quarkus.context;
 
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.context.spi.CreationalContext;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.spi.CreationalContext;
 
 import com.vaadin.flow.internal.ReflectTools;
 import io.quarkus.arc.InjectableBean;
@@ -50,6 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
  *
  * @param <C>
  *            a context type
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public abstract class InjectableContextTest<C extends InjectableContext> {
 

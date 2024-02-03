@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import jakarta.servlet.ServletContext;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,8 +30,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import javax.servlet.ServletContext;
 
+import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -50,6 +51,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -65,6 +67,7 @@ import com.github.mcollovati.vertx.http.HttpReverseProxy;
 import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
 import com.github.mcollovati.vertx.vaadin.connect.VaadinConnectHandler;
+import com.github.mcollovati.vertx.vaadin.devserver.DevServerWebSocketProxy;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler;
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
@@ -83,6 +86,9 @@ public class VertxVaadin {
     private final Vertx vertx;
     private final Router vaadinRouter;
     private final Router connectRouter;
+
+    private DevServerWebSocketProxy devServerWebSocketProxy;
+
     private final ExtendedSessionStore sessionStore;
 
     static {
@@ -284,7 +290,7 @@ public class VertxVaadin {
 
         DevModeHandler devModeHandler =
                 DevModeHandlerManager.getDevModeHandler(service).orElse(null);
-        if (devModeHandler != null) {
+        if (devModeHandler != null && devModeHandler.getPort() >= 0) {
             logger.info("Starting DevModeHandler proxy");
             HttpReverseProxy proxy = HttpReverseProxy.create(vertx, devModeHandler);
             vaadinRouter.routeWithRegex("^/themes\\/[\\s\\S]+?\\/").handler(proxy::forward);
@@ -320,6 +326,18 @@ public class VertxVaadin {
         } catch (Exception ex) {
             logger.error("Error processing request {}", routingContext.request().uri(), ex);
             routingContext.fail(ex);
+        }
+    }
+
+    void initDevServerWebSocketProxy(HttpServer httpServer) {
+        DevModeHandler devModeHandler =
+                DevModeHandlerManager.getDevModeHandler(service).orElse(null);
+        if (devModeHandler instanceof ViteHandler viteHandler) {
+            logger.info("Starting DevModeHandler websocket proxy");
+
+            DevServerWebSocketProxy proxy = DevServerWebSocketProxy.createWebsocketProxy(
+                    vertx, viteHandler.getPort(), viteHandler.getPathToVaadin());
+            httpServer.webSocketHandler(proxy);
         }
     }
 

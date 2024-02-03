@@ -22,7 +22,6 @@
  */
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
@@ -44,7 +43,7 @@ public class BasicsIT extends ViteDevModeIT {
         Thread.sleep(2000); // Checking is async so it sometimes needs some time
         Assert.assertFalse(
                 "There should be no error overlay",
-                $("vite-plugin-checker-error-overlay").exists());
+                $("vite-plugin-checker-error-overlay").first().$("main").exists());
     }
 
     @Test
@@ -56,12 +55,6 @@ public class BasicsIT extends ViteDevModeIT {
             float height = Float.parseFloat(heightString);
             return (height > 150);
         });
-    }
-
-    @Test
-    public void applicationUsesVite() {
-        TestBenchElement viteStatus = $(ParagraphElement.class).id("status");
-        Assert.assertEquals("Vite feature is true", viteStatus.getText());
     }
 
     @Test

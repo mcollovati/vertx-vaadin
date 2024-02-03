@@ -22,58 +22,42 @@
  */
 package com.github.mcollovati.vertx.quarkus;
 
+import jakarta.enterprise.inject.spi.BeanManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import io.quarkus.arc.Unremovable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.mcollovati.vertx.quarkus.annotation.VaadinServiceEnabled;
-
 /**
- * Instantiator implementation based on Quarkus DI feature.
+ * Instantiator implementation for Quarkus.
  *
- * Quarkus DI solution (also called ArC) is based on the Contexts and Dependency
- * Injection for Java 2.0 specification, but it is not a full CDI
- * implementation. Only a subset of the CDI features is implemented.
+ * New instances are created by default by QuarkusInstantiatorFactory.
  *
- * See <a href="https://quarkus.io/guides/cdi-reference">Quarkus CDI
- * Reference</a> for further details.
+ * @see InstantiatorFactory
  *
- * @see Instantiator
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
-@VaadinServiceEnabled
-@Unremovable
-@ApplicationScoped
 public class QuarkusInstantiator implements Instantiator {
 
     private static final String CANNOT_USE_CDI_BEANS_FOR_I18N =
             "Cannot use CDI beans for I18N, falling back to the default behavior.";
     private static final String FALLING_BACK_TO_DEFAULT_INSTANTIATION = "Falling back to default instantiation.";
 
-    private AtomicBoolean i18NLoggingEnabled = new AtomicBoolean(true);
-    private DefaultInstantiator delegate;
+    private final AtomicBoolean i18NLoggingEnabled = new AtomicBoolean(true);
+    private final DefaultInstantiator delegate;
 
-    @Inject
-    BeanManager beanManager;
+    private final BeanManager beanManager;
 
-    /**
-     * Gets the service class that this instantiator is supposed to work with.
-     *
-     * @return the service class this instantiator is supposed to work with.
-     */
-    public Class<? extends VaadinService> getServiceClass() {
-        return QuarkusVertxVaadinService.class;
+    public QuarkusInstantiator(DefaultInstantiator delegate, BeanManager beanManager) {
+        this.delegate = delegate;
+        this.beanManager = beanManager;
     }
 
     /**
@@ -83,12 +67,6 @@ public class QuarkusInstantiator implements Instantiator {
      */
     public BeanManager getBeanManager() {
         return this.beanManager;
-    }
-
-    @Override
-    public boolean init(final VaadinService service) {
-        delegate = new DefaultInstantiator(service);
-        return delegate.init(service) && getServiceClass().isAssignableFrom(service.getClass());
     }
 
     @Override
@@ -131,7 +109,8 @@ public class QuarkusInstantiator implements Instantiator {
 
     @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-        return Stream.concat(delegate.getServiceInitListeners(), Stream.of(getBeanManager()::fireEvent));
+        return Stream.concat(
+                delegate.getServiceInitListeners(), Stream.of(getBeanManager().getEvent()::fire));
     }
 
     @Override

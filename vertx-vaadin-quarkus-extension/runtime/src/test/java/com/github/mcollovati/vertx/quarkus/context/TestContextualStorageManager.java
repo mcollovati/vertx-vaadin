@@ -23,13 +23,17 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.util.Set;
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
 
 import com.vaadin.flow.server.VaadinSession;
 import io.quarkus.arc.Unremovable;
 
 import com.github.mcollovati.vertx.quarkus.context.RouteScopedContext.ContextualStorageManager;
 import com.github.mcollovati.vertx.quarkus.context.RouteScopedContext.RouteStorageKey;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 /**
  *

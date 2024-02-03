@@ -26,7 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
@@ -83,7 +83,7 @@ public class VertxIndexHtmlRequestHandler extends IndexHtmlRequestHandler {
         String replaceGizmoUrl(String url) {
             String html = outputStream.toString(UTF_8);
             return html.replaceFirst(
-                    "(<vaadin-dev-tools.*url=\")([^\"]+)(\".*></vaadin-dev-tools>)", "$1" + url + "$3");
+                    "(window.Vaadin.devToolsConf = \\{.*\"url\":\")([^\"]+)(\",.*};)", "$1" + url + "$3");
         }
 
         @Override

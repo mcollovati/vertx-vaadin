@@ -78,7 +78,7 @@ public class VertxDevModeHandlerManager /* extends DevModeHandlerManagerImpl */ 
                 + devModeHandler.getClass().getName());
     }
 
-    public static CompletableFuture<Integer> getDevModeHandlerFuture(DevModeHandler devModeHandler) {
+    public static CompletableFuture<Integer> getDevModeHandlerPort(DevModeHandler devModeHandler) {
         try {
             Field devServerStartFuture = AbstractDevServerRunner.class.getDeclaredField("devServerStartFuture");
             devServerStartFuture.setAccessible(true);

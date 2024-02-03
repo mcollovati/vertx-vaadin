@@ -24,9 +24,9 @@ package com.github.mcollovati.vertx.vaadin.quarkus.it.uievents;
 
 import java.util.EventObject;
 import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PollEvent;

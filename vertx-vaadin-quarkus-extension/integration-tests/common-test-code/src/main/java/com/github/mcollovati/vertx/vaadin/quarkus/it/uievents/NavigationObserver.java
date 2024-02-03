@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.event.Observes;
 
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;

@@ -25,5 +25,9 @@ package com.github.mcollovati.vertx.quarkus.context;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 @Tag(Tag.A)
 public class TestNavigationTarget extends Component {}

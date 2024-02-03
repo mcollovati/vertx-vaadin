@@ -29,13 +29,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 /**
  * Base class for manage and store ContextualStorages.
  *
  * This class is responsible for - creating, and providing the ContextualStorage
  * for a context key - destroying ContextualStorages
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 @SuppressWarnings("CdiManagedBeanInconsistencyInspection")
 abstract class AbstractContextualStorageManager<K> implements Serializable {

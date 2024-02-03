@@ -29,6 +29,10 @@ import io.quarkus.test.junit.QuarkusTest;
 
 import com.github.mcollovati.vertx.quarkus.context.RouteScopedContext.NavigationData;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 @QuarkusTest
 public class RouteContextWithinDifferentUITest extends AbstractContextTest<TestRouteScopedContext> {
 

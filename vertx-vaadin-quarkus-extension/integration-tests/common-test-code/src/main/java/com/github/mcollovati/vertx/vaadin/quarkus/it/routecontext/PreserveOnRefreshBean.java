@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext;
 
 import java.util.UUID;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.github.mcollovati.vertx.quarkus.annotation.NormalRouteScoped;
 import com.github.mcollovati.vertx.quarkus.annotation.RouteScopeOwner;

@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @param <C>
  *            a context type
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public abstract class AbstractContextTest<C extends AbstractContext> extends InjectableContextTest<C> {
 

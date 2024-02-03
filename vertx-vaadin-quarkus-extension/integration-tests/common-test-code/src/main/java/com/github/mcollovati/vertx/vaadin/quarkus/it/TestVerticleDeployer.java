@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 
 import io.quarkus.runtime.StartupEvent;
 import io.vertx.core.Vertx;

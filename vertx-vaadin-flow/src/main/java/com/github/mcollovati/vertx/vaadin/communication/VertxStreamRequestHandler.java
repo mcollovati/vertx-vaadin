@@ -29,7 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.AbstractStreamResource;

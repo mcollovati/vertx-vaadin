@@ -22,8 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;

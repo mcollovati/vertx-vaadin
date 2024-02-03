@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.quarkus.it.routecontext;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;

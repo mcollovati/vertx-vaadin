@@ -25,8 +25,8 @@ package com.github.mcollovati.vertx.vaadin;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;

@@ -23,13 +23,19 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.lang.reflect.Proxy;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import io.quarkus.arc.Unremovable;
 import io.quarkus.test.junit.QuarkusTest;
 
 import com.github.mcollovati.vertx.quarkus.context.UiContextTest.TestUIScopedContext;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 @QuarkusTest
 public class UiContextTest extends AbstractContextTest<TestUIScopedContext> {
@@ -59,5 +65,7 @@ public class UiContextTest extends AbstractContextTest<TestUIScopedContext> {
 
     @Dependent
     @Unremovable
+    @Alternative
+    @Priority(1)
     public static class TestContextualStorageManager extends UIScopedContext.ContextualStorageManager {}
 }

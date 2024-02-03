@@ -23,7 +23,7 @@
 package com.github.mcollovati.vertx.quarkus.context;
 
 import java.io.Serializable;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.CreationalContext;
 
 /**
  * A copy of org.apache.deltaspike.core.util.context.ContextualInstanceInfo.
@@ -31,6 +31,8 @@ import javax.enterprise.context.spi.CreationalContext;
  *
  * This data holder contains all necessary data you need to store a Contextual
  * Instance in a CDI Context.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public class ContextualInstanceInfo<T> implements Serializable {
 
@@ -42,7 +44,7 @@ public class ContextualInstanceInfo<T> implements Serializable {
     /**
      * We need to store the CreationalContext as we need it for properly
      * destroying the contextual instance via
-     * {@link javax.enterprise.context.spi.Contextual#destroy(Object, CreationalContext)}
+     * {@link jakarta.enterprise.context.spi.Contextual#destroy(Object, CreationalContext)}
      */
     private CreationalContext<T> creationalContext;
 

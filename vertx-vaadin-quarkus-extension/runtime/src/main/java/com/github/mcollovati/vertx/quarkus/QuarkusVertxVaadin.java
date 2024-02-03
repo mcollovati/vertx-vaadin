@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.quarkus;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import io.vertx.core.Vertx;
 

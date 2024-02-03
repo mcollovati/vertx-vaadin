@@ -22,12 +22,12 @@
  */
 package com.github.mcollovati.vertx.quarkus.context;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.spi.AlterableContext;
+import jakarta.enterprise.context.spi.Context;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 import java.util.Set;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.AlterableContext;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.VaadinService;
@@ -35,6 +35,10 @@ import com.vaadin.flow.server.VaadinService;
 import com.github.mcollovati.vertx.quarkus.QuarkusVertxVaadinService;
 import com.github.mcollovati.vertx.quarkus.TestQuarkusVertxVaadinServletService;
 import com.github.mcollovati.vertx.quarkus.context.VaadinServiceScopedContext.ContextualStorageManager;
+
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
 
 public class ServiceUnderTestContext implements UnderTestContext {
     private QuarkusVertxVaadinService service;
@@ -63,7 +67,7 @@ public class ServiceUnderTestContext implements UnderTestContext {
     @Override
     public void destroy() {
         if (service != null) {
-            beanManager.fireEvent(new ServiceDestroyEvent(service));
+            beanManager.getEvent().fire(new ServiceDestroyEvent(service));
         }
     }
 

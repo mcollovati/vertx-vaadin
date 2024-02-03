@@ -24,6 +24,10 @@ package com.github.mcollovati.vertx.quarkus.context;
 
 import io.quarkus.test.junit.QuarkusTest;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 @QuarkusTest
 public class SessionContextTest extends AbstractContextTest<VaadinSessionScopedContext> {
 

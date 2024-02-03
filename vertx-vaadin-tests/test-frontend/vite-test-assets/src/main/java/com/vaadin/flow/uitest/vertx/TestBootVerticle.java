@@ -24,9 +24,9 @@ package com.vaadin.flow.uitest.vertx;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -98,16 +98,9 @@ public class TestBootVerticle extends VaadinVerticle {
             response.setStatusCode(404);
             if (devModeHandler != null) {
                 LOGGER.trace("======================== check start. dev mod 1");
-                try {
-                    Method isRunningMethod = findIsRunningMethod(devModeHandler.getClass());
-                    boolean isRunning = (boolean) isRunningMethod.invoke(devModeHandler);
-                    if (isRunning) {
-                        LOGGER.info("DevModeHandler ready");
-                        response.setStatusCode(200);
-                    }
-                } catch (NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                    LOGGER.trace("======================== check start. dev mod err ");
+                if (isReady(devModeHandler)) {
+                    LOGGER.info("DevModeHandler ready");
+                    response.setStatusCode(200);
                 }
             } else if (service.getDeploymentConfiguration().isProductionMode()) {
                 response.setStatusCode(200);
@@ -117,16 +110,34 @@ public class TestBootVerticle extends VaadinVerticle {
         });
     }
 
-    private Method findIsRunningMethod(Class<?> clazz) throws NoSuchFieldException {
+    private boolean isReady(DevModeHandler devModeHandler) {
+        Class<? extends DevModeHandler> clazz = devModeHandler.getClass();
+        Field startFutureField = findStartFuture(clazz, "devServerStartFuture");
+        if (startFutureField == null) {
+            startFutureField = findStartFuture(clazz, "buildCompletedFuture");
+        }
+        if (startFutureField != null) {
+            boolean wasAccessible = startFutureField.canAccess(devModeHandler);
+            try {
+                startFutureField.setAccessible(true);
+                CompletableFuture<?> startFuture = (CompletableFuture<?>) startFutureField.get(devModeHandler);
+                return startFuture.isDone() && !startFuture.isCancelled() && !startFuture.isCompletedExceptionally();
+            } catch (Exception ex) {
+                startFutureField.setAccessible(wasAccessible);
+                LOGGER.trace("Error getting start future from {}", devModeHandler.getClass(), ex);
+            }
+        }
+        return false;
+    }
+
+    private Field findStartFuture(Class<?> clazz, String fieldName) {
         do {
             try {
-                Method method = clazz.getDeclaredMethod("isRunning");
-                method.setAccessible(true);
-                return method;
-            } catch (NoSuchMethodException e) {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
                 clazz = clazz.getSuperclass();
             }
         } while (clazz != Object.class);
-        throw new NoSuchFieldException("Cannot find devServerStartFuture");
+        return null;
     }
 }

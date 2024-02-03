@@ -27,10 +27,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.spi.AlterableContext;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.context.spi.AlterableContext;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
 
 import io.quarkus.arc.InjectableBean;
 import io.quarkus.arc.InjectableContext;
@@ -42,6 +42,8 @@ import io.quarkus.arc.InjectableContext;
  * implementing Context needs to implement the missing methods from the
  * {@link AlterableContext} interface and
  * {@link #getContextualStorage(Contextual, boolean)}.
+ *
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
  */
 public abstract class AbstractContext implements InjectableContext {
 

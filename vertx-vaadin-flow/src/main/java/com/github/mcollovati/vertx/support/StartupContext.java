@@ -22,6 +22,16 @@
  */
 package com.github.mcollovati.vertx.support;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,16 +49,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
@@ -210,6 +210,35 @@ public final class StartupContext implements VaadinConfig {
         }
 
         @Override
+        public void setResponseCharacterEncoding(String encoding) {}
+
+        @Override
+        public String getResponseCharacterEncoding() {
+            return null;
+        }
+
+        @Override
+        public void setRequestCharacterEncoding(String encoding) {}
+
+        @Override
+        public String getRequestCharacterEncoding() {
+            return null;
+        }
+
+        @Override
+        public void setSessionTimeout(int sessionTimeout) {}
+
+        @Override
+        public int getSessionTimeout() {
+            return 0;
+        }
+
+        @Override
+        public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
+            return null;
+        }
+
+        @Override
         public String getMimeType(String file) {
             return MimeMapping.getMimeTypeForFilename(file);
         }
@@ -280,28 +309,8 @@ public final class StartupContext implements VaadinConfig {
         }
 
         @Override
-        public Servlet getServlet(String name) throws ServletException {
-            return null;
-        }
-
-        @Override
-        public Enumeration<Servlet> getServlets() {
-            return null;
-        }
-
-        @Override
-        public Enumeration<String> getServletNames() {
-            return null;
-        }
-
-        @Override
         public void log(String msg) {
             logger.trace(msg);
-        }
-
-        @Override
-        public void log(Exception exception, String msg) {
-            logger.trace(msg, exception);
         }
 
         @Override

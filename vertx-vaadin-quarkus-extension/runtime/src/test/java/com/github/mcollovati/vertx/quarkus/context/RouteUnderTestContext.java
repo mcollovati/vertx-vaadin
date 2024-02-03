@@ -39,6 +39,10 @@ import org.mockito.Mockito;
 
 import com.github.mcollovati.vertx.quarkus.context.RouteScopedContext.NavigationData;
 
+/*
+ * NOTE: this code has been copy/pasted and adapted from vaadin-quarkus extension, credit goes to Vaadin Ltd.
+ */
+
 public class RouteUnderTestContext implements UnderTestContext {
 
     private static UIUnderTestContext uiContextUnderTest;
@@ -88,8 +92,8 @@ public class RouteUnderTestContext implements UnderTestContext {
         // context via calling API methods");
         List<HasElement> newNavigation = Collections.singletonList(new TestHasElement());
         Arc.container()
-                .beanManager()
-                .fireEvent(new AfterNavigationEvent(new LocationChangeEvent(
+                .beanManager().getEvent()
+                .fire(new AfterNavigationEvent(new LocationChangeEvent(
                         Mockito.mock(Router.class),
                         ui,
                         NavigationTrigger.PROGRAMMATIC,

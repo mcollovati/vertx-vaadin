@@ -33,6 +33,7 @@ import com.vaadin.flow.server.StaticFileServer;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
@@ -85,7 +86,7 @@ public class HttpReverseProxy {
     }
 
     public static HttpReverseProxy create(Vertx vertx, DevModeHandler devModeHandler) {
-        CompletableFuture<WebClient> webClientFuture = VertxDevModeHandlerManager.getDevModeHandlerFuture(
+        CompletableFuture<WebClient> webClientFuture = VertxDevModeHandlerManager.getDevModeHandlerPort(
                         devModeHandler)
                 .thenApply(port -> {
                     logger.debug("Starting DevMode proxy on port {}", port);
@@ -112,7 +113,7 @@ public class HttpReverseProxy {
             routingContext.next();
         } else {
 
-            if (StaticFileServer.APP_THEME_PATTERN.matcher(requestURI).find()) {
+            if (StaticFileServer.APP_THEME_ASSETS_PATTERN.matcher(requestURI).find()) {
                 requestURI = "/VAADIN/static" + requestURI;
             }
             requestURI = uriCustomizer.apply(requestURI);

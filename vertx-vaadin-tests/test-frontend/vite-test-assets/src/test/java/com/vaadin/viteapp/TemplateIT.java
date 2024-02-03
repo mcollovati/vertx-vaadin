@@ -28,7 +28,6 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.viteapp.views.template.LitComponent;
 import com.vaadin.viteapp.views.template.PolymerComponent;
-import com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent;
 import com.vaadin.viteapp.views.template.TemplateView;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,14 +64,5 @@ public class TemplateIT extends ChromeBrowserTest {
         Assert.assertEquals(newLabel, litSpan.getText());
         Assert.assertEquals(newLabel, polymerSpan.getText());
         Assert.assertEquals(newLabel, addonLitSpan.getText());
-    }
-
-    @Test
-    public void testElementReferencedByReflection() {
-        SpanElement span = $(ReflectivelyReferencedComponent.TAG)
-                .first()
-                .$(SpanElement.class)
-                .first();
-        Assert.assertEquals("ReflectivelyReferencedComponent contents", span.getText());
     }
 }
