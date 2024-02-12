@@ -19,7 +19,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        branch: [ "development" ]
+        branch: [ "development", "vaadin-23" ]
 
     steps:
       - uses: actions/checkout@v2
