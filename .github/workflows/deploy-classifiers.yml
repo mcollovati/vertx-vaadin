@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-java@v3
         with: # running setup-java again overwrites the settings.xml
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
           server-id: repsy-vertx-vaadin
           server-username: REPSY_USERNAME
           server-password: REPSY_PASSWORD
