@@ -12,9 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         java: [21, 17]
-        branch: [ development, 23 ]
+        branch: [ development, vaadin-23 ]
         include:
-          - branch: 23
+          - branch: vaadin-23
             java: 11
     timeout-minutes: 30
     runs-on: ubuntu-latest
