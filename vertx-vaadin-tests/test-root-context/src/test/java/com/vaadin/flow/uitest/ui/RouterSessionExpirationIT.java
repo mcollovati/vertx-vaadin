@@ -47,7 +47,9 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         navigateToSesssionExpireView();
         // expired session causes page reload, after the page reload there will
         // be a new session
-        Assert.assertNotEquals(sessionId, getSessionId());
+        String currentSessionId = sessionId;
+        waitUntil(d -> !currentSessionId.equals(getSessionId()));
+        //Assert.assertNotEquals(sessionId, getSessionId());
         sessionId = getSessionId();
         navigateToAnotherView();
         // session is preserved
