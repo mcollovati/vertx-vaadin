@@ -63,7 +63,7 @@ jobs:
           mvn -V -e -B -ntp verify -DtrimStackTrace=false -pl=-:vertx-vaadin-test-root-context -Dwebdriver.chrome.driver=$(which chromedriver)
       - name: Package test output files
         if: ${{ failure() || success() }}
-        run: find . -name surefire-reports -o -name failsafe-reports -o -name verticle.log | tar -czf tests-report-${{ matrix.branch }}-JVM-${{ matrix.java }}.tgz -T -
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name verticle.log | tar -czf tests-report-${{ matrix.branch }}-JVM-${{ matrix.java }}.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
