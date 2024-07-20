@@ -147,7 +147,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-ut-1
           path: tests-report-*.tgz
   it-tests-1:
     name: UI tests 1
@@ -208,7 +208,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-it-1
           path: tests-report-*.tgz
   it-tests-2:
     name: UI tests 2
@@ -260,7 +260,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-it-2
           path: tests-report-*.tgz
   test-results:
     permissions:
@@ -277,7 +277,8 @@ jobs:
       - uses: actions/download-artifact@v4
         if: ${{ always() && needs.changes.outputs.validation-required == 'true' }}
         with:
-          name: tests-output
+          pattern: tests-output-*
+          merge-multiple: true
       - name: Extract downloaded files
         if: ${{ always() && needs.changes.outputs.validation-required == 'true' }}
         run: for i in *.tgz; do tar xvf $i; done
