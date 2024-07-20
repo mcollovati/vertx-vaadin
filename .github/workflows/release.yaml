@@ -53,7 +53,7 @@ jobs:
           fi
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: refs/heads/${{ inputs.target-branch }}
           fetch-depth: 0
@@ -81,7 +81,7 @@ jobs:
             echo "⚠️ dry-run execution, artifacts will not be published on Maven Central." | tee -a $GITHUB_STEP_SUMMARY
           fi
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: 'temurin'
@@ -107,7 +107,7 @@ jobs:
 
       - name: JReleaser release output
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jreleaser-release
           path: |
