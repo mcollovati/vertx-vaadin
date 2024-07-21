@@ -109,9 +109,9 @@
         <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
 
         <vertx.version>4.3.8</vertx.version>
-        <vaadin.platform.version>24.3.15</vaadin.platform.version>
-        <vaadin.flow.version>24.3.13</vaadin.flow.version>
-        <hilla.version>2.5.7</hilla.version>
+        <vaadin.platform.version>24.4.6</vaadin.platform.version>
+        <vaadin.flow.version>24.4.2</vaadin.flow.version>
+        <hilla.version>24.4.3</hilla.version>
 
         <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
         <byte-buddy.version>1.14.11</byte-buddy.version>
@@ -134,13 +134,6 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-bom</artifactId>
                 <version>${vaadin.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>dev.hilla</groupId>
-                <artifactId>hilla-bom</artifactId>
-                <version>${hilla.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

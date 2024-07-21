@@ -22,7 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclassmethods;
 
-import dev.hilla.Endpoint;
+import com.vaadin.hilla.Endpoint;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)

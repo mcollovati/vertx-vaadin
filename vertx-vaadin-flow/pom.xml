@@ -77,10 +77,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>dev.hilla</groupId>
-            <artifactId>endpoint</artifactId>
+            <groupId>com.vaadin</groupId>
+            <artifactId>hilla-endpoint</artifactId>
             <scope>provided</scope>
-            <version>${hilla.version}</version>
         </dependency>
         <!-- Only to avoid compilation errors -->
         <dependency>

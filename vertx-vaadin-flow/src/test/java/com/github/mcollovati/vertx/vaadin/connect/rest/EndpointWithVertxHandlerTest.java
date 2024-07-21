@@ -25,8 +25,8 @@ package com.github.mcollovati.vertx.vaadin.connect.rest;
 import java.util.HashSet;
 import java.util.function.Consumer;
 
-import dev.hilla.EndpointNameChecker;
-import dev.hilla.ExplicitNullableTypeChecker;
+import com.vaadin.hilla.EndpointNameChecker;
+import com.vaadin.hilla.ExplicitNullableTypeChecker;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;

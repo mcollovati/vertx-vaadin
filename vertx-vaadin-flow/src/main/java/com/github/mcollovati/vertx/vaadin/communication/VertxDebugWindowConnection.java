@@ -33,31 +33,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.vaadin.base.devserver.DebugWindowMessage;
-import com.vaadin.base.devserver.DevToolsInterface;
-import com.vaadin.base.devserver.DevToolsMessageHandler;
-import com.vaadin.base.devserver.FeatureFlagMessage;
-import com.vaadin.base.devserver.IdeIntegration;
-import com.vaadin.base.devserver.ServerInfo;
-import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.Product;
-import elemental.json.JsonObject;
+import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
+import com.github.mcollovati.vertx.vaadin.sockjs.communication.VertxVaadinLiveReload;
 import io.vertx.core.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.mcollovati.vertx.vaadin.VertxVaadinService;
-import com.github.mcollovati.vertx.vaadin.sockjs.communication.VertxVaadinLiveReload;
+import com.vaadin.base.devserver.DebugWindowMessage;
+import com.vaadin.base.devserver.DevToolsInterface;
+import com.vaadin.base.devserver.DevToolsMessageHandler;
+import com.vaadin.base.devserver.FeatureFlagMessage;
+import com.vaadin.base.devserver.ServerInfo;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
+
+import elemental.json.JsonObject;
 
 public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
 
@@ -65,10 +60,6 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
 
     private VertxVaadinService service;
     private final Map<String, Consumer<String>> liveReload = new ConcurrentHashMap<>();
-
-    private IdeIntegration ideIntegration;
-
-    private ThemeEditorMessageHandler themeEditorMessageHandler;
 
     private List<DevToolsMessageHandler> plugins;
 
@@ -81,8 +72,6 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
     public void attachService(VertxVaadinService service) {
         this.service = service;
         VaadinContext context = service.getContext();
-        this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
-        this.ideIntegration = new IdeIntegration(ApplicationConfiguration.get(context));
         findPlugins();
     }
 
@@ -107,9 +96,6 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
                 new FeatureFlagMessage(FeatureFlags.get(service.getContext()).getFeatures().stream()
                         .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                         .collect(Collectors.toList())));
-        if (themeEditorMessageHandler.isEnabled()) {
-            send(websocketId, ThemeEditorCommand.STATE, themeEditorMessageHandler.getState());
-        }
     }
 
     private DevToolsInterface getDevToolsInterface(String websocketId) {
@@ -136,7 +122,7 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
             String errorMessage = "";
 
             try {
-                LicenseChecker.checkLicense(product.getName(), product.getVersion(), keyUrl -> {
+                LicenseChecker.checkLicense(product.getName(), product.getVersion(), BuildType.DEVELOPMENT,  keyUrl -> {
                     send(websocketId, "license-check-nokey", new ProductAndMessage(product, keyUrl));
                 });
                 ok = true;
@@ -150,28 +136,6 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
                 ProductAndMessage pm = new ProductAndMessage(product, errorMessage);
                 send(websocketId, "license-check-failed", pm);
             }
-        } else if ("showComponentCreateLocation".equals(command) || "showComponentAttachLocation".equals(command)) {
-            int nodeId = (int) data.getNumber("nodeId");
-            int uiId = (int) data.getNumber("uiId");
-            VaadinSession session = VaadinSession.getCurrent();
-            session.access(() -> {
-                Element element = session.findElement(uiId, nodeId);
-                Optional<Component> c = element.getComponent();
-                if (c.isPresent()) {
-                    if ("showComponentCreateLocation".equals(command)) {
-                        ideIntegration.showComponentCreateInIde(c.get());
-                    } else {
-                        ideIntegration.showComponentAttachInIde(c.get());
-                    }
-                } else {
-                    getLogger()
-                            .error(
-                                    "Only component locations are tracked. The given node id refers to an element and not a component");
-                }
-            });
-        } else if (themeEditorMessageHandler.canHandle(command, data)) {
-            BaseResponse resultData = themeEditorMessageHandler.handleDebugMessageData(command, data);
-            send(websocketId, ThemeEditorCommand.RESPONSE, resultData);
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
@@ -180,8 +144,10 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
                     break;
                 }
             }
-            if (!handled) {
-                getLogger().info("Unknown command from the browser: {}", command);
+            if (!handled && command != null
+                    && !command.startsWith("copilot-")) {
+                getLogger()
+                        .info("Unknown command from the browser: " + command);
             }
         }
     }

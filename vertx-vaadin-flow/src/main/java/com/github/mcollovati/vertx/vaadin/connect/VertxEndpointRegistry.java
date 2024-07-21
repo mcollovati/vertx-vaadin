@@ -26,8 +26,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 
-import dev.hilla.EndpointNameChecker;
-import dev.hilla.EndpointRegistry;
+import com.vaadin.hilla.EndpointNameChecker;
+import com.vaadin.hilla.EndpointRegistry;
 
 public class VertxEndpointRegistry extends EndpointRegistry implements VaadinEndpointRegistry {
 
