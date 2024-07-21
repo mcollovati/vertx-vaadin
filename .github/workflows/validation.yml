@@ -82,7 +82,7 @@ jobs:
           chrome-version: stable
       - name: Build
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           VERTX_VAADIN_VERSION=$(mvn -N -ntp -q help:evaluate -Dexpression=project.version -DforceStdout)
@@ -131,13 +131,13 @@ jobs:
       - name: Build
         if: ${{ github.run_attempt > 1 }}
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: Test
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false
@@ -188,13 +188,13 @@ jobs:
       - name: Build
         if: ${{ github.run_attempt > 1 }}
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: UI Test
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests
@@ -249,7 +249,7 @@ jobs:
           mvn -V -e -B -ntp -DskipTests -Dmaven.javadoc.skip=false install -Pflow-ui-tests
       - name: UI Test
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           cd vertx-vaadin-tests/
@@ -336,7 +336,7 @@ jobs:
         run: |
           mvn -V -e -B -ntp -DskipVertxRun=true -DskipTests -Dvertx-vaadin.release=snapshot -Dvertx-vaadin.release.gpg deploy
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPSY_USERNAME: ${{ secrets.REPSY_USERNAME }}
           REPSY_PASSWORD: ${{ secrets.REPSY_PASSWORD }}
