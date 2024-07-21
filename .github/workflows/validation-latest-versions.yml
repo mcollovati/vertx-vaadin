@@ -25,7 +25,7 @@ jobs:
               | sed -E 's/.*(platform|flow|vertx).*>(([0-9]+\.[0-9]+)\..*)<.*/"\1": "\2","\1Minor":"\3"/g' | paste -s -d',' \
               | awk --assign BRANCH=$branch '{print "{\"branch\":\""BRANCH"\","$0"}"}'; \
           done | paste -s -d',' | awk '{print "["$i"]"}' \
-            | jq -c '{ include: [ .[] | {branch,vertx,vaadin:.platform,flow:.flow,vertxSearch:.vertx,vaadinSearch:(.platformMinor+".*"),flowSearch:(.flowMinor+".*")},{branch,vertx:.vertx,vaadin:.platform,flow:.flow,vertxSearch:(.vertxMinor+".*"),vaadinSearch:.platform,flowSearch:.flow} ]}')
+            | jq -c '{ include: [ .[] | {branch,vertx,vaadin:.platform,flow:.flow,vertxSearch:.vertx,vaadinSearch:(.platformMinor+".*"),flowSearch:(.flowMinor+".*"),target:"vaadin"},{branch,vertx:.vertx,vaadin:.platform,flow:.flow,vertxSearch:(.vertxMinor+".*"),vaadinSearch:.platform,flowSearch:.flow,target:"vertx"} ]}')
           echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
   build:
     name: Vert.x ${{ matrix.vertxSearch }}, Vaadin ${{ matrix.vaadinSearch }}, Flow ${{ matrix.flowSearch }} (${{ matrix.branch }})
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output-${{ matrix.branch }}_vertx-${{ matrix.vertx }}_vaadin-${{ matrix.vaadin }}_flow-${{ matrix.flow }}
+          name: tests-output-${{ matrix.branch }}-${{ matrix.target }}_vertx-${{ matrix.vertx }}_vaadin-${{ matrix.vaadin }}_flow-${{ matrix.flow }}
           path: tests-report-*.tgz
       - name: Publish Unit Test Results
         if: ${{ failure() || success() }}
