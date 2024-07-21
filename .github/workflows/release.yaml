@@ -90,7 +90,7 @@ jobs:
           mvn -N -ntp versions:set -DnewVersion="${{ inputs.version }}"
       - name: Staging artifacts
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           mvn -V -ntp -Prelease -DaltDeploymentRepository=local::file:./target/staging-deploy -DskipTests deploy
 

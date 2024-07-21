@@ -66,13 +66,13 @@ jobs:
           mvn -V -e -B -ntp -DskipTests -DskipVertxRun=true install -Pflow-ui-tests
       - name: Test
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           mvn -V -e -B -ntp verify -Dmaven.javadoc.skip=false -DtrimStackTrace=false
       - name: UI Test 1
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           cd $GITHUB_WORKSPACE/vertx-vaadin-tests
@@ -82,7 +82,7 @@ jobs:
             -Duitest.chrome-version=$CHROME_VERSION
       - name: UI Test 2
         env:
-          VAADIN_OFFLINE_KEY: ${{ secrets.VAADIN_OFFLINE_KEY }}
+          VAADIN_PRO_KEY: ${{ secrets.VAADIN_PRO_KEY }}
         run: |
           set -x -e -o pipefail
           cd $GITHUB_WORKSPACE/vertx-vaadin-tests/
