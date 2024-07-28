@@ -23,11 +23,14 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
+@NotThreadSafe
 public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     @Override
@@ -49,7 +52,6 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         // be a new session
         String currentSessionId = sessionId;
         waitUntil(d -> !currentSessionId.equals(getSessionId()));
-        //Assert.assertNotEquals(sessionId, getSessionId());
         sessionId = getSessionId();
         navigateToAnotherView();
         // session is preserved
