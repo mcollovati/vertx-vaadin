@@ -39,6 +39,8 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.DefaultSystemMessagesProvider;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
@@ -191,6 +193,8 @@ public class RouterTestServlet extends VaadinServlet {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
+            // Ensure session expired notification is not shown
+            VaadinService.getCurrent().setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
             Location location = event.getUI().getInternals().getActiveViewLocation();
             if (!location.getPath().isEmpty()) {
                 VaadinSession.getCurrent().getSession().invalidate();
