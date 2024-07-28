@@ -159,6 +159,8 @@ public class RouterTestServlet extends VaadinServlet {
     public abstract static class MyAbstractView extends Div {
 
         protected MyAbstractView() {
+            // Ensure session expired notification is not shown
+            VaadinService.getCurrent().setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
             getViewClasses().forEach(c -> {
                 String viewName = c.getSimpleName();
                 Element div = ElementFactory.createDiv();
@@ -193,8 +195,6 @@ public class RouterTestServlet extends VaadinServlet {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            // Ensure session expired notification is not shown
-            VaadinService.getCurrent().setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
             Location location = event.getUI().getInternals().getActiveViewLocation();
             if (!location.getPath().isEmpty()) {
                 VaadinSession.getCurrent().getSession().invalidate();
