@@ -56,7 +56,7 @@ public class BasicsIT extends ViteDevModeIT {
             return (height > 150);
         });
     }
-    
+
     @Test
     public void canImportJson() {
         $("button").id(MainView.LOAD_AND_SHOW_JSON).click();

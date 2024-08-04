@@ -33,6 +33,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 public class NavigationTriggerIT extends ChromeBrowserTest {
+
+    @Ignore("https://github.com/vaadin/flow/issues/19494")
     @Test
     public void testNavigationTriggers() {
         String url = getTestURL() + "/abc/";
