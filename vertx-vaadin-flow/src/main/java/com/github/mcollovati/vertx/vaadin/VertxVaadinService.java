@@ -111,8 +111,8 @@ public class VertxVaadinService extends VaadinService {
     }
 
     @Override
-    protected Optional<Instantiator> loadInstantiators() throws ServiceException {
-        return super.loadInstantiators().map(VertxVaadinInstantiator::new);
+    protected Instantiator createInstantiator() throws ServiceException {
+        return new VertxVaadinInstantiator(super.createInstantiator());
     }
 
     @Override
