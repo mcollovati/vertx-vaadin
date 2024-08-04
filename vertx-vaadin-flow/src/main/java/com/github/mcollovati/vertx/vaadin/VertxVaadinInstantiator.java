@@ -30,7 +30,7 @@ public class VertxVaadinInstantiator implements Instantiator {
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return delegate.getServiceInitListeners()
                 // Disable Copilot because of hard-coded Servlet API usage
-                .filter(listener -> copilotInitListener == null || !copilotInitListener.isInstance(listener.getClass()));
+                .filter(listener -> copilotInitListener == null || !copilotInitListener.isInstance(listener));
     }
 
     @Override
