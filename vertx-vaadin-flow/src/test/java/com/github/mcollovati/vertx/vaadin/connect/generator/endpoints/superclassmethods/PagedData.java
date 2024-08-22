@@ -25,7 +25,7 @@ package com.github.mcollovati.vertx.vaadin.connect.generator.endpoints.superclas
 import java.util.Collections;
 import java.util.List;
 
-import dev.hilla.EndpointExposed;
+import com.vaadin.hilla.EndpointExposed;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)

@@ -30,6 +30,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
+import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
+import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.impl.FileResolverImpl;
+import io.vertx.core.http.impl.MimeMapping;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.file.FileResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -44,23 +58,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.FaviconHandler;
-import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import io.vertx.core.Context;
-import io.vertx.core.Vertx;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.impl.FileResolverImpl;
-import io.vertx.core.http.impl.MimeMapping;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.file.FileResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.mcollovati.vertx.support.BufferInputStreamAdapter;
-import com.github.mcollovati.vertx.vaadin.communication.RequestHandlerReplacements;
-import com.github.mcollovati.vertx.vaadin.communication.VertxIndexHtmlRequestHandler;
 
 /**
  * Created by marco on 16/07/16.
@@ -110,12 +110,10 @@ public class VertxVaadinService extends VaadinService {
         return PwaRegistry.getInstance(vertxVaadin.servletContext());
     }
 
-    /*
     @Override
     protected Instantiator createInstantiator() throws ServiceException {
         return new VertxVaadinInstantiator(super.createInstantiator());
     }
-     */
 
     @Override
     protected List<RequestHandler> createRequestHandlers() throws ServiceException {

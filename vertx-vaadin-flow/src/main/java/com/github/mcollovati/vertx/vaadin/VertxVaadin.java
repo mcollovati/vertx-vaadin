@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ApplicationClassLoaderAccess;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -298,8 +299,10 @@ public class VertxVaadin {
             vaadinRouter.routeWithRegex("/.*\\.js").handler(proxy::forward);
             vaadinRouter.routeWithRegex("/(index|web-component)\\.html").handler(proxy::forward);
 
+            BrowserLiveReloadAccessor.getLiveReloadFromService(service);
             VertxDebugWindowConnection windowConnection =
                     service.getContext().getAttribute(VertxDebugWindowConnection.class);
+
             windowConnection.attachService(service);
         }
 

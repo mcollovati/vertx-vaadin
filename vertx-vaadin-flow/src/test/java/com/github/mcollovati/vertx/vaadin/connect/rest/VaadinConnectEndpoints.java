@@ -25,12 +25,12 @@ package com.github.mcollovati.vertx.vaadin.connect.rest;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
-import dev.hilla.Endpoint;
+import com.vaadin.hilla.BrowserCallable;
 
 /**
  * Source taken from Vaadin Flow (https://github.com/vaadin/flow)
  */
-@Endpoint
+@BrowserCallable
 public class VaadinConnectEndpoints {
 
     public BeanWithZonedDateTimeField getBeanWithZonedDateTimeField() {

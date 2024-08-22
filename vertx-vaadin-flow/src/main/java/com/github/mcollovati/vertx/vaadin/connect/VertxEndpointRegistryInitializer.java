@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin.connect;
 
+import java.util.HashSet;
 import java.util.Set;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -30,12 +31,13 @@ import jakarta.servlet.annotation.HandlesTypes;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
-import dev.hilla.Endpoint;
-import dev.hilla.EndpointNameChecker;
+import com.vaadin.hilla.BrowserCallable;
+import com.vaadin.hilla.Endpoint;
+import com.vaadin.hilla.EndpointNameChecker;
 
 import com.github.mcollovati.vertx.support.HillaWorkAround;
 
-@HandlesTypes({Endpoint.class})
+@HandlesTypes({Endpoint.class, BrowserCallable.class})
 public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
@@ -46,7 +48,9 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
         }
         HillaWorkAround.install();
         ClassFinder finder = new ClassFinder.DefaultClassFinder(set);
-        Set<Class<?>> endpoints = finder.getAnnotatedClasses(Endpoint.class);
+        Set<Class<?>> endpoints = new HashSet<>();
+        endpoints.addAll(finder.getAnnotatedClasses(Endpoint.class));
+        endpoints.addAll(finder.getAnnotatedClasses(BrowserCallable.class));
 
         vaadinServletContext.setAttribute(VaadinEndpointRegistry.class, fromClasses(endpoints));
     }
