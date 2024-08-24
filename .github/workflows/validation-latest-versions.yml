@@ -18,7 +18,7 @@ jobs:
         id: matrix
         run: |
           set -x -e -o pipefail
-          branches="development"
+          branches="development vaadin-24.3"
           matrix=$(for branch in $branches; do \
             git fetch --depth=1 origin $branch:$branch;
             git show $branch:pom.xml | grep -E '<(vaadin\.(platform|flow)|vertx)\.version>' \
