@@ -17,6 +17,7 @@ types.d.ts
 .flow-node-tasks.lock
 **/src/main/bundles/
 
+vertx-vaadin-flow/frontend/generated/
 vertx-vaadin-flow-parent/vertx-vaadin-flow/frontend/
 vertx-vaadin-flow-parent/vertx-vaadin-quarkus-extension/integration-tests/development/frontend/
 vertx-vaadin-flow-parent/vertx-vaadin-quarkus-extension/integration-tests/production/frontend/
