@@ -88,7 +88,7 @@ public class PageIT extends ChromeBrowserTest {
         input.setValue("foo");
         Assert.assertEquals("foo", input.getPropertyString("value"));
         findElement(By.cssSelector("div#reload")).click();
-        input = $(InputTextElement.class).id("input");
+        input = waitUntil( d -> $(InputTextElement.class).id("input"));
         Assert.assertEquals("", input.getValue());
     }
 
