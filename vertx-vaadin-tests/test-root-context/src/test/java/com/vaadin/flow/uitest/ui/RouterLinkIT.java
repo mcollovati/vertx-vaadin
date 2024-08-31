@@ -68,13 +68,13 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
         verifySamePage();
 
-        clickLink("http://example.net/");
+        clickLink("https://example.net/");
 
         String currentUrl = getDriver().getCurrentUrl();
 
         // Chrome changes url to whatever it can, removing www part, forcing
         // https.
-        Assert.assertTrue("Invalid URL: " + currentUrl, currentUrl.equals("http://example.net/"));
+        Assert.assertEquals("Invalid URL: " + currentUrl, "https://example.net/", currentUrl);
     }
 
     @Test
