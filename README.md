@@ -76,9 +76,9 @@ Snapshots and `vaadin-flow-sockjs` classifiers are currently published on [Repsy
 
 | Vaadin version | Vert.x version | vertx-vaadin version     | Status                                                                                                                              |
 |----------------|----------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| 24.4           | 4.5.9+         | [Maven Central 24.4.x](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow?logo=apache-maven&versionPrefix=24.4) | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?event=push&branch=development) |
-| 24.3           | 4.3.1+         | [Maven Central 24.3.x](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow?logo=apache-maven&versionPrefix=24.3) | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?branch=vaadin-24.3) |
-| 23.3           | 4.3.1+         | [Maven Central 23.x](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow?logo=apache-maven&versionPrefix=23) | ![Vaadin 23.3](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?branch=vaadin-23)   |
+| 24.4           | 4.5.9+         | ![Maven Central 24.4.x](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow?logo=apache-maven&versionPrefix=24.4) | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?event=push&branch=development) |
+| 24.3           | 4.3.1+         | ![Maven Central 24.3.x](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow?logo=apache-maven&versionPrefix=24.3) | ![Development](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?branch=vaadin-24.3) |
+| 23.3           | 4.3.1+         | ![Maven Central 23.x](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow?logo=apache-maven&versionPrefix=23) | ![Vaadin 23.3](https://github.com/mcollovati/vertx-vaadin/actions/workflows/validation.yml/badge.svg?branch=vaadin-23)   |
 
 ## Documentation
 
