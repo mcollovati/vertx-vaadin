@@ -221,8 +221,7 @@ public class VertxVaadinResponseUT {
                 expectedCookie.getName(), expectedCookie.getMaxAge(),
                 expectedCookie.getPath(), expectedCookie.getDomain(),
                 expectedCookie.isSecure(), expectedCookie.isHttpOnly()
-        ):
-
+        );
     }
 
     @Test
