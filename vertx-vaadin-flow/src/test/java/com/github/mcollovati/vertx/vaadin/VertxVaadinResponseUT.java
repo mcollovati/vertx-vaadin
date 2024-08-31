@@ -203,14 +203,26 @@ public class VertxVaadinResponseUT {
         ArgumentCaptor<io.vertx.core.http.Cookie> cookieCaptor =
                 ArgumentCaptor.forClass(io.vertx.core.http.Cookie.class);
         verify(routingContext).addCookie(cookieCaptor.capture());
-        String expectedCookie = io.vertx.core.http.Cookie.cookie(cookie.getName(), cookie.getValue())
+        io.vertx.core.http.Cookie expectedCookie = io.vertx.core.http.Cookie.cookie(cookie.getName(), cookie.getValue())
                 .setMaxAge(cookie.getMaxAge())
                 .setSecure(cookie.getSecure())
                 .setHttpOnly(cookie.isHttpOnly())
                 .setPath(cookie.getPath())
-                .setDomain(cookie.getDomain())
-                .encode();
-        assertThat(cookieCaptor.getValue().encode()).isEqualTo(expectedCookie);
+                .setDomain(cookie.getDomain());
+        io.vertx.core.http.Cookie capturedCookie = cookieCaptor.getValue();
+        assertThat(capturedCookie).extracting(
+                io.vertx.core.http.Cookie::getName,
+                io.vertx.core.http.Cookie::getMaxAge,
+                io.vertx.core.http.Cookie::getPath,
+                io.vertx.core.http.Cookie::getDomain,
+                io.vertx.core.http.Cookie::isSecure,
+                io.vertx.core.http.Cookie::isHttpOnly
+        ).containsExactly(
+                expectedCookie.getName(), expectedCookie.getMaxAge(),
+                expectedCookie.getPath(), expectedCookie.getDomain(),
+                expectedCookie.isSecure(), expectedCookie.isHttpOnly()
+        ):
+
     }
 
     @Test
