@@ -108,7 +108,7 @@
         <jreleaser-maven-plugin.version>1.9.0</jreleaser-maven-plugin.version>
         <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
 
-        <vertx.version>4.3.8</vertx.version>
+        <vertx.version>4.5.9</vertx.version>
         <vaadin.platform.version>24.4.10</vaadin.platform.version>
         <vaadin.flow.version>24.4.6</vaadin.flow.version>
         <hilla.version>24.4.6</hilla.version>
