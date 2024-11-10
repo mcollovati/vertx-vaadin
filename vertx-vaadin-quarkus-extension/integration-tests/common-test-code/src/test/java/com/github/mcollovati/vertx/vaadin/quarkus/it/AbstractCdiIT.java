@@ -42,7 +42,7 @@ public abstract class AbstractCdiIT extends AbstractChromeIT {
     }
 
     protected String getText(String id) {
-        return findElement(By.id(id)).getText();
+        return waitUntil(d -> findElement(By.id(id))).getText();
     }
 
     protected void assertCountEquals(int expectedCount, String counter) throws IOException {
