@@ -34,7 +34,7 @@ import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 import com.vaadin.flow.uitest.vertx.ViewTestLayout;
 
 // Devmode detector detects bundling based on whether polymer-element.html is loaded
-@NpmPackage(value = "@vaadin/vaadin-development-mode-detector", version = "1.1.0")
+@NpmPackage(value = "@vaadin/vaadin-development-mode-detector", version = "2.0.7")
 @JsModule("@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.UsageStatisticsView", layout = ViewTestLayout.class)
 public class UsageStatisticsView extends Div {

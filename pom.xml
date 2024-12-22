@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>24.4-SNAPSHOT</version>
+    <version>24.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin root Pom</description>
