@@ -22,6 +22,9 @@
         <driver.binary.downloader.maven.plugin.version>1.0.17</driver.binary.downloader.maven.plugin.version>
         <skipVertxRun>false</skipVertxRun>
         <test.vertx.jvmArgs></test.vertx.jvmArgs>
+        <failsafe.rerunFailingTestsCount>3</failsafe.rerunFailingTestsCount>
+        <testbench.testInParallel>4</testbench.testInParallel>
+        <testbench.maxAttempts>2</testbench.maxAttempts>
     </properties>
 
     <dependencyManagement>
@@ -153,11 +156,11 @@
                         <enableAssertions>true</enableAssertions>
                         <parallel>all</parallel>
                         <threadCount>2</threadCount>
-                        <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                        <rerunFailingTestsCount>${failsafe.rerunFailingTestsCount}</rerunFailingTestsCount>
                         <systemPropertyVariables>
-                            <com.vaadin.testbench.Parameters.testsInParallel>4
+                            <com.vaadin.testbench.Parameters.testsInParallel>${testbench.testInParallel}
                             </com.vaadin.testbench.Parameters.testsInParallel>
-                            <com.vaadin.testbench.Parameters.maxAttempts>2
+                            <com.vaadin.testbench.Parameters.maxAttempts>${testbench.maxAttempts}
                             </com.vaadin.testbench.Parameters.maxAttempts>
                             <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
                         </systemPropertyVariables>
