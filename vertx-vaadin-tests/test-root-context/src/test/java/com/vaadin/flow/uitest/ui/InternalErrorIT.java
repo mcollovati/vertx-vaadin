@@ -87,25 +87,25 @@ public class InternalErrorIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void enableSessionExpiredNotification_sessionExpired_notificationShown() {
+    public void enableSessionExpiredNotification_sessionExpired_notificationShown() throws InterruptedException {
         clickButton("enable-notification");
 
         // Refresh to take the new config into use
         getDriver().navigate().refresh();
 
         clickButton(UPDATE);
+        waitUntil(driver -> isMessageUpdated());
         clickButton(CLOSE_SESSION);
 
         // Just click on any button to make a request after killing the session
         clickButton(CLOSE_SESSION);
 
-        assertTrue(
-                "After enabling the 'Session Expired' notification, "
-                        + "the page should not be refreshed "
-                        + "after killing the session",
-                isMessageUpdated());
-        assertTrue(
-                "After enabling the 'Session Expired' notification "
+        waitUntil(d -> isSessionExpiredNotificationPresent());
+
+        Assert.assertTrue("After enabling the 'Session Expired' notification, "
+                + "the page should not be refreshed "
+                + "after killing the session", isMessageUpdated());
+        Assert.assertTrue("After enabling the 'Session Expired' notification "
                         + "and killing the session, the notification should be displayed",
                 isSessionExpiredNotificationPresent());
     }
