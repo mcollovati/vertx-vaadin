@@ -47,7 +47,6 @@ import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
@@ -152,10 +151,25 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
         }
     }
 
-    private void send(String websocketId, String command, Object data) {
+    public void sendHmrEvent(String event, JsonObject eventData) {
+        JsonObject msg = elemental.json.Json.createObject();
+        msg.put("command", "hmr");
+        JsonObject data = elemental.json.Json.createObject();
+        msg.put("data", data);
+        data.put("event", event);
+        data.put("eventData", eventData);
+        broadcast(msg);
+    }
+
+    private void send(String websocketId, String command,
+                      Object data) {
+        send(websocketId, Json.encode(new DebugWindowMessage(command, data)));
+    }
+
+    private void send(String websocketId, String json) {
         try {
             Optional.ofNullable(liveReload.get(websocketId))
-                    .ifPresent(producer -> producer.accept(Json.encode(new DebugWindowMessage(command, data))));
+                    .ifPresent(producer -> producer.accept(json));
         } catch (Exception e) {
             getLogger().error("Error sending message", e);
         }
@@ -163,7 +177,6 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
 
     public void onClose(String websocketId) {
         logger.debug("Live reload connection disconnected for {}", websocketId);
-        // Optional.ofNullable(liveReload.get(websocketId)).ifPresent(MessageProducer::close);
         for (DevToolsMessageHandler plugin : plugins) {
             plugin.handleDisconnect(getDevToolsInterface(websocketId));
         }
@@ -175,16 +188,16 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
         msg.put("command", "update");
         msg.put("path", path);
         msg.put("content", content);
-        sendToAll(msg);
+        broadcast(msg);
     }
 
     public void reload() {
         JsonObject msg = elemental.json.Json.createObject();
         msg.put("command", "reload");
-        sendToAll(msg);
+        broadcast(msg);
     }
 
-    private void sendToAll(JsonObject message) {
+    private void broadcast(JsonObject message) {
         String json = message.toJson();
         liveReload.values().stream().filter(Objects::nonNull).forEach(socket -> socket.accept(json));
     }
@@ -223,7 +236,12 @@ public class VertxDebugWindowConnection implements VertxVaadinLiveReload {
 
         @Override
         public void send(String command, JsonObject data) {
-            connection.send(websocketId, command, data);
+            JsonObject msg = elemental.json.Json.createObject();
+            msg.put("command", command);
+            if (data != null) {
+                msg.put("data", data);
+            }
+            connection.send(websocketId, msg.toJson());
         }
 
         @Override
