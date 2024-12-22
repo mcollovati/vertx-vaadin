@@ -124,7 +124,7 @@
         <slf4j.version>2.0.9</slf4j.version>
         <checkstyle.version>10.12.6</checkstyle.version>
         <uber-pom-maven-plugin.version>1.0.3</uber-pom-maven-plugin.version>
-        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     </properties>
 
