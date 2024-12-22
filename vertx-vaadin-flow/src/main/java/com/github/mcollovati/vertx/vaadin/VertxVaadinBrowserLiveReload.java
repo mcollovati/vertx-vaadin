@@ -32,6 +32,8 @@ import org.atmosphere.cpr.AtmosphereResource;
 import com.github.mcollovati.vertx.vaadin.communication.VertxDebugWindowConnection;
 import com.github.mcollovati.vertx.vaadin.sockjs.communication.VertxVaadinLiveReload;
 
+import elemental.json.JsonObject;
+
 class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
 
     private final BrowserLiveReload delegate;
@@ -75,6 +77,11 @@ class VertxVaadinBrowserLiveReload implements BrowserLiveReload {
     @Override
     public void update(String path, String content) {
         reloader.update(path, content);
+    }
+
+    @Override
+    public void sendHmrEvent(String event, JsonObject eventData) {
+        reloader.sendHmrEvent(event, eventData);
     }
 
     @Override

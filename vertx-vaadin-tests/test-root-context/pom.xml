@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>vertx-vaadin-test</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.5-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>vertx-vaadin-test-root-context</artifactId>
@@ -120,11 +120,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
-        </dependency>
 
     </dependencies>
 

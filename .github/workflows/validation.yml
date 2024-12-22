@@ -1,7 +1,7 @@
 name: vertx-vaadin validation
 on:
   push:
-    branches: [development, vaadin-24.3, vaadin-23]
+    branches: [development, vaadin-24.4, vaadin-23]
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]

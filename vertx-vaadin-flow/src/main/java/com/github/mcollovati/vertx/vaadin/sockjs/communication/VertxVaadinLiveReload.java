@@ -22,6 +22,8 @@
  */
 package com.github.mcollovati.vertx.vaadin.sockjs.communication;
 
+import elemental.json.JsonObject;
+
 /**
  * Provides a way to reload browser tabs via web socket connection.
  */
@@ -41,5 +43,15 @@ public interface VertxVaadinLiveReload {
      *            the new content of the file
      */
     void update(String path, String content);
+
+    /**
+     * Send a client side HMR event.
+     *
+     * @param event
+     *            the event name
+     * @param eventData
+     *            the event data
+     */
+    void sendHmrEvent(String event, JsonObject eventData);
 
 }
