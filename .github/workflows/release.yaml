@@ -10,7 +10,7 @@ on:
         default: 'development'
         options:
         - "development"
-        - "vaadin-24.4"
+        - "vaadin-24.5"
         - "vaadin-23"
       version:
         description: "Version to release (e.g. 1.1.0 or 1.2.0-alpha1)"
