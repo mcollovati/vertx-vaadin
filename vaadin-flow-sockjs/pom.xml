@@ -22,7 +22,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
 
-        <sockjs-client.version>1.5.0</sockjs-client.version>
+        <sockjs-client.version>1.6.1</sockjs-client.version>
         <checkstyle.skip>false</checkstyle.skip>
 
         <gwt.version>2.9.0</gwt.version>
