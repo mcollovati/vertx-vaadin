@@ -33,10 +33,11 @@
         <flow-client-generated-sources>${project.build.directory}/generated-sources/flow-client
         </flow-client-generated-sources>
         <flow-overwritten-sources>${project.build.directory}/generated-sources/flow-overwrite</flow-overwritten-sources>
+        <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
 
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-        <minify-maven-plugin.version>1.7.6</minify-maven-plugin.version>
+        <minify-maven-plugin.version>1.7.10</minify-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -315,7 +316,7 @@
             </plugin>
 
             <plugin>
-                <groupId>com.samaxes.maven</groupId>
+                <groupId>com.7p-group</groupId>
                 <artifactId>minify-maven-plugin</artifactId>
                 <version>${minify-maven-plugin.version}</version>
                 <executions>
