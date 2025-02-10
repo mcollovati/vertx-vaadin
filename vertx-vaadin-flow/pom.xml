@@ -21,7 +21,7 @@
         <vaadin-flow-sockjs.version>${project.version}</vaadin-flow-sockjs.version>
         <jackson.version>2.17.2</jackson.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
-        <jakarta.websocket.version>2.1.1</jakarta.websocket.version>
+        <jakarta.websocket.version>2.2.0</jakarta.websocket.version>
         <validation.api.version>3.0.2</validation.api.version>
     </properties>
 
