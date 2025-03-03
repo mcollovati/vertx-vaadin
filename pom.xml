@@ -120,7 +120,7 @@
         <junit.version>4.13.2</junit.version>
         <mockito.version>5.8.0</mockito.version>
         <assertj.version>3.24.2</assertj.version>
-        <logback.version>1.4.14</logback.version>
+        <logback.version>1.5.17</logback.version>
         <slf4j.version>2.0.9</slf4j.version>
         <checkstyle.version>10.12.6</checkstyle.version>
         <uber-pom-maven-plugin.version>1.0.3</uber-pom-maven-plugin.version>
