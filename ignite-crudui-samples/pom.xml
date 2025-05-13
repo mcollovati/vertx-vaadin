@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.vaadin.crudui</groupId>
+	<artifactId>ignite-crudui</artifactId>
+	<version>24.6.6</version>
+	<packaging>jar</packaging>
+	<name>Crud UI for Ignite</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<failOnMissingWebXml>false</failOnMissingWebXml>
+		<validation.api.version>3.0.2</validation.api.version>
+		<vaadin.version>24.6.6</vaadin.version>
+		<vertx-vaadin.version>24.6-SNAPSHOT</vertx-vaadin.version>
+		<spring-boot.version>3.3.5</spring-boot.version>
+		<spring.data.version>3.3.5</spring.data.version>
+		<ignite.version>2.16.999-SNAPSHOT</ignite.version>
+		<ignite.data.version>3.2.0-SNAPSHOT</ignite.data.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>vaadin-prereleases</id>
+			<url>https://maven.vaadin.com/vaadin-prereleases/</url>
+		</repository>
+		<repository>
+			<id>vaadin-addons</id>
+			<url>https://maven.vaadin.com/vaadin-addons</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>vaadin-prereleases</id>
+			<url>https://maven.vaadin.com/vaadin-prereleases</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-bom</artifactId>
+				<version>${vaadin.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<!-- Spring Boot BOM -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.github.mcollovati.vertx</groupId>
+			<artifactId>vertx-vaadin-flow</artifactId>
+			<version>${vertx-vaadin.version}</version>
+		</dependency>
+
+		<!--<dependency>
+            <groupId>com.github.mcollovati.vertx</groupId>
+            <artifactId>vaadin-flow-sockjs</artifactId>
+            <version>${vertx-vaadin.version}</version>
+        </dependency>-->
+
+		<!-- Bean validation implementation -->
+
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>8.0.2.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.expressly</groupId>
+			<artifactId>expressly</artifactId>
+			<version>5.0.0</version> <!-- Required for EL expressions -->
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.5.3.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-core</artifactId>
+			<exclusions>
+				<!--
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>flow-push</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>flow-client</artifactId>
+				</exclusion>
+				-->
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hilla</artifactId>
+		</dependency>
+
+		<!-- Added to provide logging output as Flow uses -->
+		<!-- the unbound SLF4J no-operation (NOP) logger implementation -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<version>${spring.data.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.vaadin.crudui</groupId>
+			<artifactId>crudui</artifactId>
+			<version>24.6.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-spring-data-ext</artifactId>
+			<version>${ignite.data.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.2.224</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>3.3.5</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>
+			<version>3.1.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<scope>compile</scope>
+			<version>2.17.2</version>
+		</dependency>
+
+	</dependencies>
+
+
+	<profiles>
+		<profile>
+			<id>vaadin-vertx</id>
+			<activation>
+				<property>
+					<name>vaadin.vertx</name>
+				</property>
+			</activation>
+
+			<properties>
+				<vaadin.productionMode>true</vaadin.productionMode>
+			</properties>
+
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>io.reactiverse</groupId>
+						<artifactId>vertx-maven-plugin</artifactId>
+						<version>1.0.28</version>
+						<executions>
+							<execution>
+								<id>vmp-init-package</id>
+								<goals>
+									<goal>initialize</goal>
+									<goal>package</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<skip>false</skip>
+							<redeploy>false</redeploy>
+							<classifier>fat</classifier>
+							<attach>true</attach>
+							<workDirectory>${project.build.directory}</workDirectory>
+							<verticle>com.github.mcollovati.vertxvaadin.flowdemo.UIVerticle</verticle>
+							<webRoot>${project.build.outputDirectory}/META-INF/resources/webjars</webRoot>
+							<stripWebJarVersion>false</stripWebJarVersion>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>productionMode</id>
+			<activation>
+				<property>
+					<name>vaadin.productionMode</name>
+				</property>
+			</activation>
+
+			<properties>
+				<vaadin.productionMode>true</vaadin.productionMode>
+			</properties>
+
+			<dependencies>
+				<dependency>
+					<groupId>com.vaadin</groupId>
+					<artifactId>flow-server-production-mode</artifactId>
+				</dependency>
+			</dependencies>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.vaadin</groupId>
+						<artifactId>vaadin-maven-plugin</artifactId>
+                        <configuration>
+							<reactEnable>true</reactEnable>
+						</configuration>
+						<version>${vaadin.version}</version>
+						<executions>
+							<execution>
+								<id>frontend</id>
+								<phase>compile</phase>
+								<goals>
+									<goal>prepare-frontend</goal>
+									<goal>build-frontend</goal>
+								</goals>
+								<configuration>
+									<productionMode>true</productionMode>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>

@@ -1,0 +1,21 @@
+/*
+   CSS styling examples for the Vaadin app.
+
+   Visit https://vaadin.com/docs/styling/application-theme/ for more information.
+*/
+
+/* Example: the style is applied only to the textfields which have the `bordered` class name. */
+vaadin-text-field.bordered::part(input-field) {
+  box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct);
+  background-color: var(--lumo-base-color);
+}
+
+[part="content"] div {
+   padding: var(--lumo-space-m);
+}
+
+vaadin-app-layout::part(content) {
+  padding: 1em;
+}
+
+
