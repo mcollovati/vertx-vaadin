@@ -24,8 +24,12 @@ package com.github.mcollovati.vertx.vaadin.connect.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.server.VaadinService;
+import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import org.slf4j.Logger;
@@ -41,33 +45,50 @@ public class VertxCsrfChecker implements CsrfChecker<RoutingContext> {
             return true;
         }
 
-        Session session = request.session();
-        if (session == null) {
-            return true;
-        }
+        String csrfTokenInCookie = this.getCsrfTokenInCookie(request);
+        if (csrfTokenInCookie == null) {
+            Session session = request.session();
+            if (session == null) {
+                return true;
+            }
 
-        String csrfTokenInSession = session.get(VaadinService.getCsrfTokenAttributeName());
-        if (csrfTokenInSession == null) {
+            String csrfTokenInSession = session.get(VaadinService.getCsrfTokenAttributeName());
+            csrfTokenInCookie = csrfTokenInSession;
+        }
+        if (csrfTokenInCookie == null) {
             if (getLogger().isInfoEnabled()) {
-                getLogger().info("Unable to verify CSRF token for endpoint request, got null token in session");
+                getLogger().info("Unable to verify CSRF token for endpoint request, got null token in cookie");
             }
 
             return false;
-        }
+        } else {
+            String csrfTokenInRequest = this.getCsrfTokenInRequest(request);
+            if (this.compareCsrfTokens(csrfTokenInCookie, csrfTokenInRequest)) {
+                if (getLogger().isInfoEnabled()) {
+                    getLogger().info("Invalid CSRF token in endpoint request");
+                }
 
-        String csrfTokenInRequest = request.request().getHeader("X-CSRF-Token");
-        if (csrfTokenInRequest == null
-                || !MessageDigest.isEqual(
-                        csrfTokenInSession.getBytes(StandardCharsets.UTF_8),
-                        csrfTokenInRequest.getBytes(StandardCharsets.UTF_8))) {
-            if (getLogger().isInfoEnabled()) {
-                getLogger().info("Invalid CSRF token in endpoint request");
+                return false;
+            } else {
+                return true;
             }
-
-            return false;
         }
+    }
 
-        return true;
+    String getCsrfTokenInRequest(RoutingContext request) {
+        return request.request().getHeader("X-CSRF-Token");
+    }
+
+    String getCsrfTokenInCookie(RoutingContext request) {
+        Cookie cookie = request.request().getCookie("csrfToken");
+        if(cookie!=null){
+            return cookie.getValue();
+        }
+        return null;
+    }
+
+    private boolean compareCsrfTokens(String csrfTokenInCookie, String csrfTokenInRequest) {
+        return csrfTokenInRequest == null || !MessageDigest.isEqual(csrfTokenInCookie.getBytes(StandardCharsets.UTF_8), csrfTokenInRequest.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

@@ -22,12 +22,14 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import io.vertx.core.http.HttpMethod;
 import jakarta.servlet.ServletContext;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -74,6 +76,7 @@ import com.github.mcollovati.vertx.vaadin.sockjs.communication.SockJSPushHandler
 import com.github.mcollovati.vertx.web.sstore.ExtendedLocalSessionStore;
 import com.github.mcollovati.vertx.web.sstore.ExtendedSessionStore;
 import com.github.mcollovati.vertx.web.sstore.NearCacheSessionStore;
+import org.springframework.context.ApplicationContext;
 
 public class VertxVaadin {
 
@@ -237,6 +240,10 @@ public class VertxVaadin {
         return startupContext.servletContext();
     }
 
+    protected ApplicationContext getSpringContext() {
+        return startupContext.getSpringContext();
+    }
+
     protected void serviceInitialized(Router router) {
         // empty by default
     }
@@ -309,11 +316,14 @@ public class VertxVaadin {
         initSockJS(vaadinRouter, sessionHandler);
 
         VertxStaticFileServer staticFileServer = new VertxStaticFileServer(service);
-        vaadinRouter.route("/*").handler(staticFileServer);
-        vaadinRouter.routeWithRegex("/.+").handler(StaticHandler.create("META-INF/resources"));
-        vaadinRouter.route("/*").blockingHandler(this::handleVaadinRequest);
+        vaadinRouter.get("/*").handler(staticFileServer);
+        vaadinRouter.routeWithRegex("/.+").method(HttpMethod.GET).handler(StaticHandler.create("META-INF/resources"));
 
+        vaadinRouter.route("/*").last().blockingHandler(this::handleVaadinRequest);
+
+        // user maybe add some handler before vaadin handlers
         serviceInitialized(vaadinRouter);
+
     }
 
     private void handleVaadinRequest(RoutingContext routingContext) {
@@ -338,9 +348,9 @@ public class VertxVaadin {
         if (devModeHandler instanceof ViteHandler viteHandler) {
             logger.info("Starting DevModeHandler websocket proxy");
 
-            DevServerWebSocketProxy proxy = DevServerWebSocketProxy.createWebsocketProxy(
+            devServerWebSocketProxy = DevServerWebSocketProxy.createWebsocketProxy(
                     vertx, viteHandler.getPort(), viteHandler.getPathToVaadin());
-            httpServer.webSocketHandler(proxy);
+            httpServer.webSocketHandler(devServerWebSocketProxy);
         }
     }
 
@@ -385,9 +395,9 @@ public class VertxVaadin {
         return new VertxVaadin(vertx, sessionStore, startupContext);
     }
 
-    public static VertxVaadin create(Vertx vertx, JsonObject config) {
+    public static VertxVaadin create(Vertx vertx, JsonObject config, ApplicationContext springContext) {
         StartupContext startupContext = Sync.await(
-                completer -> StartupContext.of(vertx, new VaadinOptions(config)).onComplete(completer));
+                completer -> StartupContext.of(vertx, new VaadinOptions(config), springContext).onComplete(completer));
         return create(vertx, startupContext);
     }
 

@@ -22,6 +22,7 @@
  */
 package com.github.mcollovati.vertx.vaadin;
 
+import com.vaadin.hilla.startup.EndpointsValidator;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
@@ -50,7 +51,7 @@ import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.hilla.startup.EndpointsValidator;
+
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
@@ -72,6 +73,7 @@ import com.github.mcollovati.vertx.support.StartupContext;
 import com.github.mcollovati.vertx.support.VaadinPatches;
 import com.github.mcollovati.vertx.vaadin.connect.VertxEndpointRegistryInitializer;
 import com.github.mcollovati.vertx.vaadin.devserver.VertxDevModeHandlerManager;
+import org.springframework.context.ApplicationContext;
 
 import static java.util.Arrays.asList;
 
@@ -89,12 +91,18 @@ public class VaadinVerticle extends AbstractVerticle {
     private HttpServer httpServer;
     private VertxVaadinService vaadinService;
 
+    protected ApplicationContext createSpringContext(){
+        return null;
+    }
+
+
     @Override
     public void start(Promise<Void> startFuture) throws Exception {
         log.info("Starting vaadin verticle " + getClass().getName());
+        ApplicationContext springContext = createSpringContext();
 
         prepareConfig()
-                .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions))
+                .compose(vaadinOptions -> StartupContext.of(vertx, vaadinOptions, springContext))
                 .compose(this::initVertxVaadin)
                 .compose(this::startupHttpServer)
                 .<Void>map(router -> {
@@ -109,19 +117,21 @@ public class VaadinVerticle extends AbstractVerticle {
 
     private Future<Router> startupHttpServer(VertxVaadin vertxVaadin) {
         String mountPoint = vertxVaadin.config().mountPoint();
+        if (!mountPoint.endsWith("/*")) {
+            mountPoint = mountPoint.replaceFirst("/?$", "/*");
+        }
+
         Router router = Router.router(vertx);
 
         if (vertxVaadin.config().hillaEnabled()) {
             String connectEndpoint = vertxVaadin.config().hillaEndpoint();
             if (!connectEndpoint.endsWith("/*")) {
                 connectEndpoint = connectEndpoint.replaceFirst("/?$", "/*");
-                router.route(connectEndpoint).subRouter(vertxVaadin.connectRouter());
             }
+            String mountPointPrefix = mountPoint.substring(0,mountPoint.length()-2);
+            router.route(mountPointPrefix+connectEndpoint).subRouter(vertxVaadin.connectRouter());
         }
 
-        if (!mountPoint.endsWith("/*")) {
-            mountPoint = mountPoint.replaceFirst("/?$", "/*");
-        }
         router.route(mountPoint).subRouter(vertxVaadin.router());
         log.debug("Mounted Vaadin router on {}", mountPoint);
 
@@ -269,6 +279,9 @@ public class VaadinVerticle extends AbstractVerticle {
                         vaadinOpts.sockJSSupport(haSockJS);
 
                         ClassInfo hillaClassInfo = scanResult.getClassInfo("dev.hilla.EndpointRegistry");
+                        if(hillaClassInfo==null){
+                            hillaClassInfo = scanResult.getClassInfo("com.vaadin.hilla.EndpointRegistry");
+                        }
                         boolean hasHilla = hillaClassInfo != null && !hillaClassInfo.isExternalClass();
                         if (!hasHilla) {
                             vaadinOpts.disableHilla();

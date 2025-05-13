@@ -1,3 +1,4 @@
+
 /*
  * The MIT License
  * Copyright © 2016-2020 Marco Collovati (mcollovati@gmail.com)
@@ -24,6 +25,10 @@ package com.github.mcollovati.vertx.vaadin.connect;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import com.vaadin.hilla.*;
+import com.vaadin.hilla.parser.jackson.JacksonObjectMapperFactory;
+import com.vaadin.hilla.signals.core.registry.SecureSignalsRegistry;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
@@ -31,14 +36,22 @@ import jakarta.servlet.annotation.HandlesTypes;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
-import com.vaadin.hilla.BrowserCallable;
-import com.vaadin.hilla.Endpoint;
-import com.vaadin.hilla.EndpointNameChecker;
 
 import com.github.mcollovati.vertx.support.HillaWorkAround;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.context.ApplicationContext;
+import com.vaadin.hilla.signals.handler.SignalsHandler;
+
 
 @HandlesTypes({Endpoint.class, BrowserCallable.class})
 public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServletContainerInitializer {
+
+    ApplicationContext springContext;
+
+    // for hilla signal endpoint instance
+    SignalsHandler signal;
+
+    private VertxEndpointRegistry endpontRegistry = new VertxEndpointRegistry(new EndpointNameChecker());
 
     @Override
     public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
@@ -46,6 +59,19 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
         if (set == null || !Boolean.parseBoolean(vaadinServletContext.getContextParameter("hilla.enabled"))) {
             return;
         }
+        springContext = (ApplicationContext)ctx.getAttribute("springContext");
+
+        if(signal==null){
+            EndpointInvoker invoker = new EndpointInvoker(springContext,
+                    new JacksonObjectMapperFactory.Json().build(),
+                    new ExplicitNullableTypeChecker(),
+                    ctx,
+                    endpontRegistry
+            );
+            SecureSignalsRegistry registry = new SecureSignalsRegistry(invoker);
+            signal = new SignalsHandler(registry);
+        }
+
         HillaWorkAround.install();
         ClassFinder finder = new ClassFinder.DefaultClassFinder(set);
         Set<Class<?>> endpoints = new HashSet<>();
@@ -55,17 +81,45 @@ public class VertxEndpointRegistryInitializer implements ClassLoaderAwareServlet
         vaadinServletContext.setAttribute(VaadinEndpointRegistry.class, fromClasses(endpoints));
     }
 
-    static VaadinEndpointRegistry fromClasses(Set<Class<?>> endpoints) {
-        VaadinEndpointRegistry registry = new VertxEndpointRegistry(new EndpointNameChecker());
-        endpoints.stream().map(VertxEndpointRegistryInitializer::newInstance).forEach(registry::registerEndpoint);
+    VaadinEndpointRegistry fromClasses(Set<Class<?>> endpoints) {
+        VaadinEndpointRegistry registry = endpontRegistry;
+        endpoints.stream().map(this::newInstance).forEach(registry::registerEndpoint);
         return registry;
     }
 
-    static Object newInstance(Class<?> cl) {
+    final Object newInstance(Class<?> cl) {
+
         try {
+
+            if(cl.equals(SignalsHandler.class)){
+                return signal;
+            }
+
+            if(springContext!=null){
+                try {
+                    return getOrCreate(springContext, cl);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
             return cl.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T getOrCreate(ApplicationContext context, Class<T> type) {
+        if (context.getBeanNamesForType(type).length == 1) {
+            return context.getBean(type);
+        } else if (context.getBeanNamesForType(type).length > 1) {
+            try {
+                return context.getAutowireCapableBeanFactory().createBean(type);
+            } catch (BeanInstantiationException var3) {
+                throw new BeanInstantiationException(var3.getBeanClass(), "[HINT] This could be caused by more than one suitable beans for autowiring in the context.", var3);
+            }
+        } else {
+            return context.getAutowireCapableBeanFactory().createBean(type);
         }
     }
 }

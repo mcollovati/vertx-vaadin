@@ -62,6 +62,7 @@ import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
+
 /**
  * Created by marco on 16/07/16.
  */
@@ -112,6 +113,9 @@ public class VertxVaadinService extends VaadinService {
 
     @Override
     protected Instantiator createInstantiator() throws ServiceException {
+        if(this.vertxVaadin.getSpringContext()!=null){
+            return new VertxVaadinInstantiator(new SpringInstantiator(this, this.vertxVaadin.getSpringContext()));
+        }
         return new VertxVaadinInstantiator(super.createInstantiator());
     }
 

@@ -73,6 +73,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.mcollovati.vertx.vaadin.VaadinOptions;
 import com.github.mcollovati.vertx.vaadin.VertxVaadinContext;
+import org.springframework.context.ApplicationContext;
+
 
 public final class StartupContext implements VaadinConfig {
 
@@ -81,11 +83,12 @@ public final class StartupContext implements VaadinConfig {
     private final Context context;
     private final Vertx vertx;
     private final VaadinOptions vaadinOptions;
-
+    private final ApplicationContext springContext;
     private DeploymentConfiguration deploymentConfiguration;
 
-    private StartupContext(Vertx vertx, Set<String> resources, VaadinOptions vaadinOptions) {
+    private StartupContext(Vertx vertx, Set<String> resources, VaadinOptions vaadinOptions, ApplicationContext springContext) {
         this.resources = new HashSet<>(resources);
+        this.springContext = springContext;
         Context context = vertx.getOrCreateContext();
         if (context instanceof ContextInternal && !((ContextInternal) context).isDuplicate()) {
             context = ((ContextInternal) context).duplicate();
@@ -128,16 +131,22 @@ public final class StartupContext implements VaadinConfig {
         return vaadinOptions.asProperties().getProperty(name);
     }
 
-    public static Future<StartupContext> of(Vertx vertx, VaadinOptions vaadinOptions) {
+    public static Future<StartupContext> of(Vertx vertx, VaadinOptions vaadinOptions, ApplicationContext springContext) {
         Promise<Set<String>> promise = Promise.promise();
         vertx.executeBlocking(StartupContext.scanResources(vaadinOptions), promise);
-        return promise.future().map(res -> new StartupContext(vertx, res, vaadinOptions));
+        return promise.future().map(res -> new StartupContext(vertx, res, vaadinOptions, springContext));
+    }
+
+    public static StartupContext syncOf(Vertx vertx, VaadinOptions vaadinOptions, ApplicationContext springContext) {
+        Promise<Set<String>> promise = Promise.promise();
+        scanResources(vaadinOptions).handle(promise);
+        return new StartupContext(vertx, promise.future().result(), vaadinOptions, springContext);
     }
 
     public static StartupContext syncOf(Vertx vertx, VaadinOptions vaadinOptions) {
         Promise<Set<String>> promise = Promise.promise();
         scanResources(vaadinOptions).handle(promise);
-        return new StartupContext(vertx, promise.future().result(), vaadinOptions);
+        return new StartupContext(vertx, promise.future().result(), vaadinOptions, null);
     }
 
     private static Handler<Promise<Set<String>>> scanResources(VaadinOptions vaadinOptions) {
@@ -154,6 +163,10 @@ public final class StartupContext implements VaadinConfig {
                 future.fail(ex);
             }
         };
+    }
+
+    public ApplicationContext getSpringContext() {
+        return springContext;
     }
 
     public VaadinOptions vaadinOptions() {
@@ -345,6 +358,9 @@ public final class StartupContext implements VaadinConfig {
 
         @Override
         public Object getAttribute(String name) {
+            if(name.equals("springContext")){
+                return startupContext.getSpringContext();
+            }
             return startupContext.context.getLocal(name);
         }
 

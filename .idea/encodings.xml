@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/ignite-crudui/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ignite-crudui/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vaadin-flow-sockjs/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-flow-jandex/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-flow-jandex/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-flow/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-flow/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/deployment/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/deployment/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/common-test-code/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/common-test-code/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/reusable-theme/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/reusable-theme/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/test-addons/addon-with-jandex/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/test-addons/addon-with-jandex/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/test-addons/addon-without-jandex/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/integration-tests/test-addons/addon-without-jandex/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/runtime/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/runtime/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/vertx-vaadin-quarkus-extension/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
