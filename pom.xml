@@ -4,7 +4,7 @@
 
     <groupId>com.github.mcollovati.vertx</groupId>
     <artifactId>vertx-vaadin-root</artifactId>
-    <version>24.6-SNAPSHOT</version>
+    <version>24.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Vertx Vaadin root Pom</description>
@@ -109,9 +109,9 @@
         <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
 
         <vertx.version>4.5.11</vertx.version>
-        <vaadin.platform.version>24.6.6</vaadin.platform.version>
-        <vaadin.flow.version>24.6.6</vaadin.flow.version>
-        <hilla.version>24.6.6</hilla.version>
+        <vaadin.platform.version>24.7.4</vaadin.platform.version>
+        <vaadin.flow.version>24.7.6</vaadin.flow.version>
+        <hilla.version>24.7.4</hilla.version>
 
         <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
         <byte-buddy.version>1.14.11</byte-buddy.version>

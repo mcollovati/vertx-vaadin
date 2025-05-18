@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.mcollovati.vertx.tests</groupId>
         <artifactId>vertx-vaadin-test</artifactId>
-        <version>24.6-SNAPSHOT</version>
+        <version>24.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>vertx-vaadin-test-resources</artifactId>

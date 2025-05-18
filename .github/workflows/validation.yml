@@ -1,7 +1,7 @@
 name: vertx-vaadin validation
 on:
   push:
-    branches: [development, vaadin-24.5, vaadin-23]
+    branches: [development, vaadin-24.6, vaadin-23]
   workflow_dispatch:
     inputs:
       force-deploy:
