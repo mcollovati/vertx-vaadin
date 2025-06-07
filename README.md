@@ -6,8 +6,13 @@
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.mcollovati.vertx/vertx-vaadin-flow.svg?label=vertx-vaadin-flow)
 ![Repsy Snapshots](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmcollovati%2Fvertx-vaadin-snapshots%2Fcom%2Fgithub%2Fmcollovati%2Fvertx%2Fvertx-vaadin-flow%2Fmaven-metadata.xml&label=repsy%20(snapshots))
 
-> [!WARNING]
-**Project Status: Under Discussion** – We're considering sunsetting this project. Please see [this issue](https://github.com/mcollovati/vertx-vaadin/issues/169) to learn more and share your thoughts.
+> [!WARNING] 
+> # **7 June 2025 - Project sunset**
+> I'm sad to announce that this project is being sunset.\
+> While it's been a valuable personal journey—especially in helping me dive deep into Vert.x and Vaadin internals—it's clear that there isn't enough interest or adoption to justify the ongoing maintenance effort. Given the time required to keep things current, I've decided it's time to step away.\
+> For anyone looking for alternatives, the [Quarkus Vaadin](https://quarkus.io/extensions/com.vaadin/vaadin-quarkus-extension/) extension is currently the best-supported option and continues to evolve.
+> If you're focused on frontend development with Vaadin and want to avoid boilerplate when connecting to a Java backend, the [Quarkus-Hilla](https://quarkus.io/extensions/com.github.mcollovati/quarkus-hilla-react/) extension is also worth checking out.\
+> Thank you to everyone who explored or contributed to this project. It’s been a meaningful learning experience.
 
 ## Description
 
